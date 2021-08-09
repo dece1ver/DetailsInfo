@@ -1,0 +1,111 @@
+﻿<UserControl x:Class="DetailsInfo.KeyBoardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DetailsInfo"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             TextElement.Foreground="{DynamicResource MaterialDesignBodyLight}"
+             TextElement.FontWeight="Regular"
+             TextElement.FontSize="13"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="Auto"
+             FontFamily="{DynamicResource MaterialDesignFont}"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="530">
+    <UserControl.Resources>
+        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="FontWeight" Value="Light"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="-5"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+        </Style>
+        <Style TargetType="RowDefinition">
+            <Setter Property="Height" Value="40"/>
+        </Style>
+        <Style TargetType="ColumnDefinition">
+            <Setter Property="Width" Value="40"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Button Content="Esc" Grid.Column="0" Grid.Row="0"/>
+
+        <Button Content="{Binding PropKeyQ, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0" Grid.Row="1" d:Content="Q"/>
+        <Button Content="{Binding PropKeyW}" Grid.Column="1" Grid.Row="1" d:Content="W"/>
+        <Button Content="{Binding PropKeyE}" Grid.Column="2" Grid.Row="1" d:Content="E"/>
+        <Button Content="{Binding PropKeyR}" Grid.Column="3" Grid.Row="1" d:Content="R"/>
+        <Button Content="{Binding PropKeyT}" Grid.Column="4" Grid.Row="1" d:Content="T"/>
+        <Button Content="{Binding PropKeyY}" Grid.Column="5" Grid.Row="1" d:Content="Y"/>
+        <Button Content="{Binding PropKeyU}" Grid.Column="6" Grid.Row="1" d:Content="U"/>
+        <Button Content="{Binding PropKeyI}" Grid.Column="7" Grid.Row="1" d:Content="I"/>
+        <Button Content="{Binding PropKeyO}" Grid.Column="8" Grid.Row="1" d:Content="O"/>
+        <Button Content="{Binding PropKeyP}" Grid.Column="9" Grid.Row="1" d:Content="P"/>
+
+        <Button Content="7" Grid.Column="11" Grid.Row="1"/>
+        <Button Content="8" Grid.Column="12" Grid.Row="1"/>
+        <Button Content="9" Grid.Column="13" Grid.Row="1"/>
+
+        <Button Content="{Binding PropKeyA}" Grid.Column="0" Grid.Row="2" d:Content="A"/>
+        <Button Content="{Binding PropKeyS}" Grid.Column="1" Grid.Row="2" d:Content="S"/>
+        <Button Content="{Binding PropKeyD}" Grid.Column="2" Grid.Row="2" d:Content="D"/>
+        <Button Content="{Binding PropKeyF}" Grid.Column="3" Grid.Row="2" d:Content="F"/>
+        <Button Content="{Binding PropKeyG}" Grid.Column="4" Grid.Row="2" d:Content="G"/>
+        <Button Content="{Binding PropKeyH}" Grid.Column="5" Grid.Row="2" d:Content="H"/>
+        <Button Content="{Binding PropKeyJ}" Grid.Column="6" Grid.Row="2" d:Content="J"/>
+        <Button Content="{Binding PropKeyK}" Grid.Column="7" Grid.Row="2" d:Content="K"/>
+        <Button Content="{Binding PropKeyL}" Grid.Column="8" Grid.Row="2" d:Content="L"/>
+        <Button Content="+" Grid.Column="9" Grid.Row="2"/>
+
+        <Button Content="4" Grid.Column="11" Grid.Row="2"/>
+        <Button Content="5" Grid.Column="12" Grid.Row="2"/>
+        <Button Content="6" Grid.Column="13" Grid.Row="2"/>
+
+        <Button Content="{Binding PropKeyZ}" Grid.Column="0" Grid.Row="3" d:Content="Z"/>
+        <Button Content="{Binding PropKeyX}" Grid.Column="1" Grid.Row="3" d:Content="X"/>
+        <Button Content="{Binding PropKeyC}" Grid.Column="2" Grid.Row="3" d:Content="C"/>
+        <Button Content="{Binding PropKeyV}" Grid.Column="3" Grid.Row="3" d:Content="V"/>
+        <Button Content="{Binding PropKeyB}" Grid.Column="4" Grid.Row="3" d:Content="B"/>
+        <Button Content="{Binding PropKeyN}" Grid.Column="5" Grid.Row="3" d:Content="N"/>
+        <Button Content="{Binding PropKeyM}" Grid.Column="6" Grid.Row="3" d:Content="M"/>
+        <Button Content="(" Grid.Column="7" Grid.Row="3"/>
+        <Button Content=")" Grid.Column="8" Grid.Row="3"/>
+        <Button Content="-" Grid.Column="9" Grid.Row="3"/>
+
+        <Button Content="1" Grid.Column="11" Grid.Row="3"/>
+        <Button Content="2" Grid.Column="12" Grid.Row="3"/>
+        <Button Content="3" Grid.Column="13" Grid.Row="3"/>
+
+        <Button Content="Caps Lock" Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2" Cursor="Hand"/>
+        <Button Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="8" Cursor="Hand"/>
+        <Button Content="0" Grid.Column="11" Grid.Row="4"/>
+        <Button Content="." Grid.Column="12" Grid.Row="4"/>
+        <Button Content="," Grid.Column="13" Grid.Row="4"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,154 @@
+﻿<Window x:Class="DetailsInfo.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DetailsInfo"
+        mc:Ignorable="d"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="12"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignShadowBrush}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Title="Конфигурация" Height="600" Width="800" FontSize="14" Loaded="Window_Loaded" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource MaterialDesignBodyLight}" Topmost="True" Foreground="{DynamicResource MaterialDesignBody}">
+    <Window.Resources>
+        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+            <!--<Setter Property="Width" Value="70"/>-->
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="10 -8 0 0"/>
+            <Setter Property="FontWeight" Value="Light"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <DockPanel Background="{DynamicResource MaterialDesignDarkBackground}" Margin="1,1,1,1">
+            <StatusBar DockPanel.Dock="Bottom" Background="{DynamicResource MaterialDesignToolBarBackground}" Foreground="{DynamicResource MaterialDesignToolBackground}">
+                <StatusBarItem FontSize="14">
+                    <TextBlock x:Name="statusBarTextBox"/>
+                </StatusBarItem>
+            </StatusBar>
+            <Grid DockPanel.Dock="Bottom" Height="70">
+                <Button x:Name="closeButton" Width="200" Height="50" HorizontalAlignment="Left"
+                    Background="{DynamicResource MaterialDesignValidationErrorBrush}" BorderBrush="{x:Null}" Margin="10,0,0,0" Click="closeButton_Click" Cursor="Hand" Foreground="Black">
+                    <materialDesign:PackIcon Kind="Close"/>
+                </Button>
+                <Button x:Name="applyButton" Width="200" Height="50" HorizontalAlignment="Right"
+                    Background="{DynamicResource SecondaryHueMidBrush}" BorderBrush="{x:Null}" Margin="0,0,10,0" Click="applyButton_Click" Foreground="Black">
+                    <materialDesign:PackIcon Kind="Done"/>
+                </Button>
+            </Grid>
+            <Grid Margin="10,10,10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="150"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="70"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                           Text="Конфигурация" Foreground="{DynamicResource MaterialDesignBodyLight}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button Grid.Column="2" Click="tabtipButton_Click" Cursor="Hand">
+                    <materialDesign:PackIcon Kind="Keyboard" Width="22" Height="22"/>
+                </Button>
+                
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="Таблица:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <TextBox Grid.Row="1" Grid.Column="1" materialDesign:TextFieldAssist.HasClearButton="True"
+                         x:Name="fileNameTextBox" Text="&lt;путь>" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"></TextBox>
+                <Button Grid.Row="1" Grid.Column="2" x:Name="fileSetButton" Content="Обзор" Click="fileSetButton_Click"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Text="Кодировка:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <TextBox Grid.Row="2" Grid.Column="1" x:Name="fileEncodingTextBox" Text="&lt;кодировка>" 
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <Button Grid.Row="2" Grid.Column="2" x:Name="encodingLinkButton" Content="Подробно" Click="encodingLinkButton_Click"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="0"
+                           Text="Архив УП:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <TextBox Grid.Row="3" Grid.Column="1" x:Name="archiveTextBox" Text="&lt;путь>" materialDesign:TextFieldAssist.HasClearButton="True"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <Button Grid.Row="3" Grid.Column="2" x:Name="archiveButton" Content="Обзор" Click="archiveButton_Click"/>
+
+                <TextBlock Grid.Row="4" Grid.Column="0"
+                           Text="Проверка:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <TextBox Grid.Row="4" Grid.Column="1" x:Name="tempTextBox" Text="&lt;путь>" materialDesign:TextFieldAssist.HasClearButton="True"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <Button Grid.Row="4" Grid.Column="2" x:Name="tempButton" Content="Обзор" Click="tempButton_Click"/>
+
+                <TextBlock Grid.Row="5" Grid.Column="0"
+                           Text="Станок:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <TextBox Grid.Row="5" Grid.Column="1" x:Name="machineTextBox" Text="&lt;путь>" materialDesign:TextFieldAssist.HasClearButton="True"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <Button Grid.Row="5" Grid.Column="2" x:Name="machineButton" Content="Обзор" Click="machineButton_Click"/>
+
+                <TextBlock Grid.Row="6" Grid.Column="0"
+                           Text="Логи (UNC):" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <TextBox Grid.Row="6" Grid.Column="1" x:Name="netLogPathTextBox" Text="&lt;путь>" materialDesign:TextFieldAssist.HasClearButton="True"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <Button Grid.Row="6" Grid.Column="2" x:Name="netLogPathButton" Content="Обзор" Click="netLogPathButton_Click"/>
+
+                <TextBlock Grid.Row="7" Grid.Column="0"
+                           Text="Логин:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <TextBox Grid.Row="7" Grid.Column="1" x:Name="emailLoginTextBox" Grid.ColumnSpan="2" materialDesign:TextFieldAssist.HasClearButton="True"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" Cursor="IBeam"/>
+
+                <TextBlock Grid.Row="8" Grid.Column="0"
+                           Text="Пароль:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <PasswordBox Grid.Row="8" Grid.Column="1" x:Name="emailPassTextBox" Grid.ColumnSpan="2" materialDesign:TextFieldAssist.HasClearButton="True"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+
+                <Slider x:Name="refreshSlider" Grid.Row="10" Grid.Column="3" Width="150" Minimum="0"
+                        Maximum="10" Style="{StaticResource MaterialDesignDiscreteSlider}" Margin="0 0 0 10"
+                        TickFrequency="1" TickPlacement="BottomRight" />
+
+                <TextBlock Grid.Row="9" Grid.Column="0"
+                           Text="Сервер:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+
+                <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="LeftToRight">
+                    <TextBox x:Name="serverTextBox" Margin="0 -10 0 0"
+                        materialDesign:HintAssist.Hint="Адрес"
+                        Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                        VerticalAlignment="Center" Cursor="IBeam"/>
+                    <TextBox x:Name="portTextBox"  Margin="10 -10 10 0"
+                        materialDesign:HintAssist.Hint="Порт"
+                        Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                        VerticalAlignment="Center" Cursor="IBeam"/>
+                    <CheckBox x:Name="useSslCheckBox" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="SSL"/>
+                </StackPanel>
+                <StackPanel Grid.Row="10" Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="RightToLeft" Margin="5 0">
+                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}">
+                        Интервал просмотра
+                        <LineBreak/>
+                        сетевой папки станка
+                    </TextBlock>
+                    <Border BorderThickness="1" BorderBrush="{DynamicResource MaterialDesignCardBackground}" Margin="5" CornerRadius="1"/>
+                    <CheckBox x:Name="autoRenameCheckBox" Height="50" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}">
+                        <TextBlock Margin="5">
+                            Автосокращение названия
+                            <LineBreak/>
+                            УП при передаче на станок
+                        </TextBlock>
+                    </CheckBox>
+                </StackPanel>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</Window>

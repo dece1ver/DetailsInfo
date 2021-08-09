@@ -1,0 +1,520 @@
+﻿<Window x:Class="DetailsInfo.MainWindow"
+        x:Name="mainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DetailsInfo"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:ff="clr-namespace:DetailsInfo.Data"
+        xmlns:cv="clr-namespace:DetailsInfo.Converters"
+        mc:Ignorable="d"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignDarkForeground}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Title="Закрепленные изделия" Height="768" Width="1366" Loaded="Window_Loaded" WindowState="Maximized" WindowStartupLocation="CenterScreen" WindowStyle="None" FontSize="14" ResizeMode="CanMinimize" Topmost="True">
+    <Window.Resources>
+        <cv:PriorityConverter x:Key="priorityConverter" />
+        <cv:WidthConverter x:Key="widthConverter" />
+        <cv:ArchiveConverter x:Key="archiveConverter" />
+        <cv:NcNameConverter x:Key="ncNameConverter" />
+        <Style TargetType="DataGridCell">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Height" Value="33"/>
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
+            <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+        <Style x:Key="upperPanelButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+            <Setter Property="Width" Value="72"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Focusable" Value="False"/>
+        </Style>
+        <Style x:Key="generalButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0 0 7 0"/>
+            <Setter Property="FontWeight" Value="Light"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+        </Style>
+        <Style TargetType="materialDesign:PackIcon">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="20"/>
+        </Style>
+        <Style TargetType="GroupBox" BasedOn="{StaticResource MaterialDesignGroupBox}">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="materialDesign:ShadowAssist.ShadowDepth" Value="Depth3"/>
+            <Setter Property="BorderBrush" Value="{StaticResource MaterialDesignPaper}"/>
+        </Style>
+    </Window.Resources>
+    <materialDesign:DialogHost x:Name="messageDialog">
+        <materialDesign:DialogHost.DialogContent>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="210*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="emailMessageTextBox" FontSize="20" Grid.Row="0"
+                           Margin="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button Margin="20" Grid.Row="1"
+                    Style="{StaticResource generalButtonStyle}"
+                    Width="206" Height="50"
+                    IsCancel="True"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="Sample2Cancel"
+                    HorizontalAlignment="Center"
+                    Content="ОК" />
+            </Grid>
+        </materialDesign:DialogHost.DialogContent>
+        <DockPanel>
+
+            <!--#region Кнопки на верхней панели -->
+            <Grid DockPanel.Dock="Top" Height="auto">
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="refreshButton" HorizontalAlignment="Left" Style="{StaticResource upperPanelButtonStyle}"
+                    Click="refreshButton_Click" Cursor="Hand">
+                        <materialDesign:PackIcon Kind="Refresh"/>
+                    </Button>
+                    <Button x:Name="calcButton" HorizontalAlignment="Left" Style="{StaticResource upperPanelButtonStyle}"
+                    Click="calcButton_Click" Cursor="Hand">
+                        <materialDesign:PackIcon Kind="Calculator"/>
+                    </Button>
+                    <Button Style="{StaticResource upperPanelButtonStyle}" Click="tabtipButton_Click" Cursor="Hand">
+                        <materialDesign:PackIcon Kind="Keyboard" Width="25" Height="25"/>
+                    </Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="settingsButton" HorizontalAlignment="Right"
+                    Click="settingsButton_Click" Cursor="Hand" Style="{StaticResource upperPanelButtonStyle}">
+                        <materialDesign:PackIcon Kind="Settings"/>
+                    </Button>
+                    <Button x:Name="helpButton" HorizontalAlignment="Right" Style="{StaticResource upperPanelButtonStyle}"
+                    Click="helpButton_Click">
+                        <materialDesign:PackIcon Kind="QuestionMark"/>
+                    </Button>
+                    <!--<Button x:Name="topMostButton" HorizontalAlignment="Right" Style="{StaticResource upperPanelButtonStyle}"
+                    Click="topMostButton_Click">
+                    <materialDesign:PackIcon Kind="Pin"/>
+                </Button>-->
+                    <Button x:Name="minimizeButton" HorizontalAlignment="Right" Style="{StaticResource upperPanelButtonStyle}"
+                    Click="minimizeButton_Click" Cursor="Hand">
+                        <materialDesign:PackIcon Kind="WindowMinimize"/>
+                    </Button>
+                    <Button x:Name="closeButton" HorizontalAlignment="Right" Click="closeButton_Click" Style="{StaticResource upperPanelButtonStyle}" Cursor="Hand">
+                        <materialDesign:PackIcon Kind="Close" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                             Height="30" Width="30" />
+                    </Button>
+                </StackPanel>
+
+            </Grid>
+            <!--#endregion-->
+
+            <StatusBar DockPanel.Dock="Bottom" Height="25" FontSize="14" Background="{DynamicResource MaterialDesignToolBarBackground}" Foreground="{DynamicResource MaterialDesignToolBackground}">
+                <StatusBarItem>
+                    <TextBlock x:Name="statusTextBlock" Text="Загрузка..."/>
+                </StatusBarItem>
+
+                <StatusBarItem HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon x:Name="tableConnectionIcon" Margin="0 0 10 0" Kind="Table" ToolTip="Список закрепленных деталей"/>
+                        <materialDesign:PackIcon x:Name="archiveConnectionIcon" Margin="0 0 10 0" Kind="FolderHome" ToolTip="Архив УП"/>
+                        <materialDesign:PackIcon x:Name="tempFolderConnectionIcon" Margin="0 0 10 0" Kind="LanConnect" ToolTip="Промежуточная"/>
+                        <materialDesign:PackIcon x:Name="machineConnectionIcon" Margin="0 0 10 0" Kind="ServerNetwork" ToolTip="Станок"/>
+                        <materialDesign:PackIcon x:Name="emailConnectionIcon" Margin="0 0 10 0" Kind="Email" ToolTip="Сервер уведомлений"/>
+                        <TextBlock x:Name="dateTimeTB" d:Text="00.00.0000 00:00"/>
+                    </StackPanel>
+                </StatusBarItem>
+
+            </StatusBar>
+
+            <TabControl x:Name="tabControl"
+            Style="{StaticResource MaterialDesignNavigatilRailTabControl}"
+            TabStripPlacement="Left" SelectedIndex="0">
+
+                <!--#region Перемещение УП -->
+
+                <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+                    <TabItem.Header>
+                        <materialDesign:PackIcon 
+                        Kind="Transfer"
+                        Width="24"
+                        Height="24" />
+                    </TabItem.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="2"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <!--#region Архив УП -->
+                        <GroupBox Grid.Column="0" Header="Архив управляющих программ" x:Name="archiveGB" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                            <materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                   DialogTheme="Inherit" CloseOnClickAway="True">
+                                <materialDesign:DialogHost.DialogContent>
+                                    <StackPanel Margin="30" Orientation="Vertical">
+
+                                        <TextBlock Text="Поиск файлов" FontSize="20"/>
+                                        <TextBox x:Name="findTextBox" materialDesign:HintAssist.Hint="Название" Margin="2 15 2 2" HorizontalAlignment="Stretch" 
+                                             Style="{StaticResource MaterialDesignTextBox}" FontSize="20" Width="276"/>
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button
+                                            Style="{StaticResource generalButtonStyle}"
+                                            IsCancel="True"
+                                            Margin="2 2 2 2"
+                                            Width="66" Height="50"
+                                            Command="materialDesign:DialogHost.CloseDialogCommand">
+                                                    <Button.CommandParameter>
+                                                        <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                                            False
+                                                        </system:Boolean>
+                                                    </Button.CommandParameter>
+                                                    <StackPanel Orientation="Vertical">
+                                                        <!--<TextBlock Text="Отмена"/>-->
+                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}" VerticalAlignment="Center"
+                                                                         Width="35" 
+                                                                         Height="35"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="findButtonButton"
+                                                Style="{StaticResource generalButtonStyle}"
+                                                Width="206" Height="50"
+                                                IsDefault="True"
+                                                Margin="2 2 2 2"
+                                                Command="materialDesign:DialogHost.CloseDialogCommand"
+                                                Click="findButton_Click">
+                                                    <Button.CommandParameter>
+                                                        <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                                            True
+                                                        </system:Boolean>
+                                                    </Button.CommandParameter>
+                                                    <StackPanel Orientation="Vertical">
+                                                        <!--<TextBlock Text="ОК"/>-->
+                                                        <materialDesign:PackIcon Kind="Done" Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                                                         Width="35" 
+                                                                         Height="35"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <local:NumericKeyboardControl HorizontalAlignment="Center"/>
+                                        <Button Style="{StaticResource generalButtonStyle}" Click="tabtipButton_Click" 
+                                            Margin="2" Width="276" Height="50">
+                                            <materialDesign:PackIcon Kind="Keyboard"
+                                                                 Width="35" 
+                                                                 Height="35"/>
+                                        </Button>
+
+                                    </StackPanel>
+                                </materialDesign:DialogHost.DialogContent>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <ProgressBar Grid.Row="1" x:Name="archiveProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
+                                        Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                        Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <DockPanel x:Name="archiveButtonsPanel" Visibility="Visible">
+                                        <StackPanel Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Left">
+                                            <Button x:Name="archiveRootButton" Style="{StaticResource generalButtonStyle}" Click="archiveRootButton_Click">
+                                                <materialDesign:PackIcon Kind="FolderHomeOutline" Height="25" Width="25" />
+                                            </Button>
+                                            <Button x:Name="archiveParentButton" Style="{StaticResource generalButtonStyle}" Click="archiveParentButton_Click">
+                                                <materialDesign:PackIcon Kind="FolderUploadOutline" Height="25" Width="25" />
+                                            </Button>
+                                        </StackPanel>
+                                        <Button x:Name="findDialogButton" Style="{StaticResource generalButtonStyle}"
+                                            DockPanel.Dock="Right" Margin="0" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}" Cursor="Hand" >
+                                            <materialDesign:PackIcon Kind="Magnify" Height="25" Width="25" />
+                                        </Button>
+                                        <ProgressBar x:Name="findProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
+                                        Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                        Value="0" IsIndeterminate="True" Visibility="Collapsed"/>
+                                        <Button x:Name="returnButton" Style="{StaticResource generalButtonStyle}" Click="returnButton_Click"
+                                            DockPanel.Dock="Right" Margin="0" Visibility="Collapsed" Cursor="Hand">
+                                            <materialDesign:PackIcon Kind="ArrowBack" Height="25" Width="25"/>
+                                        </Button>
+                                        <TextBox x:Name="archivePathTB" Margin="0 0 6 0" materialDesign:TextFieldAssist.TextBoxViewMargin="5 12 5 0"
+                                                 Text="&lt;путь>" IsReadOnly="True" FontSize="14" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
+                                        </TextBox>
+                                    </DockPanel>
+                                    <ListView Grid.Row="1" x:Name="archiveLV" Margin="0,10,0,0" PreviewMouseLeftButtonUp="archiveLV_PreviewMouseLeftButtonUp" 
+                                          HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Focusable="False" Visibility="Visible">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel Margin="-12 0 -8 0" Focusable="False">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ContentControl Content="{Binding Icon}" Margin="0 -6 7 -6" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                                        <TextBlock Text="{Binding Content, Converter={StaticResource archiveConverter}}" 
+                                                           VerticalAlignment="Center" Margin="5 0 0 0"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" FlowDirection="RightToLeft">
+                                                        <Button Visibility="{Binding TransferButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
+                                                            Style="{StaticResource generalButtonStyle}" Click="transferButton_Click" Margin="0 -6 7 -6">
+                                                            <materialDesign:PackIcon Kind="ArrowRight" />
+                                                        </Button>
+                                                        <Button Visibility="{Binding OpenButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                            Style="{StaticResource generalButtonStyle}" Click="openButton_Click" Margin="0 -6 7 -6">
+                                                            <materialDesign:PackIcon Kind="Eye" />
+                                                        </Button>
+                                                        <Button Visibility="{Binding OpenFolderState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2" Margin="0 -6 7 -6"
+                                                            Style="{StaticResource generalButtonStyle}" Click="openFolderButton_Click">
+                                                            <materialDesign:PackIcon Kind="Folder" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Grid>
+                            </materialDesign:DialogHost>
+                        </GroupBox>
+                        <!--#endregion-->
+
+                        <Border Background="{DynamicResource MaterialDesignDivider}" Grid.Column="1" />
+
+                        <!--#region Сетевая папка -->
+                        <GroupBox Grid.Column="2" Header="Программы в сетевой папке" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                            <materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                   DialogTheme="Inherit" CloseOnClickAway="True">
+                                <materialDesign:DialogHost.DialogContent>
+                                    <StackPanel Margin="30" Orientation="Vertical">
+                                        <TextBlock Text="Переименовать файл" FontSize="20"/>
+                                        <TextBlock x:Name="kostyl" Visibility="Collapsed"/>
+                                        <TextBox x:Name="newNameTB" materialDesign:HintAssist.Hint="Новое имя" Margin="2 15 2 2" HorizontalAlignment="Stretch" 
+                                             Style="{StaticResource MaterialDesignTextBox}" FontSize="20" Width="276"
+                                             materialDesign:TextFieldAssist.SuffixText="{Binding ElementName=kostyl, Path=Text}"/>
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button
+                                            Style="{StaticResource generalButtonStyle}"
+                                            IsCancel="True"
+                                            Margin="2 2 2 2"
+                                            Width="66" Height="50"
+                                            Command="materialDesign:DialogHost.CloseDialogCommand">
+                                                    <Button.CommandParameter>
+                                                        <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                                            False
+                                                        </system:Boolean>
+                                                    </Button.CommandParameter>
+                                                    <StackPanel Orientation="Vertical">
+                                                        <!--<TextBlock Text="Отмена"/>-->
+                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}" VerticalAlignment="Center"
+                                                                         Width="35" 
+                                                                         Height="35"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="applyRenameButton"
+                                                Style="{StaticResource generalButtonStyle}"
+                                                Width="206" Height="50"
+                                                IsDefault="True"
+                                                Margin="2 2 2 2"
+                                                Command="materialDesign:DialogHost.CloseDialogCommand"
+                                                Click="ApplyRenameButtonClick">
+                                                    <Button.CommandParameter>
+                                                        <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                                            True
+                                                        </system:Boolean>
+                                                    </Button.CommandParameter>
+                                                    <StackPanel Orientation="Vertical">
+                                                        <!--<TextBlock Text="ОК"/>-->
+                                                        <materialDesign:PackIcon Kind="Done" Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                                                         Width="35" 
+                                                                         Height="35"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </StackPanel>
+                                            <local:NumericKeyboardControl HorizontalAlignment="Center"/>
+                                            <Button Style="{StaticResource generalButtonStyle}" Click="tabtipButton_Click" 
+                                            Margin="2" Width="276" Height="50">
+                                                <materialDesign:PackIcon Kind="Keyboard"
+                                                                 Width="35" 
+                                                                 Height="35"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </materialDesign:DialogHost.DialogContent>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Orientation="Horizontal">
+
+                                    </StackPanel>
+                                    <DockPanel Grid.Row="0">
+                                        <StackPanel Orientation="Horizontal" >
+                                        </StackPanel>
+                                    </DockPanel>
+                                    <ProgressBar Grid.Row="1" x:Name="machineProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
+                                        Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                        Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <ListView x:Name="machineDG" Grid.Row="1" HorizontalContentAlignment="Stretch" 
+                                      BorderThickness="0" PreviewMouseLeftButtonUp="machineDG_PreviewMouseLeftButtonUp">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel Margin="-12 0 -7 0">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ContentControl Content="{Binding Icon}" Margin="0 -6 7 -6" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                                        <TextBlock Text="{Binding FileName}" d:Text="Название" 
+                                                       VerticalAlignment="Center" Margin="5 0 0 0" />
+                                                        <TextBlock Text="{Binding NcName, Converter={StaticResource ncNameConverter}}" 
+                                                       VerticalAlignment="Center" Margin="5 0 0 0"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" FlowDirection="RightToLeft">
+                                                        <Button Visibility="{Binding DeleteButtonVisibility}" 
+                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                        Style="{StaticResource generalButtonStyle}" Click="deleteButton_Click">
+                                                            <materialDesign:PackIcon Kind="Delete" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                                        </Button>
+                                                        <Button Visibility="{Binding CheckButtonVisibility}" 
+                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                            Width="100" Padding="-2" Margin="0 -6 7 -6"
+                                                        Content="На проверку" FontSize="14" 
+                                                        Style="{StaticResource generalButtonStyle}" Click="checkButton_Click"/>
+                                                        <Button Visibility="{Binding RenameButtonVisibility}" Margin="0 -6 7 -6"
+                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                        Style="{StaticResource generalButtonStyle}" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
+                                                            <materialDesign:PackIcon Kind="Rename"/>
+                                                        </Button>
+                                                        <Button Visibility="{Binding OpenButtonVisibility}" 
+                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                        Style="{StaticResource generalButtonStyle}" Click="openNCButton_Click">
+                                                            <materialDesign:PackIcon Kind="Eye"/>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Grid>
+                            </materialDesign:DialogHost>
+                        </GroupBox>
+                        <!--#endregion-->
+                        <materialDesign:Snackbar Grid.ColumnSpan="3" Grid.Column="0" x:Name="snackBar"
+                                             HorizontalAlignment="Stretch"
+                                             MessageQueue="{materialDesign:MessageQueue}"
+                                             IsActive="False"/>
+                    </Grid>
+                </TabItem>
+                <!--#endregion-->
+
+                <!--#region Список деталей -->
+                <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+                    <TabItem.Header>
+                        <materialDesign:PackIcon
+                    Kind="ListStatus"
+                    Width="24"
+                    Height="24" />
+                    </TabItem.Header>
+                    <Grid>
+                        <GroupBox x:Name="statusGB" Header="Список закрепленных деталей" Margin="0,0,0,1" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                            <DataGrid x:Name="tableDG" AutoGenerateColumns="False" IsReadOnly="True" EnableRowVirtualization="True" 
+                                    Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow" 
+                                    CanUserReorderColumns="False" CanUserResizeColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Приоритет" Width="100"
+                                            Binding="{Binding Priority, Converter={StaticResource priorityConverter}}"/>
+                                    <DataGridTextColumn Header="Заказ" Width="auto" Binding="{Binding Order}"/>
+                                    <DataGridTextColumn Header="Номенклатура" Width="300" Binding="{Binding Name}"/>
+                                    <DataGridTextColumn Header="Статус" Width="120" Binding="{Binding Status}"/>
+                                    <DataGridTextColumn Header="Время" Binding="{Binding MachineTime}"/>
+                                    <DataGridTextColumn Header="Комментарий" Width="*" Binding="{Binding Comment}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+                <!--#endregion-->
+
+                <!--#region Заметки -->
+                <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+                    <TabItem.Header>
+                        <materialDesign:PackIcon
+                    Kind="Note"
+                    Width="24"
+                    Height="24" />
+                    </TabItem.Header>
+                    <Grid>
+                        <GroupBox x:Name="notesGB" Header="Заметки" materialDesign:ShadowAssist.ShadowDepth="Depth0" Margin="0,0,0,1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <Button x:Name="addToolButton"
+                                    Style="{StaticResource generalButtonStyle}" Click="addToolButton_Click" Cursor="Hand">
+                                        <materialDesign:PackIcon Kind="Plus" Width="25" Height="25"/>
+                                    </Button>
+                                    <Button x:Name="sortToolButton"
+                                    Style="{StaticResource generalButtonStyle}" Click="sortToolButton_Click" Cursor="Hand">
+                                        <materialDesign:PackIcon Kind="Sort" Width="25" Height="25"/>
+                                    </Button>
+                                </StackPanel>
+                                <DataGrid x:Name="notesDG" AutoGenerateColumns="False" EnableRowVirtualization="True"
+                                    Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow" IsSynchronizedWithCurrentItem="True" 
+                                    CanUserReorderColumns="False" CanUserResizeColumns="False" Grid.Row="1" ItemsSource="{Binding ToolNotes}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                        Width="130" FontSize="14" 
+                                        Binding="{Binding Path=ToolNo}"
+                                        Header="Ячейка"
+                                        ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                                        EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}"/>
+                                        <DataGridTextColumn
+                                        Width="*" FontSize="14"
+                                        Binding="{Binding Path=ToolDescription}"
+                                        Header="Описание"
+                                        ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                                        EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}"/>
+                                        <DataGridTemplateColumn>
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button x:Name="deleteToolButton"
+                                                        Height="30" 
+                                                        Width="{Binding Source={x:Static ff:FileFormats.IconSize}}"
+                                                        Style="{StaticResource generalButtonStyle}" Click="deleteToolButton_Click" BorderBrush="{x:Null}" Padding="-5">
+                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+                <!--#endregion-->
+            </TabControl>
+        </DockPanel>
+    </materialDesign:DialogHost>
+</Window>
