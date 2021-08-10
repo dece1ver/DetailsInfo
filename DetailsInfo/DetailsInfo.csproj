@@ -14,10 +14,10 @@
     <AssemblyOriginatorKeyFile>DetailsInfo_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
     <AssemblyName>Details Info</AssemblyName>
-    <Version>1.0.6</Version>
+    <Version>1.0.7</Version>
     <StartupObject></StartupObject>
-    <AssemblyVersion>1.0.6.3</AssemblyVersion>
-    <FileVersion>1.0.6.3</FileVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
+    <FileVersion>1.0.7.0</FileVersion>
     <Description>Типа файловый менеджер</Description>
     <Copyright>dece1ver</Copyright>
     <PackageProjectUrl>https://detailsinfo.azurewebsites.net/</PackageProjectUrl>

@@ -79,7 +79,6 @@ namespace DetailsInfo
         #endregion
 
 
-
         public MainWindow()
         {
             InitializeComponent();
@@ -754,7 +753,7 @@ namespace DetailsInfo
             ArchiveContent currentItem = (ArchiveContent)item;
             if (Directory.Exists(currentItem.Content))
             {
-                Stopwatch sw = Stopwatch.StartNew();
+                //Stopwatch sw = Stopwatch.StartNew();
                 _transferFromArchive = false;
                 _transferFromMachine = false;
                 _deleteFromMachine = false;
@@ -763,7 +762,7 @@ namespace DetailsInfo
                 _openFromNcFolder = false;
                 _currentArchiveFolder = currentItem.Content;
                 LoadArchive();
-                statusTextBlock.Text = $"Открыто за {sw.ElapsedMilliseconds} мс";
+                //statusTextBlock.Text = $"Открыто за {sw.ElapsedMilliseconds} мс";
             }
             else if (File.Exists(currentItem.Content))
             {
