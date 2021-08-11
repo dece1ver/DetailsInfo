@@ -1,2 +1,66 @@
 ﻿@page "/"
 
+<MudContainer Class="ml-2">
+    <table style="margin-bottom: 15px">
+        <tr>
+            <td style="padding-right: 15px">
+                <MudText>Версия:</MudText>
+            </td>
+            <td>
+                <MudText>@_version</MudText>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-right: 15px">
+                <MudText>Email:</MudText>
+            </td>
+            <td>
+                <MudLink Href="mailto:gromov@areopag-spb.ru">gromov@areopag-spb.ru</MudLink>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td style="padding-right: 15px">
+                <MudText>Требования:</MudText>
+            </td>
+            <td />
+        </tr>
+        <tr>
+            <td />
+            <td>
+                <MudText>● Windows 10 x64</MudText>
+            </td>
+        </tr>
+        <tr>
+            <td />
+            <td>
+                <MudText>● .NET 5</MudText>
+            </td>
+        </tr>
+    </table>
+    <table style="margin-bottom: 25px">
+        <tr>
+            <td style="padding-right: 15px">
+                <MudText>Описание:</MudText>
+            </td>
+            <td />
+        </tr>
+        <tr>
+            <td />
+            <td>
+                <MudText>Тут ClickOnce версия приложения с установкой и обновлениями.</MudText>
+                <MudText>Portable версию можно скачать <MudLink Target="_blank" Href="https://github.com/Dece1ver/DetailsInfo/releases">в релизах</MudLink> на GitHub.</MudText>
+            </td>
+        </tr>
+    </table>
+    <MudButton Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.FileDownload" IconColor="Color.Primary" Color="Color.Primary" Style="width: 260px; height: 80px;" Link="/setup.exe">
+        <MudText>Скачать</MudText>
+    </MudButton>
+</MudContainer>
+
+@code
+{ 
+    // написать выдергивание версии из основного проекта
+    private string _version = "1.0.7.0";
+}
