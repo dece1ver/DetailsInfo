@@ -17,6 +17,7 @@ namespace DetailsInfo.Data
         public static string[] VideoExtensions { get; set; } = { ".mp4", ".mpeg", ".wmv", ".webm", ".mkv" };
         public static string[] DocumentExtensions { get; set; } = { ".pdf", ".xml", ".doc", ".docx", ".docm", ".txt" };
         public static string[] MiscExtensions { get; set; } = { ".sys", ".tmp", ".lnk", ".rdp", ".ini", ".exe", ".bat", ".cmd", ".com" };
+        public static string[] SystemFiles { get; set; } = { "Thumbs.db" };
 
         private static string[] _machineExtensions = Array.Empty<string>();
 

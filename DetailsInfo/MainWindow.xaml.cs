@@ -387,25 +387,28 @@ namespace DetailsInfo
                     {
                         foreach (string file in files)
                         {
-                            if (Reader.CanBeTransfered(file))
+                            if (!FileFormats.SystemFiles.Contains(Path.GetFileName(file)))
                             {
-                                _archiveContent.Add(new ArchiveContent
+                                if (Reader.CanBeTransfered(file))
                                 {
-                                    Content = file,
-                                    TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                    OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                    OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed
-                                });
-                            }
-                            else
-                            {
-                                _archiveContent.Add(new ArchiveContent
+                                    _archiveContent.Add(new ArchiveContent
+                                    {
+                                        Content = file,
+                                        TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                        OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                        OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed
+                                    });
+                                }
+                                else
                                 {
-                                    Content = file,
-                                    TransferButtonState = Visibility.Collapsed,
-                                    OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                    OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed
-                                });
+                                    _archiveContent.Add(new ArchiveContent
+                                    {
+                                        Content = file,
+                                        TransferButtonState = Visibility.Collapsed,
+                                        OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                        OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed
+                                    });
+                                }
                             }
                         }
                         if (_findStatus == FindStatus.Find)
