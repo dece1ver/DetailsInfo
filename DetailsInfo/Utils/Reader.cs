@@ -277,25 +277,7 @@ namespace DetailsInfo.Data
             }
             if (Directory.Exists(path) || File.Exists(path)) return true;
             if (string.IsNullOrEmpty(path)) return false;
-            ProcessStartInfo pinfo = new("net", "use")
-            {
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                UseShellExecute = false
-            };
-            string output;
-            using (Process p = Process.Start(pinfo))
-            {
-                output = p.StandardOutput.ReadToEnd();
-            }
-            foreach (string line in output.Split('\n'))
-            {
-                if (line.Contains(path) && line.Contains("OK"))
-                {
-                    return true; // shareIsProbablyConnected
-                }
-            }
-            return false;
+            return true;
         }
 
         /// <summary>

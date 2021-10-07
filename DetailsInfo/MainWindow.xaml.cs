@@ -167,6 +167,7 @@ namespace DetailsInfo
             emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
             emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Foreground = redBrush);
             Pop3Client client = new();
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
             try
             {
                 client.Connect(Settings.Default.popServer, Settings.Default.popPort, Settings.Default.useSsl);
@@ -232,13 +233,13 @@ namespace DetailsInfo
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Foreground = redBrush);
                 }
-                catch (Pop3ProtocolException)
+                catch (Pop3ProtocolException ex)
                 {
                     if (debugMode) AddStatus(_pop3ProtocolException);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Foreground = redBrush);
                 }
-                catch (MailKit.Security.SslHandshakeException)
+                catch (MailKit.Security.SslHandshakeException ex)
                 {
                     if (debugMode) AddStatus(_sslHandshakeException);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
@@ -330,7 +331,7 @@ namespace DetailsInfo
         /// <summary>
         /// Обновляет содержимое архива
         /// </summary>
-        private void LoadArchive()
+        private async Task LoadArchive()
         {
             if (_archiveStatus)
             {
@@ -339,7 +340,7 @@ namespace DetailsInfo
                     string[] dirs = Array.Empty<string>();
                     string[] files = Array.Empty<string>();
                     string findString = string.Empty;
-                    findTextBox.Dispatcher.InvokeAsync(() => findString = findTextBox.Text);
+                    await findTextBox.Dispatcher.InvokeAsync(() => findString = findTextBox.Text);
                     switch (_findStatus)
                     {
                         // просто сёрфим папки
@@ -351,15 +352,19 @@ namespace DetailsInfo
                         // поиск
                         case FindStatus.Find:
                             _archiveContent = new();
-                            archiveLV.Dispatcher.InvokeAsync(() => archiveLV.Visibility = Visibility.Collapsed);
-                            archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Поиск \"{findTextBox.Text}\"...");
+                            await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.Visibility = Visibility.Collapsed);
+                            await findDialogButton.Dispatcher.InvokeAsync(() => findDialogButton.Visibility = Visibility.Collapsed);
+                            await archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Поиск \"{findTextBox.Text}\"...");
                             if (debugMode) AddStatus(_FindInProcess);
-                            archiveProgressBar.Dispatcher.InvokeAsync(() => findProgressBar.Visibility = Visibility.Visible);
-                            files = Directory
-                            .EnumerateFiles(_currentArchiveFolder, "*.*", SearchOption.AllDirectories)
-                            .Where(
+                            await archiveProgressBar .Dispatcher.InvokeAsync(() => findProgressBar.Visibility = Visibility.Visible);
+                            await Task.Run(() => 
+                            {
+                                files = Directory
+                                .EnumerateFiles(_currentArchiveFolder, "*.*", SearchOption.AllDirectories)
+                                .Where(
                                 file => file.ToLower().Contains(findString, StringComparison.OrdinalIgnoreCase))
-                            .ToArray();
+                                .ToArray();
+                            });
                             break;
                         // возврат к результатам поиска
                         case FindStatus.Finded:
@@ -416,8 +421,8 @@ namespace DetailsInfo
                             _findResult = files;
                         }
                     }
-                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.IsEnabled = true);
-                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ItemsSource = _archiveContent);
+                    await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.IsEnabled = true);
+                    await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ItemsSource = _archiveContent);
 
                 }
                 catch (UnauthorizedAccessException e)
@@ -451,21 +456,22 @@ namespace DetailsInfo
                 switch (_findStatus)
                 {
                     case FindStatus.DontNeed:
-                        archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = _currentArchiveFolder);
-                        archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.CaretIndex = archivePathTB.Text.Length);
-                        archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.ScrollToHorizontalOffset(double.MaxValue));
+                        await archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = _currentArchiveFolder);
+                        await archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.CaretIndex = archivePathTB.Text.Length);
+                        await archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.ScrollToHorizontalOffset(double.MaxValue));
                         break;
                     case FindStatus.Finded:
                         break;
                     case FindStatus.Find:
-                        archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Поиск \"{findTextBox.Text}\" завершен. Найдено {archiveLV.Items.Count} элементов.");
-                        findProgressBar.Dispatcher.InvokeAsync(() => findProgressBar.Visibility = Visibility.Collapsed);
-                        findDialogButton.Dispatcher.InvokeAsync(() => findDialogButton.Visibility = Visibility.Visible);
-                        archiveRootButton.Dispatcher.InvokeAsync(() => archiveRootButton.IsEnabled = true);
-                        archiveParentButton.Dispatcher.InvokeAsync(() => archiveParentButton.IsEnabled = true);
-                        findDialogButton.Dispatcher.InvokeAsync(() => findDialogButton.IsEnabled = true);
+                        await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.Visibility = Visibility.Visible);
+                        await archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Поиск \"{findTextBox.Text}\" завершен. Найдено {archiveLV.Items.Count} элементов.");
+                        await findProgressBar.Dispatcher.InvokeAsync(() => findProgressBar.Visibility = Visibility.Collapsed);
+                        await findDialogButton.Dispatcher.InvokeAsync(() => findDialogButton.Visibility = Visibility.Visible);
+                        await archiveRootButton.Dispatcher.InvokeAsync(() => archiveRootButton.IsEnabled = true);
+                        await archiveParentButton.Dispatcher.InvokeAsync(() => archiveParentButton.IsEnabled = true);
+                        await findDialogButton.Dispatcher.InvokeAsync(() => findDialogButton.IsEnabled = true);
                         _findStatus = FindStatus.Finded;
-                        findTextBox.Dispatcher.InvokeAsync(() => findTextBox.Text = string.Empty);
+                        await findTextBox.Dispatcher.InvokeAsync(() => findTextBox.Text = string.Empty);
                         break;
                 }
             }
