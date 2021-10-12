@@ -15,5 +15,7 @@
         public string PopServer { get; set; }
         public int PopPort { get; set; }
         public bool UseSsl { get; set; }
+        public string SmtpServer { get; set; }
+        public int SmtpPort { get; set; }
     }
 }

@@ -101,6 +101,9 @@
                     <Button Style="{StaticResource upperPanelButtonStyle}" Click="tabtipButton_Click" Cursor="Hand">
                         <materialDesign:PackIcon Kind="Keyboard" Width="25" Height="25"/>
                     </Button>
+                    <Button Style="{StaticResource upperPanelButtonStyle}" Click="messageButton_Click" Cursor="Hand">
+                        <materialDesign:PackIcon Kind="EmailEdit" Width="25" Height="25"/>
+                    </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="settingsButton" HorizontalAlignment="Right"

@@ -215,5 +215,53 @@ namespace DetailsInfo.Properties {
                 this["useSsl"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string smtpServer {
+            get {
+                return ((string)(this["smtpServer"]));
+            }
+            set {
+                this["smtpServer"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int smtpPort {
+            get {
+                return ((int)(this["smtpPort"]));
+            }
+            set {
+                this["smtpPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string fromAdress {
+            get {
+                return ((string)(this["fromAdress"]));
+            }
+            set {
+                this["fromAdress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string toAdress {
+            get {
+                return ((string)(this["toAdress"]));
+            }
+            set {
+                this["toAdress"] = value;
+            }
+        }
     }
 }

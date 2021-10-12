@@ -657,6 +657,12 @@ namespace DetailsInfo
             Close();
         }
 
+        private void messageButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageWindow messageWindow = new();
+            messageWindow.ShowDialog();
+        }
+
         private void settingsButton_Click(object sender, RoutedEventArgs e)
         {
             SettingsWindow settingsWindow = new();
@@ -1168,5 +1174,7 @@ namespace DetailsInfo
             }
         }
         #endregion
+
+        
     }
 }

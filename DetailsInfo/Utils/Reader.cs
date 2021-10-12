@@ -314,7 +314,10 @@ namespace DetailsInfo.Data
                 EmailLogin = Settings.Default.emailLogin,
                 EmailPass = Settings.Default.emailPass,
                 PopServer = Settings.Default.popServer,
-                PopPort = Settings.Default.popPort
+                PopPort = Settings.Default.popPort,
+                SmtpServer = Settings.Default.smtpServer,
+                SmtpPort = Settings.Default.smtpPort,
+                UseSsl = Settings.Default.useSsl
             };
 
             using (var writer = File.CreateText(UserSettingsPath))
@@ -331,7 +334,9 @@ namespace DetailsInfo.Data
                 userConfig.MachinePath == null ||
                 userConfig.TempPath == null ||
                 userConfig.PopServer == null ||
-                userConfig.PopPort == 0)
+                userConfig.SmtpServer == null ||
+                userConfig.PopPort == 0 ||
+                userConfig.SmtpPort == 0)
             {
                 return false;
             }
@@ -354,6 +359,8 @@ namespace DetailsInfo.Data
                 EmailPass = userConfig.EmailPass ?? Settings.Default.emailPass,
                 PopServer = !string.IsNullOrEmpty(userConfig.PopServer) ? userConfig.PopServer : Settings.Default.popServer,
                 PopPort = userConfig.PopPort != 0 ? userConfig.PopPort : Settings.Default.popPort,
+                SmtpServer = !string.IsNullOrEmpty(userConfig.SmtpServer) ? userConfig.SmtpServer : Settings.Default.smtpServer,
+                SmtpPort = userConfig.PopPort != 0 ? userConfig.SmtpPort : Settings.Default.smtpPort,
                 UseSsl = userConfig.UseSsl
             };
 
@@ -374,6 +381,8 @@ namespace DetailsInfo.Data
             Settings.Default.popServer = tempUserConfig.PopServer;
             Settings.Default.popPort = tempUserConfig.PopPort;
             Settings.Default.useSsl = tempUserConfig.UseSsl;
+            Settings.Default.smtpServer = tempUserConfig.SmtpServer;
+            Settings.Default.smtpPort = tempUserConfig.SmtpPort;
             Settings.Default.Save();
             return "Файл конфигурации исправлен. ";
         }
