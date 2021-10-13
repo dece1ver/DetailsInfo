@@ -64,6 +64,10 @@ namespace DetailsInfo
         private readonly SolidColorBrush greenBrush = Util.BrushFromHex("#FFAEEA00");
         #endregion
 
+        public string ProgramType { get; set; } = string.Empty;
+        public string ProgramCoordinates { get; set; } = string.Empty;
+        public List<NcToolInfo> ProgramTools { get; set; } = new();
+
         private readonly List<string> _status = new();
 
         #region Статусы ошибок
@@ -1143,9 +1147,9 @@ namespace DetailsInfo
 
         private void analyzeNCButton_Click(object sender, RoutedEventArgs e)
         {
-            analyzeDG.ItemsSource = Reader.AnalyzeProgram(_selectedMachineFile, out string programType, out string coordinates);
-            analyzeProgramTypeTB.Text = programType;
-            analyzeProgramCoordinatesTB.Text = coordinates;
+            ProgramTools = Reader.AnalyzeProgram(_selectedMachineFile, out string programType, out string coordinates);
+            ProgramType = programType;
+            ProgramCoordinates = coordinates;
             //List<string> temp = new();
             //foreach (var item in analyze)
             //{

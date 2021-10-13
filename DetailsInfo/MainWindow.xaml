@@ -85,6 +85,7 @@
                     Content="ОК" />
             </Grid>
         </materialDesign:DialogHost.DialogContent>
+        
         <DockPanel>
 
             <!--#region Кнопки на верхней панели -->
@@ -303,6 +304,7 @@
                         <GroupBox Grid.Column="2" Header="Программы в сетевой папке" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
                             <materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                    DialogTheme="Inherit" CloseOnClickAway="True">
+
                                 <materialDesign:DialogHost.DialogContent>
                                     <StackPanel Margin="30" Orientation="Vertical">
                                         <TextBlock Text="Переименовать файл" FontSize="20"/>
@@ -424,10 +426,10 @@
                                                             Style="{StaticResource generalButtonStyle}" Click="analyzeNCButton_Click">
                                                             <Button.CommandParameter>
                                                                 <StackPanel
-                                                                    Margin="16">
-                                                                    <TextBlock Text="{Binding ElementName=analyzeProgramTypeTB, Path=Text}" />
-                                                                    <TextBlock Text="{Binding ElementName=analyzeProgramCoordinatesTB, Path=Text}"/>
-                                                                    <DataGrid ItemsSource="{Binding ElementName=analyzeDG, Path=ItemsSource}"
+                                                                    Margin="16" DataContext="{Binding Source=local:MainWindow, Mode=OneWay}">
+                                                                    <TextBlock Text="{Binding ProgramType}" />
+                                                                    <TextBlock Text="{Binding ProgramCoordinates}"/>
+                                                                    <DataGrid ItemsSource="{Binding ItemsSource}"
                                                                           CanUserAddRows="False"
                                                                           SelectionUnit="Cell"
                                                                           SelectionMode="Extended" />
