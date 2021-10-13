@@ -376,9 +376,11 @@ namespace DetailsInfo.Data
                     if (compensationLine.Contains('F')) compensationLine = compensationLine.Split('F')[0];
                     if (compensationLine.Contains('M')) compensationLine = compensationLine.Split('M')[0];
                     if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
-                    currentD = int.Parse(compensationLine.Replace(" ", string.Empty));
-                    if (currentTool != currentD) warningsD++;
-                    tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                    if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentD))
+                    {
+                        if (currentTool != currentD) warningsD++;
+                        tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                    }
                     //compensationsD.Add($"T{currentTool} D{int.Parse(compensationLine.Replace(" ", string.Empty))}");
                 }
                 if (line.Contains("G43") && line.Contains('H'))
@@ -391,9 +393,11 @@ namespace DetailsInfo.Data
                     if (compensationLine.Contains('F')) compensationLine = compensationLine.Split('F')[0];
                     if (compensationLine.Contains('M')) compensationLine = compensationLine.Split('M')[0];
                     if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
-                    currentH = int.Parse(compensationLine.Replace(" ", string.Empty));
-                    if (currentTool != currentH) warningsH++;
-                    tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                    if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentH))
+                    {
+                        if (currentTool != currentH) warningsH++;
+                        tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                    }                    
                     //compensationsH.Add($"T{currentTool} H{int.Parse(compensationLine.Replace(" ", string.Empty))}");
                 }
             }

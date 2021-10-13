@@ -362,19 +362,14 @@
                                         </StackPanel>
                                     </StackPanel>
                                 </materialDesign:DialogHost.DialogContent>
-                                
-                                <Grid>
 
+                                <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="auto"/>
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
                                     <StackPanel Orientation="Horizontal">
-                                        <Grid Visibility="Collapsed">
-                                            <TextBlock x:Name="analyzeProgramTypeTB" />
-                                            <TextBlock x:Name="analyzeProgramCoordinatesTB"/>
-                                            <DataGrid x:Name="analyzeDG"/>
-                                        </Grid>
+                                        
                                     </StackPanel>
                                     <DockPanel Grid.Row="0">
                                         <StackPanel Orientation="Horizontal" >
@@ -383,6 +378,30 @@
                                     <ProgressBar Grid.Row="1" x:Name="machineProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
                                         Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Grid x:Name="analyzeGrid" Visibility="Collapsed" Margin="20" Grid.RowSpan="2">
+                                        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
+                                            <DockPanel Margin="16" LastChildFill="True">
+                                                <TextBlock x:Name="analyzeProgramTypeTB" DockPanel.Dock="Top" VerticalAlignment="Center" FontSize="16"/>
+                                                <TextBlock x:Name="analyzeProgramCoordinatesTB" DockPanel.Dock="Top"/>
+                                                <Button DockPanel.Dock="Bottom"
+                                                Style="{StaticResource generalButtonStyle}"
+                                                Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                                                HorizontalAlignment="Right"
+                                                Content="ОК" />
+                                                <DataGrid x:Name="analyzeDG" AutoGenerateColumns="False" EnableRowVirtualization="True"
+                                                Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow"
+                                                CanUserReorderColumns="False" CanUserResizeColumns="False" Grid.Row="1">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn Header="T" Width="auto" Binding="{Binding Position}"/>
+                                                        <DataGridTextColumn Header="Комментарий" Binding="{Binding Comment}"/>
+                                                        <DataGridTextColumn Header="H" Binding="{Binding LengthCompensation}"/>
+                                                        <DataGridTextColumn Header="D" Binding="{Binding RadiusCompensation}"/>
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                                
+                                            </DockPanel>
+                                        </Border>                                        
+                                    </Grid>
                                     <ListView x:Name="machineDG" Grid.Row="1" HorizontalContentAlignment="Stretch" 
                                       BorderThickness="0" PreviewMouseLeftButtonUp="machineDG_PreviewMouseLeftButtonUp">
                                         <ListView.ItemTemplate>
@@ -419,29 +438,11 @@
                                                         Style="{StaticResource generalButtonStyle}" Click="openNCButton_Click">
                                                             <materialDesign:PackIcon Kind="Eye"/>
                                                         </Button>
-                                                        
-                                                        <Button Visibility="{Binding AnalyzeButtonVisibility}" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+
+                                                        <Button Visibility="{Binding AnalyzeButtonVisibility}"
                                                             Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
                                                             Style="{StaticResource generalButtonStyle}" Click="analyzeNCButton_Click">
-                                                            <Button.CommandParameter>
-                                                                <StackPanel
-                                                                    Margin="16" DataContext="{Binding Source=local:MainWindow, Mode=OneWay}">
-                                                                    <TextBlock Text="{Binding ProgramType}" />
-                                                                    <TextBlock Text="{Binding ProgramCoordinates}"/>
-                                                                    <DataGrid ItemsSource="{Binding ItemsSource}"
-                                                                          CanUserAddRows="False"
-                                                                          SelectionUnit="Cell"
-                                                                          SelectionMode="Extended" />
-                                                                    <Button
-                                                                          Style="{StaticResource MaterialDesignFlatButton}"
-                                                                          IsCancel="True"
-                                                                          Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                                                                          CommandParameter="Sample2Cancel"
-                                                                          HorizontalAlignment="Center"
-                                                                          Content="CANCEL" />                                           
-                                                                </StackPanel>
-                                                            </Button.CommandParameter>
                                                             <materialDesign:PackIcon Kind="CodeTagsCheck"/>
                                                         </Button>
                                                     </StackPanel>

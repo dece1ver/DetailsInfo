@@ -1147,15 +1147,18 @@ namespace DetailsInfo
 
         private void analyzeNCButton_Click(object sender, RoutedEventArgs e)
         {
-            ProgramTools = Reader.AnalyzeProgram(_selectedMachineFile, out string programType, out string coordinates);
-            ProgramType = programType;
-            ProgramCoordinates = coordinates;
-            //List<string> temp = new();
-            //foreach (var item in analyze)
-            //{
-            //    temp.Add($"T{item.Position} {item.Comment}{(item.LengthCompensation is null ? string.Empty : $" H{item.LengthCompensation}")}{(item.RadiusCompensation is null ? string.Empty : $" D{item.RadiusCompensation}")}");
-            //}
-            //MessageBox.Show($"{coordinates}\n{temp}", programType);
+            var analyze = Reader.AnalyzeProgram(_selectedMachineFile, out string programType, out string coordinates);
+            analyzeDG.ItemsSource = analyze;
+            analyzeProgramTypeTB.Text = programType;
+            analyzeProgramCoordinatesTB.Text = coordinates;
+            machineDG.Visibility = Visibility.Collapsed;
+            analyzeGrid.Visibility = Visibility.Visible;
+            List<string> temp = new();
+            foreach (var item in analyze)
+            {
+                temp.Add($"T{item.Position} {item.Comment}{(item.LengthCompensation is null ? string.Empty : $" H{item.LengthCompensation}")}{(item.RadiusCompensation is null ? string.Empty : $" D{item.RadiusCompensation}")}");
+            }
+            MessageBox.Show($"{coordinates}\n{temp}", programType);
         }
         #endregion
 
