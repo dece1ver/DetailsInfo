@@ -15,6 +15,7 @@ namespace DetailsInfo.Data
         public Visibility RenameButtonVisibility { get; set; }
         public Visibility CheckButtonVisibility { get; set; }
         public Visibility DeleteButtonVisibility { get; set; }
+        public Visibility AnalyzeButtonVisibility { get; set; }
         public PackIcon Icon => SetIcon(FullPath);
 
 

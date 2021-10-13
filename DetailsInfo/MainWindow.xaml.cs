@@ -50,6 +50,7 @@ namespace DetailsInfo
         private bool _deleteFromMachine;
         private bool _openFromArchive;
         private bool _openFromNcFolder;
+        private bool _analyzeNcProgram;
 
         private bool _tabtipStatus;
         private bool _errorStatus;
@@ -528,6 +529,7 @@ namespace DetailsInfo
                         RenameButtonVisibility = (_renameOnMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                         OpenButtonVisibility = (_openFromNcFolder && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                         DeleteButtonVisibility = (_deleteFromMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
+                        AnalyzeButtonVisibility = (_analyzeNcProgram && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                     });
                 }
 
@@ -775,6 +777,7 @@ namespace DetailsInfo
                 _openFromArchive = false;
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
+                _analyzeNcProgram = false;
                 _currentArchiveFolder = currentItem.Content;
                 LoadArchive();
                 //statusTextBlock.Text = $"Открыто за {sw.ElapsedMilliseconds} мс";
@@ -787,6 +790,7 @@ namespace DetailsInfo
                 _deleteFromMachine = false;
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
+                _analyzeNcProgram = false;
                 _selectedArchiveFile = currentItem.Content;
                 LoadArchive();
                 // LoadMachine() написать
@@ -810,6 +814,7 @@ namespace DetailsInfo
                 _openFromArchive = false;
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
+                _analyzeNcProgram = false;
                 _currentArchiveFolder = Directory.GetParent(_currentArchiveFolder)?.ToString();
             }
             LoadArchive();
@@ -826,6 +831,7 @@ namespace DetailsInfo
             _openFromArchive = false;
             _renameOnMachine = false;
             _openFromNcFolder = false;
+            _analyzeNcProgram = false;
             _currentArchiveFolder = Settings.Default.archivePath;
             LoadArchive();
         }
@@ -884,6 +890,7 @@ namespace DetailsInfo
                 _openFromArchive = false;
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
+                _analyzeNcProgram = false;
                 WriteLog($"Отправлено на станок: \"{_selectedArchiveFile}\"");
                 LoadMachine();
                 LoadArchive();
@@ -924,6 +931,7 @@ namespace DetailsInfo
                 _openFromArchive = false;
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
+                _analyzeNcProgram = false;
                 LoadMachine();
                 LoadArchive();
             }
@@ -938,6 +946,7 @@ namespace DetailsInfo
                     _openFromArchive = false;
                     _renameOnMachine = false;
                     _openFromNcFolder = false;
+                    _analyzeNcProgram = false;
                     LoadMachine();
                     LoadArchive();
                 }
@@ -971,6 +980,7 @@ namespace DetailsInfo
                 _transferFromArchive = false;
                 _openFromArchive = false;
                 _openFromNcFolder = true;
+                _analyzeNcProgram = true;
                 _selectedMachineFile = currentItem.FullPath;
                 kostyl.Text = currentItem.Extension;
                 LoadMachine();
@@ -1037,6 +1047,7 @@ namespace DetailsInfo
                     _openFromArchive = false;
                     _renameOnMachine = false;
                     _openFromNcFolder = false;
+                    _analyzeNcProgram = false;
                     LoadMachine();
                     SendMessage($"Отправлен на проверку и очищен из сетевой папки файл: {tempName}");
                     WriteLog($"Отправлено на проверку \"{_selectedMachineFile}\" -> \"{tempName}\"");
@@ -1075,6 +1086,7 @@ namespace DetailsInfo
                 _openFromArchive = false;
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
+                _analyzeNcProgram = false;
                 LoadMachine();
                 LoadArchive();
                 SendMessage($"Из сетевой папки станка удален файл: {Path.GetFileName(_selectedMachineFile)}");
@@ -1097,6 +1109,7 @@ namespace DetailsInfo
                 _openFromArchive = false;
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
+                _analyzeNcProgram = false;
                 LoadMachine();
                 LoadArchive();
             }
@@ -1111,6 +1124,7 @@ namespace DetailsInfo
                     _openFromArchive = false;
                     _renameOnMachine = false;
                     _openFromNcFolder = false;
+                    _analyzeNcProgram = false;
                     LoadMachine();
                     LoadArchive();
                 }
@@ -1125,6 +1139,19 @@ namespace DetailsInfo
                 WriteLog($"Ошибка при открытии файла \"{Path.GetFileName(_selectedMachineFile)}\"");
                 AddError(exception);
             }
+        }
+
+        private void analyzeNCButton_Click(object sender, RoutedEventArgs e)
+        {
+            analyzeDG.ItemsSource = Reader.AnalyzeProgram(_selectedMachineFile, out string programType, out string coordinates);
+            analyzeProgramTypeTB.Text = programType;
+            analyzeProgramCoordinatesTB.Text = coordinates;
+            //List<string> temp = new();
+            //foreach (var item in analyze)
+            //{
+            //    temp.Add($"T{item.Position} {item.Comment}{(item.LengthCompensation is null ? string.Empty : $" H{item.LengthCompensation}")}{(item.RadiusCompensation is null ? string.Empty : $" D{item.RadiusCompensation}")}");
+            //}
+            //MessageBox.Show($"{coordinates}\n{temp}", programType);
         }
         #endregion
 
@@ -1173,6 +1200,7 @@ namespace DetailsInfo
                 _tabtipStatus = true;
             }
         }
+
         #endregion
 
         

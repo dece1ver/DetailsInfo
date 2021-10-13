@@ -360,13 +360,19 @@
                                         </StackPanel>
                                     </StackPanel>
                                 </materialDesign:DialogHost.DialogContent>
+                                
                                 <Grid>
+
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="auto"/>
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
                                     <StackPanel Orientation="Horizontal">
-
+                                        <Grid Visibility="Collapsed">
+                                            <TextBlock x:Name="analyzeProgramTypeTB" />
+                                            <TextBlock x:Name="analyzeProgramCoordinatesTB"/>
+                                            <DataGrid x:Name="analyzeDG"/>
+                                        </Grid>
                                     </StackPanel>
                                     <DockPanel Grid.Row="0">
                                         <StackPanel Orientation="Horizontal" >
@@ -410,6 +416,31 @@
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
                                                         Style="{StaticResource generalButtonStyle}" Click="openNCButton_Click">
                                                             <materialDesign:PackIcon Kind="Eye"/>
+                                                        </Button>
+                                                        
+                                                        <Button Visibility="{Binding AnalyzeButtonVisibility}" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                            Style="{StaticResource generalButtonStyle}" Click="analyzeNCButton_Click">
+                                                            <Button.CommandParameter>
+                                                                <StackPanel
+                                                                    Margin="16">
+                                                                    <TextBlock Text="{Binding ElementName=analyzeProgramTypeTB, Path=Text}" />
+                                                                    <TextBlock Text="{Binding ElementName=analyzeProgramCoordinatesTB, Path=Text}"/>
+                                                                    <DataGrid ItemsSource="{Binding ElementName=analyzeDG, Path=ItemsSource}"
+                                                                          CanUserAddRows="False"
+                                                                          SelectionUnit="Cell"
+                                                                          SelectionMode="Extended" />
+                                                                    <Button
+                                                                          Style="{StaticResource MaterialDesignFlatButton}"
+                                                                          IsCancel="True"
+                                                                          Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                                                                          CommandParameter="Sample2Cancel"
+                                                                          HorizontalAlignment="Center"
+                                                                          Content="CANCEL" />                                           
+                                                                </StackPanel>
+                                                            </Button.CommandParameter>
+                                                            <materialDesign:PackIcon Kind="CodeTagsCheck"/>
                                                         </Button>
                                                     </StackPanel>
                                                 </DockPanel>

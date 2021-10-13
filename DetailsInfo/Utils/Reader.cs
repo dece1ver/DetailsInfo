@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Forms;
@@ -290,6 +291,116 @@ namespace DetailsInfo.Data
             textBox.Text = path;
             textBox.CaretIndex = textBox.Text.Length;
             textBox.ScrollToHorizontalOffset(double.MaxValue);
+        }
+
+        public static List<NcToolInfo> AnalyzeProgram(string programPath, out string caption, out string coordinates)
+        {
+            List<NcToolInfo> tools = new();
+            bool millProgram = false;
+            var lines = File.ReadLines(programPath);
+            List<string> coordinateSystems = new();
+            int currentTool = 0;
+            string currentToolComment = string.Empty;
+            int currentH = 0;
+            int currentD = 0;
+            int warningsH = 0;
+            int warningsD = 0;
+            
+            foreach (var line in lines)
+            {
+                if (line.Contains("G54") && !coordinateSystems.Contains("G54"))
+                {
+                    coordinateSystems.Add("G54");
+                }
+                if (line.Contains("G55") && !coordinateSystems.Contains("G55"))
+                {
+                    coordinateSystems.Add("G55");
+                }
+                if (line.Contains("G56") && !coordinateSystems.Contains("G56"))
+                {
+                    coordinateSystems.Add("G56");
+                }
+                if (line.Contains("G57") && !coordinateSystems.Contains("G57"))
+                {
+                    coordinateSystems.Add("G57");
+                }
+                if (line.Contains("G58") && !coordinateSystems.Contains("G58"))
+                {
+                    coordinateSystems.Add("G58");
+                }
+                if (line.Contains("G59") && !coordinateSystems.Contains("G59"))
+                {
+                    coordinateSystems.Add("G59");
+                }
+
+                if (line.Contains("M30"))
+                {
+                    if (currentTool != 0 && currentToolComment != string.Empty)
+                    {
+                        tools.Add(new NcToolInfo() {Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                    }
+                }
+
+                if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && line.Contains("M6") && !line.StartsWith('('))
+                {
+                    millProgram = true;
+
+                    if (currentTool != 0 && currentToolComment != string.Empty)
+                    {
+                        tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                    }
+
+                    string toolLine = line.Contains('(') ? line.Split('T')[1].Replace("M6", string.Empty).Split('(')[0].Replace(" ", string.Empty) : line.Split('T')[1].Replace("M6", string.Empty).Replace(" ", string.Empty);
+                    
+                    if (int.TryParse(toolLine, out currentTool))
+                    {
+                        try
+                        {
+                            currentToolComment = $"(" + line.Split("(")[1].Trim();
+                            //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            currentToolComment = $"(---)";
+                            //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
+                        }
+                    }
+                }
+                if ((line.Contains("G41") || line.Contains("G42")) && line.Contains('D'))
+                {
+                    string compensationLine = line.Split("D")[1];
+                    if (compensationLine.Contains('X')) compensationLine = compensationLine.Split('X')[0];
+                    if (compensationLine.Contains('Y')) compensationLine = compensationLine.Split('Y')[0];
+                    if (compensationLine.Contains('Z')) compensationLine = compensationLine.Split('Z')[0];
+                    if (compensationLine.Contains('A')) compensationLine = compensationLine.Split('A')[0];
+                    if (compensationLine.Contains('F')) compensationLine = compensationLine.Split('F')[0];
+                    if (compensationLine.Contains('M')) compensationLine = compensationLine.Split('M')[0];
+                    if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
+                    currentD = int.Parse(compensationLine.Replace(" ", string.Empty));
+                    if (currentTool != currentD) warningsD++;
+                    tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                    //compensationsD.Add($"T{currentTool} D{int.Parse(compensationLine.Replace(" ", string.Empty))}");
+                }
+                if (line.Contains("G43") && line.Contains('H'))
+                {
+                    string compensationLine = line.Split("H")[1];
+                    if (compensationLine.Contains('X')) compensationLine = compensationLine.Split('X')[0];
+                    if (compensationLine.Contains('Y')) compensationLine = compensationLine.Split('Y')[0];
+                    if (compensationLine.Contains('Z')) compensationLine = compensationLine.Split('Z')[0];
+                    if (compensationLine.Contains('A')) compensationLine = compensationLine.Split('A')[0];
+                    if (compensationLine.Contains('F')) compensationLine = compensationLine.Split('F')[0];
+                    if (compensationLine.Contains('M')) compensationLine = compensationLine.Split('M')[0];
+                    if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
+                    currentH = int.Parse(compensationLine.Replace(" ", string.Empty));
+                    if (currentTool != currentH) warningsH++;
+                    tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                    //compensationsH.Add($"T{currentTool} H{int.Parse(compensationLine.Replace(" ", string.Empty))}");
+                }
+            }
+            caption = $"{(millProgram ? "Фрезерная" : "Токарная")} программа";
+            coordinates = $"{(coordinateSystems.Count == 1 ? $"Система координат {coordinateSystems[0]}\n" : $"Системы координат: {string.Join(',', coordinateSystems)}\n")}\n";
+            
+            return tools.Distinct().ToList();
         }
 
         #region Пользовательские настройки
