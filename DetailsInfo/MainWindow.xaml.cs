@@ -51,6 +51,7 @@ namespace DetailsInfo
         private bool _openFromArchive;
         private bool _openFromNcFolder;
         private bool _analyzeNcProgram;
+        private bool _analyzeInfo;
 
         private bool _tabtipStatus;
         private bool _errorStatus;
@@ -124,14 +125,14 @@ namespace DetailsInfo
             {
                 if (!Reader.CheckPath(Settings.Default.archivePath)) TurnOffArchive();
                 if (_archiveStatus) archiveConnectionIcon.Dispatcher.Invoke(() => archiveConnectionIcon.Foreground = greenBrush);
-                LoadArchive();
+                _ = LoadArchive();
 
                 if (!Reader.CheckPath(Settings.Default.machinePath)) TurnOffMachine();
                 if (_machineStatus) machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Foreground = greenBrush);
                 LoadMachine();
 
                 if (!Reader.CheckPath(Settings.Default.tempPath)) _tempFolderStatus = false;
-                if (_tempFolderStatus) machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Foreground = greenBrush);
+                if (_tempFolderStatus) tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = greenBrush);
 
                 RefreshStatus();
                 if (start)
@@ -553,8 +554,8 @@ namespace DetailsInfo
             machineDG.Dispatcher.Invoke(() => machineDG.Visibility = Visibility.Collapsed);
             if (!string.IsNullOrWhiteSpace(Settings.Default.machinePath))
                 machineProgressBar.Dispatcher.Invoke(() => machineProgressBar.Visibility = Visibility.Visible);
-            machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.ServerNetworkOff);
             machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Foreground = redBrush);
+            machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.ServerNetworkOff);
             if (debugMode) AddStatus(_noMachineLabel);
         }
 
@@ -564,7 +565,7 @@ namespace DetailsInfo
         private void TurnOnMachine()
         {
             _machineStatus = true;
-            machineDG.Dispatcher.Invoke(() => machineDG.Visibility = Visibility.Visible);
+            if (!_analyzeInfo) machineDG.Dispatcher.Invoke(() => machineDG.Visibility = Visibility.Visible);
             machineProgressBar.Dispatcher.Invoke(() => machineProgressBar.Visibility = Visibility.Collapsed);
             machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.ServerNetwork);
             machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Foreground = greenBrush);
@@ -1147,18 +1148,57 @@ namespace DetailsInfo
 
         private void analyzeNCButton_Click(object sender, RoutedEventArgs e)
         {
-            var analyze = Reader.AnalyzeProgram(_selectedMachineFile, out string programType, out string coordinates);
-            analyzeDG.ItemsSource = analyze;
-            analyzeProgramTypeTB.Text = programType;
-            analyzeProgramCoordinatesTB.Text = coordinates;
+            
+            AnalyzeProgramAsync();
+            
+
+            //List<string> temp = new();
+            //foreach (var item in analyze)
+            //{
+            //    temp.Add($"T{item.Position} {item.Comment}{(item.LengthCompensation is null ? string.Empty : $" H{item.LengthCompensation}")}{(item.RadiusCompensation is null ? string.Empty : $" D{item.RadiusCompensation}")}");
+            //}
+            //MessageBox.Show($"{coordinates}\n{temp}", programType);
+        }
+
+        private async Task AnalyzeProgramAsync()
+        {
+            _analyzeInfo = true;
             machineDG.Visibility = Visibility.Collapsed;
-            analyzeGrid.Visibility = Visibility.Visible;
-            List<string> temp = new();
-            foreach (var item in analyze)
+            machineProgressBar.Visibility = Visibility.Visible;
+            
+            await Task.Run(() =>
             {
-                temp.Add($"T{item.Position} {item.Comment}{(item.LengthCompensation is null ? string.Empty : $" H{item.LengthCompensation}")}{(item.RadiusCompensation is null ? string.Empty : $" D{item.RadiusCompensation}")}");
+                var analyze = Reader.AnalyzeProgram(_selectedMachineFile, out string programType, out string coordinates, out List<string> warningsH, out List<string> warningsD);
+                analyzeDG.Dispatcher.Invoke(() => analyzeDG.ItemsSource = analyze);
+                analyzeProgramTypeTB.Dispatcher.Invoke(() => analyzeProgramTypeTB.Text = programType);
+                analyzeProgramCoordinatesTB.Dispatcher.Invoke(() => analyzeProgramCoordinatesTB.Text = coordinates);
+                if (warningsH.Count > 0)
+                {
+                    warningsLengthCompensationTB.Dispatcher.Invoke(() => warningsLengthCompensationTB.Text = $"Несовпадений корретора на длину: {warningsH.Count}\n {string.Join('|', warningsH)}");
+                }
+                if (warningsD.Count > 0)
+                {
+                    warningsRadiusCompensationTB.Dispatcher.Invoke(() => warningsRadiusCompensationTB.Text = $"Несовпадений корретора на радиус: {warningsD.Count}\n {string.Join('|', warningsD)}");
+                }
+            });
+            machineProgressBar.Visibility = Visibility.Collapsed;
+            analyzeGrid.Visibility = Visibility.Visible;
+        }
+
+        private void analyzeOkButton_Click(object sender, RoutedEventArgs e)
+        {
+            _analyzeInfo = false;
+            analyzeDG.ItemsSource = new List<NcToolInfo>();
+            warningsLengthCompensationTB.Text = string.Empty;
+            warningsRadiusCompensationTB.Text = string.Empty;
+            analyzeProgramTypeTB.Text = string.Empty;
+            analyzeProgramCoordinatesTB.Text = string.Empty;
+            analyzeGrid.Visibility = Visibility.Collapsed;
+
+            if (_machineStatus)
+            {
+                machineDG.Visibility = Visibility.Visible;
             }
-            MessageBox.Show($"{coordinates}\n{temp}", programType);
         }
         #endregion
 
@@ -1207,6 +1247,7 @@ namespace DetailsInfo
                 _tabtipStatus = true;
             }
         }
+
 
         #endregion
 

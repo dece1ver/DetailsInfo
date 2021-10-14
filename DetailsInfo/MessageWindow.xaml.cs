@@ -6,6 +6,7 @@ using MimeKit;
 using System.Windows;
 using DetailsInfo.Properties;
 using System.Threading.Tasks;
+using DetailsInfo.Data;
 
 namespace DetailsInfo
 {
@@ -75,6 +76,7 @@ namespace DetailsInfo
                 Settings.Default.smtpPort = port;
             }
             Settings.Default.Save();
+            Reader.WriteConfig();
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(Environment.MachineName, Settings.Default.fromAdress));

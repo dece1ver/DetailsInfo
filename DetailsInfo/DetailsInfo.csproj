@@ -16,8 +16,8 @@
     <AssemblyName>Details Info</AssemblyName>
     <Version>1.0.7</Version>
     <StartupObject></StartupObject>
-    <AssemblyVersion>1.0.7.3</AssemblyVersion>
-    <FileVersion>1.0.7.3</FileVersion>
+    <AssemblyVersion>1.0.7.6</AssemblyVersion>
+    <FileVersion>1.0.7.6</FileVersion>
     <Description>Типа файловый менеджер</Description>
     <Copyright>dece1ver</Copyright>
     <PackageProjectUrl>https://detailsinfo.azurewebsites.net/</PackageProjectUrl>
@@ -32,10 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.13.0" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.0.0" />
+    <PackageReference Include="MailKit" Version="2.15.0" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Ookii.Dialogs.Wpf" Version="3.1.0" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="4.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
   </ItemGroup>
 

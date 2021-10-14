@@ -278,7 +278,7 @@ namespace DetailsInfo.Data
             }
             if (Directory.Exists(path) || File.Exists(path)) return true;
             if (string.IsNullOrEmpty(path)) return false;
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -293,18 +293,19 @@ namespace DetailsInfo.Data
             textBox.ScrollToHorizontalOffset(double.MaxValue);
         }
 
-        public static List<NcToolInfo> AnalyzeProgram(string programPath, out string caption, out string coordinates)
+        public static List<NcToolInfo> AnalyzeProgram(string programPath, out string caption, out string coordinates, out List<string> warningsH, out List<string> warningsD)
         {
             List<NcToolInfo> tools = new();
+            warningsH = new();
+            warningsD = new();
             bool millProgram = false;
             var lines = File.ReadLines(programPath);
             List<string> coordinateSystems = new();
-            int currentTool = 0;
+            NcToolInfo currentTool = new();
+            int currentToolNo = 0;
             string currentToolComment = string.Empty;
             int currentH = 0;
             int currentD = 0;
-            int warningsH = 0;
-            int warningsD = 0;
             
             foreach (var line in lines)
             {
@@ -335,24 +336,39 @@ namespace DetailsInfo.Data
 
                 if (line.Contains("M30"))
                 {
-                    if (currentTool != 0 && currentToolComment != string.Empty)
+                    if (currentToolNo != 0 && currentToolComment != string.Empty)
                     {
-                        tools.Add(new NcToolInfo() {Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                        currentTool.Position = currentToolNo;
+                        currentTool.Comment = currentToolComment;
+                        currentTool.LengthCompensation = currentH;
+                        currentTool.RadiusCompensation = currentD;
+                        if (!tools.Contains(currentTool))
+                        {
+                            tools.Add(currentTool);
+                        }
                     }
                 }
 
                 if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && line.Contains("M6") && !line.StartsWith('('))
                 {
                     millProgram = true;
-
-                    if (currentTool != 0 && currentToolComment != string.Empty)
+                    
+                    if (currentToolNo != 0 && currentToolComment != string.Empty)
                     {
-                        tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                        currentTool.Position = currentToolNo;
+                        currentTool.Comment = currentToolComment;
+                        currentTool.LengthCompensation = currentH;
+                        currentTool.RadiusCompensation = currentD;
+                        if (!tools.Contains(currentTool))
+                        {
+                            tools.Add(currentTool);
+                        }
                     }
 
                     string toolLine = line.Contains('(') ? line.Split('T')[1].Replace("M6", string.Empty).Split('(')[0].Replace(" ", string.Empty) : line.Split('T')[1].Replace("M6", string.Empty).Replace(" ", string.Empty);
-                    
-                    if (int.TryParse(toolLine, out currentTool))
+                    currentD = 0;
+                    currentD = 0;
+                    if (int.TryParse(toolLine, out currentToolNo))
                     {
                         try
                         {
@@ -366,6 +382,46 @@ namespace DetailsInfo.Data
                         }
                     }
                 }
+
+                if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && !millProgram && !line.StartsWith('('))
+                {
+                    if (currentToolNo != 0 && currentToolComment != string.Empty)
+                    {
+                        currentTool.Position = currentToolNo;
+                        currentTool.Comment = currentToolComment;
+                        currentTool.LengthCompensation = 0;
+                        currentTool.RadiusCompensation = 0;
+                        if (!tools.Contains(currentTool))
+                        {
+                            tools.Add(currentTool);
+                        }
+                    }
+
+                    string toolLine = line.Contains('(') ? line.Split('T')[1].Split('(')[0].Replace(" ", string.Empty) : line.Split('T')[1].Replace(" ", string.Empty);
+                    if (toolLine.Contains('X')) toolLine = toolLine.Split('X')[0];
+                    if (toolLine.Contains('Y')) toolLine = toolLine.Split('Y')[0];
+                    if (toolLine.Contains('Z')) toolLine = toolLine.Split('Z')[0];
+                    if (toolLine.Contains('A')) toolLine = toolLine.Split('A')[0];
+                    if (toolLine.Contains('F')) toolLine = toolLine.Split('F')[0];
+                    if (toolLine.Contains('M')) toolLine = toolLine.Split('M')[0];
+                    if (toolLine.Contains('G')) toolLine = toolLine.Split('G')[0];
+                    currentD = 0;
+                    currentD = 0;
+                    if (int.TryParse(toolLine, out currentToolNo))
+                    {
+                        try
+                        {
+                            currentToolComment = $"(" + line.Split("(")[1].Trim();
+                            //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            currentToolComment = $"(---)";
+                            //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
+                        }
+                    }
+                }
+
                 if ((line.Contains("G41") || line.Contains("G42")) && line.Contains('D'))
                 {
                     string compensationLine = line.Split("D")[1];
@@ -378,8 +434,15 @@ namespace DetailsInfo.Data
                     if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
                     if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentD))
                     {
-                        if (currentTool != currentD) warningsD++;
-                        tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                        if (currentToolNo != currentD) warningsD.Add($" [T{currentToolNo} D{currentD}] {line} ");
+                        currentTool.Position = currentToolNo;
+                        currentTool.Comment = currentToolComment;
+                        currentTool.LengthCompensation = currentH;
+                        currentTool.RadiusCompensation = currentD;
+                        if (!tools.Contains(currentTool))
+                        {
+                            tools.Add(currentTool);
+                        }
                     }
                     //compensationsD.Add($"T{currentTool} D{int.Parse(compensationLine.Replace(" ", string.Empty))}");
                 }
@@ -395,8 +458,15 @@ namespace DetailsInfo.Data
                     if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
                     if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentH))
                     {
-                        if (currentTool != currentH) warningsH++;
-                        tools.Add(new NcToolInfo() { Position = currentTool, Comment = currentToolComment, LengthCompensation = currentH, RadiusCompensation = currentD });
+                        if (currentToolNo != currentH) warningsH.Add($" [T{currentToolNo} H{currentH}] {line} ");
+                        currentTool.Position = currentToolNo;
+                        currentTool.Comment = currentToolComment;
+                        currentTool.LengthCompensation = currentH;
+                        currentTool.RadiusCompensation = currentD;
+                        if (!tools.Contains(currentTool))
+                        {
+                            tools.Add(currentTool);
+                        }
                     }                    
                     //compensationsH.Add($"T{currentTool} H{int.Parse(compensationLine.Replace(" ", string.Empty))}");
                 }
@@ -404,7 +474,7 @@ namespace DetailsInfo.Data
             caption = $"{(millProgram ? "Фрезерная" : "Токарная")} программа";
             coordinates = $"{(coordinateSystems.Count == 1 ? $"Система координат {coordinateSystems[0]}\n" : $"Системы координат: {string.Join(',', coordinateSystems)}\n")}\n";
             
-            return tools.Distinct().ToList();
+            return tools;
         }
 
         #region Пользовательские настройки
@@ -533,6 +603,8 @@ namespace DetailsInfo.Data
             Settings.Default.emailPass = userConfig.EmailPass;
             Settings.Default.popServer = userConfig.PopServer;
             Settings.Default.popPort = userConfig.PopPort;
+            Settings.Default.smtpServer = userConfig.SmtpServer;
+            Settings.Default.smtpPort = userConfig.SmtpPort;
             Settings.Default.Save();
             return $"Прочитан файл конфигурации. ";
         }

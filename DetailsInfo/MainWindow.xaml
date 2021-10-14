@@ -23,6 +23,9 @@
         <cv:WidthConverter x:Key="widthConverter" />
         <cv:ArchiveConverter x:Key="archiveConverter" />
         <cv:NcNameConverter x:Key="ncNameConverter" />
+        <cv:NcToolLengthConverter x:Key="ncToolLengthConverter" />
+        <cv:NcToolRadiusConverter x:Key="ncToolRadiusConverter" />
+        <cv:NcToolNoConverter x:Key="ncToolNoConverter" />
         <Style TargetType="DataGridCell">
             <Setter Property="Template">
                 <Setter.Value>
@@ -85,7 +88,7 @@
                     Content="ОК" />
             </Grid>
         </materialDesign:DialogHost.DialogContent>
-        
+
         <DockPanel>
 
             <!--#region Кнопки на верхней панели -->
@@ -124,8 +127,8 @@
                         <materialDesign:PackIcon Kind="WindowMinimize"/>
                     </Button>
                     <Button x:Name="closeButton" HorizontalAlignment="Right" Click="closeButton_Click" Style="{StaticResource upperPanelButtonStyle}" Cursor="Hand">
-                        <materialDesign:PackIcon Kind="Close" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                                             Height="30" Width="30" />
+                        <materialDesign:PackIcon Kind="Close"
+                                             Height="30" Width="30" Foreground="#FFFF002E" />
                     </Button>
                 </StackPanel>
 
@@ -195,7 +198,7 @@
                                                     </Button.CommandParameter>
                                                     <StackPanel Orientation="Vertical">
                                                         <!--<TextBlock Text="Отмена"/>-->
-                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}" VerticalAlignment="Center"
+                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="Red" VerticalAlignment="Center"
                                                                          Width="35" 
                                                                          Height="35"/>
                                                     </StackPanel>
@@ -327,7 +330,7 @@
                                                     </Button.CommandParameter>
                                                     <StackPanel Orientation="Vertical">
                                                         <!--<TextBlock Text="Отмена"/>-->
-                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}" VerticalAlignment="Center"
+                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="Red" VerticalAlignment="Center"
                                                                          Width="35" 
                                                                          Height="35"/>
                                                     </StackPanel>
@@ -369,7 +372,7 @@
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
                                     <StackPanel Orientation="Horizontal">
-                                        
+
                                     </StackPanel>
                                     <DockPanel Grid.Row="0">
                                         <StackPanel Orientation="Horizontal" >
@@ -378,29 +381,80 @@
                                     <ProgressBar Grid.Row="1" x:Name="machineProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
                                         Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <Grid x:Name="analyzeGrid" Visibility="Collapsed" Margin="20" Grid.RowSpan="2">
+                                    <Grid x:Name="analyzeGrid" Visibility="Collapsed" Grid.RowSpan="2" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
                                         <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
-                                            <DockPanel Margin="16" LastChildFill="True">
+                                            <DockPanel Margin="16" LastChildFill="True" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
                                                 <TextBlock x:Name="analyzeProgramTypeTB" DockPanel.Dock="Top" VerticalAlignment="Center" FontSize="16"/>
                                                 <TextBlock x:Name="analyzeProgramCoordinatesTB" DockPanel.Dock="Top"/>
                                                 <Button DockPanel.Dock="Bottom"
-                                                Style="{StaticResource generalButtonStyle}"
-                                                Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                                                HorizontalAlignment="Right"
-                                                Content="ОК" />
-                                                <DataGrid x:Name="analyzeDG" AutoGenerateColumns="False" EnableRowVirtualization="True"
-                                                Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow"
-                                                CanUserReorderColumns="False" CanUserResizeColumns="False" Grid.Row="1">
-                                                    <DataGrid.Columns>
-                                                        <DataGridTextColumn Header="T" Width="auto" Binding="{Binding Position}"/>
-                                                        <DataGridTextColumn Header="Комментарий" Binding="{Binding Comment}"/>
-                                                        <DataGridTextColumn Header="H" Binding="{Binding LengthCompensation}"/>
-                                                        <DataGridTextColumn Header="D" Binding="{Binding RadiusCompensation}"/>
-                                                    </DataGrid.Columns>
-                                                </DataGrid>
-                                                
+                                                Style="{StaticResource generalButtonStyle}" Margin="0"
+                                                HorizontalAlignment="Right" Click="analyzeOkButton_Click" Cursor="Hand">
+                                                    <materialDesign:PackIcon Kind="Done" Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                                                         Width="35" 
+                                                                         Height="35"/>
+                                                </Button>
+                                                <TextBlock x:Name="warningsRadiusCompensationTB" DockPanel.Dock="Bottom" FontFamily="Consolas"/>
+                                                <TextBlock x:Name="warningsLengthCompensationTB" DockPanel.Dock="Bottom" FontFamily="Consolas"/>
+                                                <GroupBox Header="Инструмент" materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0" Margin="0 -17 0 10">
+                                                    <DataGrid x:Name="analyzeDG" AutoGenerateColumns="False" EnableRowVirtualization="True" IsReadOnly="True" HeadersVisibility="None"
+                                                          Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow" SelectedItem="-1"
+                                                          CanUserReorderColumns="False" CanUserResizeColumns="False">
+                                                        <DataGrid.CellStyle>
+                                                            <Style TargetType="DataGridCell">
+                                                                <Setter Property="Padding" Value="2"/>
+                                                                <Setter Property="Template">
+                                                                    <Setter.Value>
+                                                                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                                                            <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                                                                <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                                            </Border>
+                                                                        </ControlTemplate>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </Style>
+                                                        </DataGrid.CellStyle>
+                                                        <DataGrid.Columns>
+                                                            <DataGridTextColumn Header="№" Width="auto" Binding="{Binding Position, Converter={StaticResource ncToolNoConverter}}" FontFamily="Consolas">
+                                                                <DataGridTextColumn.ElementStyle>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                                                        <Setter Property="Margin" Value="0 0" />
+                                                                    </Style>
+                                                                </DataGridTextColumn.ElementStyle>
+                                                            </DataGridTextColumn>
+                                                            <DataGridTextColumn Header="Комментарий" Binding="{Binding Comment}" FontFamily="Consolas">
+                                                                <DataGridTextColumn.ElementStyle>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                                                        <Setter Property="Margin" Value="0 0" />
+                                                                    </Style>
+                                                                </DataGridTextColumn.ElementStyle>
+                                                            </DataGridTextColumn>
+                                                            <DataGridTextColumn Header="H" Binding="{Binding LengthCompensation, Converter={StaticResource ncToolLengthConverter}}" FontFamily="Consolas">
+                                                                <DataGridTextColumn.ElementStyle>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                                                        <Setter Property="Margin" Value="0 0" />
+                                                                    </Style>
+                                                                </DataGridTextColumn.ElementStyle>
+                                                            </DataGridTextColumn>
+                                                            <DataGridTextColumn Header="D" Binding="{Binding RadiusCompensation, Converter={StaticResource ncToolRadiusConverter}}" FontFamily="Consolas">
+                                                                <DataGridTextColumn.ElementStyle>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                                                        <Setter Property="Margin" Value="0 0" />
+                                                                    </Style>
+                                                                </DataGridTextColumn.ElementStyle>
+                                                            </DataGridTextColumn>
+                                                        </DataGrid.Columns>
+                                                    </DataGrid>
+                                                </GroupBox>
                                             </DockPanel>
-                                        </Border>                                        
+                                        </Border>
                                     </Grid>
                                     <ListView x:Name="machineDG" Grid.Row="1" HorizontalContentAlignment="Stretch" 
                                       BorderThickness="0" PreviewMouseLeftButtonUp="machineDG_PreviewMouseLeftButtonUp">
@@ -419,7 +473,7 @@
                                                             Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
                                                         Style="{StaticResource generalButtonStyle}" Click="deleteButton_Click">
-                                                            <materialDesign:PackIcon Kind="Delete" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                                            <materialDesign:PackIcon Kind="Delete" Foreground="Red"/>
                                                         </Button>
                                                         <Button Visibility="{Binding CheckButtonVisibility}" 
                                                             Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
@@ -432,18 +486,17 @@
                                                         Style="{StaticResource generalButtonStyle}" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
                                                             <materialDesign:PackIcon Kind="Rename"/>
                                                         </Button>
-                                                        <Button Visibility="{Binding OpenButtonVisibility}" 
-                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
-                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
-                                                        Style="{StaticResource generalButtonStyle}" Click="openNCButton_Click">
-                                                            <materialDesign:PackIcon Kind="Eye"/>
-                                                        </Button>
-
                                                         <Button Visibility="{Binding AnalyzeButtonVisibility}"
                                                             Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
                                                             Style="{StaticResource generalButtonStyle}" Click="analyzeNCButton_Click">
                                                             <materialDesign:PackIcon Kind="CodeTagsCheck"/>
+                                                        </Button>
+                                                        <Button Visibility="{Binding OpenButtonVisibility}" 
+                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                        Style="{StaticResource generalButtonStyle}" Click="openNCButton_Click">
+                                                            <materialDesign:PackIcon Kind="Eye"/>
                                                         </Button>
                                                     </StackPanel>
                                                 </DockPanel>
@@ -477,7 +530,14 @@
                                     CanUserReorderColumns="False" CanUserResizeColumns="False">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Приоритет" Width="100"
-                                            Binding="{Binding Priority, Converter={StaticResource priorityConverter}}"/>
+                                            Binding="{Binding Priority, Converter={StaticResource priorityConverter}}">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
                                     <DataGridTextColumn Header="Заказ" Width="auto" Binding="{Binding Order}"/>
                                     <DataGridTextColumn Header="Номенклатура" Width="300" Binding="{Binding Name}"/>
                                     <DataGridTextColumn Header="Статус" Width="120" Binding="{Binding Status}"/>
@@ -538,7 +598,7 @@
                                                         Height="30" 
                                                         Width="{Binding Source={x:Static ff:FileFormats.IconSize}}"
                                                         Style="{StaticResource generalButtonStyle}" Click="deleteToolButton_Click" BorderBrush="{x:Null}" Padding="-5">
-                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                                        <materialDesign:PackIcon Kind="Cancel" Foreground="Red"/>
                                                     </Button>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>

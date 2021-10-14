@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace DetailsInfo.Data
 {
-    public class NcToolInfo
+    public struct NcToolInfo
     {
         public int Position { get; set; }
         public string Comment { get; set; }
-        public int? LengthCompensation { get; set; }
-        public int? RadiusCompensation { get; set; }
-
+        public int LengthCompensation { get; set; }
+        public int RadiusCompensation { get; set; }
     }
 }
