@@ -120,7 +120,7 @@
                         TickFrequency="1" TickPlacement="BottomRight" />
 
                 <TextBlock Grid.Row="9" Grid.Column="0"
-                           Text="Сервер:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                           Text="POP3 сервер:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
 
                 <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="LeftToRight">
                     <TextBox x:Name="serverTextBox" Margin="0 -10 0 0"
