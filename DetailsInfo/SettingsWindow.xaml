@@ -140,11 +140,18 @@
                         сетевой папки станка
                     </TextBlock>
                     <Border BorderThickness="1" BorderBrush="{DynamicResource MaterialDesignCardBackground}" Margin="5" CornerRadius="1"/>
-                    <CheckBox x:Name="autoRenameCheckBox" Height="50" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}">
+                    <CheckBox x:Name="autoRenameCheckBox" Height="50" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Cursor="Hand">
                         <TextBlock Margin="5">
                             Автосокращение названия
                             <LineBreak/>
                             УП при передаче на станок
+                        </TextBlock>
+                    </CheckBox>
+                    <CheckBox x:Name="intergratedImageViewer" Height="50" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Cursor="Hand">
+                        <TextBlock Margin="5">
+                            Использовать встроенный
+                            <LineBreak/>
+                            Просмотрщик изображений
                         </TextBlock>
                     </CheckBox>
                 </StackPanel>

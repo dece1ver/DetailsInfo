@@ -495,6 +495,7 @@ namespace DetailsInfo.Data
                 TempPath = Settings.Default.tempPath,
                 RefreshInterval = Settings.Default.refreshInterval,
                 AutoRename = Settings.Default.autoRenameToMachine,
+                IntegratedImageViewer = Settings.Default.integratedImageViewer,
                 NetLogPath = Settings.Default.netLogPath,
                 EmailLogin = Settings.Default.emailLogin,
                 EmailPass = Settings.Default.emailPass,
@@ -539,6 +540,7 @@ namespace DetailsInfo.Data
                 TempPath = !string.IsNullOrEmpty(userConfig.TempPath) ? userConfig.TempPath : Settings.Default.tempPath,
                 RefreshInterval = userConfig.RefreshInterval,
                 AutoRename = userConfig.AutoRename,
+                IntegratedImageViewer = userConfig.IntegratedImageViewer,
                 NetLogPath = userConfig.NetLogPath ?? Settings.Default.netLogPath,
                 EmailLogin = userConfig.EmailLogin ?? Settings.Default.emailLogin,
                 EmailPass = userConfig.EmailPass ?? Settings.Default.emailPass,
@@ -560,6 +562,7 @@ namespace DetailsInfo.Data
             Settings.Default.tempPath = tempUserConfig.TempPath;
             Settings.Default.refreshInterval = tempUserConfig.RefreshInterval;
             Settings.Default.autoRenameToMachine = tempUserConfig.AutoRename;
+            Settings.Default.integratedImageViewer = tempUserConfig.IntegratedImageViewer;
             Settings.Default.netLogPath = tempUserConfig.NetLogPath;
             Settings.Default.emailLogin = tempUserConfig.EmailLogin;
             Settings.Default.emailPass = tempUserConfig.EmailPass;
@@ -598,6 +601,7 @@ namespace DetailsInfo.Data
             Settings.Default.tempPath = userConfig.TempPath;
             Settings.Default.refreshInterval = userConfig.RefreshInterval;
             Settings.Default.autoRenameToMachine = userConfig.AutoRename;
+            Settings.Default.integratedImageViewer = userConfig.IntegratedImageViewer;
             Settings.Default.netLogPath = userConfig.NetLogPath;
             Settings.Default.emailLogin = userConfig.EmailLogin;
             Settings.Default.emailPass = userConfig.EmailPass;

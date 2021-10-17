@@ -263,5 +263,17 @@ namespace DetailsInfo.Properties {
                 this["toAdress"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool integratedImageViewer {
+            get {
+                return ((bool)(this["integratedImageViewer"]));
+            }
+            set {
+                this["integratedImageViewer"] = value;
+            }
+        }
     }
 }

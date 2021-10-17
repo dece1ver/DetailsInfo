@@ -51,6 +51,7 @@ namespace DetailsInfo
             refreshSlider.Value = Settings.Default.refreshInterval;
 
             autoRenameCheckBox.IsChecked = Settings.Default.autoRenameToMachine;
+            intergratedImageViewer.IsChecked = Settings.Default.integratedImageViewer;
 
             emailLoginTextBox.Text = Settings.Default.emailLogin;
             emailPassTextBox.Password = Settings.Default.emailPass;
@@ -165,6 +166,7 @@ namespace DetailsInfo
             Settings.Default.netLogPath = netLogPathTextBox.Text;
             Settings.Default.refreshInterval = (int)refreshSlider.Value;
             Settings.Default.autoRenameToMachine = (bool)autoRenameCheckBox.IsChecked;
+            Settings.Default.integratedImageViewer = (bool)intergratedImageViewer.IsChecked;
             Settings.Default.emailLogin = emailLoginTextBox.Text;
             Settings.Default.emailPass = emailPassTextBox.Password;
             Settings.Default.popServer = serverTextBox.Text;

@@ -173,6 +173,19 @@
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
 
+                        <materialDesign:DialogHost x:Name="ImageDialogHost" Grid.Column="1">
+                            <materialDesign:DialogHost.DialogContent>
+                                <Grid MinWidth="300" MinHeight="200" Margin="0" >
+                                    <Image x:Name="image" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Button x:Name="closeImageDialogButton" HorizontalAlignment="Right" VerticalAlignment="Top" Height="50" Width="50"
+                                            Click="closeImageDialogButton_Click" Style="{StaticResource MaterialDesignToolForegroundButton}">
+                                        <materialDesign:PackIcon Kind="CloseCircle"
+                                             Height="30" Width="30" Foreground="#FFFF002E" />
+                                    </Button>
+                                </Grid>
+                            </materialDesign:DialogHost.DialogContent>
+                        </materialDesign:DialogHost>
+                        
                         <!--#region Архив УП -->
                         <GroupBox Grid.Column="0" Header="Архив управляющих программ" x:Name="archiveGB" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
                             <materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"

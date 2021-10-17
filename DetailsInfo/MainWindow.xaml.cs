@@ -930,11 +930,10 @@ namespace DetailsInfo
         {
             try
             {
-                if (new string[]{".jpg", ".jpeg" }.Contains(Path.GetExtension(_selectedArchiveFile).ToLower()))
+                if (Settings.Default.integratedImageViewer && FileFormats.ImageExtensions.Contains(Path.GetExtension(_selectedArchiveFile).ToLower()))
                 {
-                    ShowImageWindow imageWindow = new();
-                    imageWindow.image.Source = new BitmapImage(new Uri(_selectedArchiveFile));
-                    imageWindow.ShowDialog();
+                    image.Source = new BitmapImage(new Uri(_selectedArchiveFile));
+                    ImageDialogHost.IsOpen = true;
                 }
                 else
                 {
@@ -978,7 +977,10 @@ namespace DetailsInfo
 
         }
 
-
+        private void closeImageDialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            ImageDialogHost.IsOpen = false;
+        }
         #endregion
 
         #region Сетевая папка
@@ -1118,7 +1120,16 @@ namespace DetailsInfo
         {
             try
             {
-                Process.Start(new ProcessStartInfo(_selectedMachineFile) { UseShellExecute = true });
+                if (Settings.Default.integratedImageViewer && FileFormats.ImageExtensions.Contains(Path.GetExtension(_selectedMachineFile).ToLower()))
+                {
+                    image.Source = new BitmapImage(new Uri(_selectedMachineFile));
+                    ImageDialogHost.IsOpen = true;
+                }
+                else
+                {
+                    Process.Start(new ProcessStartInfo(_selectedMachineFile) { UseShellExecute = true });
+                }
+                
                 _transferFromArchive = false;
                 _transferFromMachine = false;
                 _deleteFromMachine = false;
@@ -1258,6 +1269,7 @@ namespace DetailsInfo
                 _tabtipStatus = true;
             }
         }
+
 
 
         #endregion
