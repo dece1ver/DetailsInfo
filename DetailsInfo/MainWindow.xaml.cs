@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Application = System.Windows.Application;
 using ListView = System.Windows.Controls.ListView;
 
@@ -929,7 +930,17 @@ namespace DetailsInfo
         {
             try
             {
-                Process.Start(new ProcessStartInfo(_selectedArchiveFile) { UseShellExecute = true });
+                if (new string[]{".jpg", ".jpeg" }.Contains(Path.GetExtension(_selectedArchiveFile).ToLower()))
+                {
+                    ShowImageWindow imageWindow = new();
+                    imageWindow.image.Source = new BitmapImage(new Uri(_selectedArchiveFile));
+                    imageWindow.ShowDialog();
+                }
+                else
+                {
+                    Process.Start(new ProcessStartInfo(_selectedArchiveFile) { UseShellExecute = true });
+                }
+                
                 _transferFromArchive = false;
                 _transferFromMachine = false;
                 _deleteFromMachine = false;
