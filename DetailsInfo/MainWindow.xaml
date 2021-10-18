@@ -175,7 +175,7 @@
 
                         <materialDesign:DialogHost x:Name="ImageDialogHost" Grid.Column="1">
                             <materialDesign:DialogHost.DialogContent>
-                                <Grid MinWidth="300" MinHeight="200" Margin="0" >
+                                <Grid MinWidth="256" MinHeight="256" Margin="0" >
                                     <Image x:Name="image" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <Button x:Name="closeImageDialogButton" HorizontalAlignment="Right" VerticalAlignment="Top" Height="50" Width="50"
                                             Click="closeImageDialogButton_Click" Style="{StaticResource MaterialDesignToolForegroundButton}">
