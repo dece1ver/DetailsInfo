@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -535,7 +536,12 @@ namespace DetailsInfo
                         RenameButtonVisibility = (_renameOnMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                         OpenButtonVisibility = (_openFromNcFolder && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                         DeleteButtonVisibility = (_deleteFromMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
-                        AnalyzeButtonVisibility = (_analyzeNcProgram && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
+                        AnalyzeButtonVisibility = 
+                        (!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile).ToLower(CultureInfo.InvariantCulture))
+                        || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedMachineFile).ToLower(CultureInfo.InvariantCulture))
+                        || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedMachineFile).ToLower(CultureInfo.InvariantCulture))
+                        )
+                        && _analyzeNcProgram && file == _selectedMachineFile ) ? Visibility.Visible : Visibility.Collapsed,
                     });
                 }
 
@@ -1170,8 +1176,15 @@ namespace DetailsInfo
 
         private void analyzeNCButton_Click(object sender, RoutedEventArgs e)
         {
-            
-            AnalyzeProgramAsync();
+
+            if (FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile).ToLower(CultureInfo.InvariantCulture)))
+            {
+                SendMessage("Файлы Mazatrol неподдерживаются");
+            }
+            else
+            {
+                AnalyzeProgramAsync();
+            }
             
 
             //List<string> temp = new();
