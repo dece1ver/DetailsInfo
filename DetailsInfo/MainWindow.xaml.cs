@@ -537,9 +537,9 @@ namespace DetailsInfo
                         OpenButtonVisibility = (_openFromNcFolder && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                         DeleteButtonVisibility = (_deleteFromMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                         AnalyzeButtonVisibility = 
-                        (!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile).ToLower(CultureInfo.InvariantCulture))
-                        || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedMachineFile).ToLower(CultureInfo.InvariantCulture))
-                        || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedMachineFile).ToLower(CultureInfo.InvariantCulture))
+                        (!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
+                        || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
+                        || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                         )
                         && _analyzeNcProgram && file == _selectedMachineFile ) ? Visibility.Visible : Visibility.Collapsed,
                     });
