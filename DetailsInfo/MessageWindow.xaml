@@ -76,7 +76,7 @@
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                         VerticalAlignment="Center" Cursor="IBeam"/>
                     <TextBox Grid.Row="1" Grid.Column="1" x:Name="emailLoginTextBox" materialDesign:TextFieldAssist.HasClearButton="True"
-                         VerticalAlignment="Center" HorizontalAlignment="Stretch" Foreground="{DynamicResource MaterialDesignBodyLight}" Cursor="IBeam"/>
+                         VerticalAlignment="Center" HorizontalAlignment="Stretch" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                 </DockPanel>
                 
 

@@ -25,6 +25,8 @@ namespace DetailsInfo.Data
         public static string LogPath => CheckPath(Settings.Default.netLogPath) ? Path.Combine(Settings.Default.netLogPath, $"{Environment.MachineName}.txt") : LocalLogPath;
         public const string Nameless = "Без названия";
 
+        public enum GetFileNameOptions {FullInfo, OnlyNCName }
+
 
         /// <summary>
         /// Ищет свободное имя
@@ -127,7 +129,7 @@ namespace DetailsInfo.Data
         /// </summary>
         /// <param name="file">Путь к исходному файлу</param>
         /// <returns>Возвращает строку содержащую имя файла, при неудаче возвращает значение поля nameless</returns>
-        public static string CreateTempName(string file)
+        public static string CreateTempName(string file, GetFileNameOptions options = GetFileNameOptions.FullInfo)
         {
             try
             {
@@ -136,7 +138,14 @@ namespace DetailsInfo.Data
                 {
                     string name = GetMazatrolSmartName(file) != Nameless ? GetMazatrolSmartName(file) : Path.GetFileNameWithoutExtension(file);
                     string extension = Path.GetExtension(file);
-                    return $"{name} [{DateTime.Now:dd-MM-y HH-mm}]" + extension;
+                    if (options == GetFileNameOptions.FullInfo)
+                    {
+                        return $"{name} [{DateTime.Now:dd-MM-y HH-mm}]" + extension;
+                    }
+                    else
+                    {
+                        return name;
+                    }
                 }
                 // Sinumerik
 
@@ -150,8 +159,14 @@ namespace DetailsInfo.Data
                 {
                     return Path.GetFileName(file); // дописать обработку
                 }
-
-                return $"{GetFanucName(file)} [{DateTime.Now:dd-MM-y HH-mm}] ({Path.GetFileName(file)})";
+                if (options == GetFileNameOptions.FullInfo)
+                {
+                    return $"{GetFanucName(file)} [{DateTime.Now:dd-MM-y HH-mm}] ({Path.GetFileName(file)})";
+                }
+                else
+                {
+                    return GetFanucName(file);
+                }
             }
             catch
             {
@@ -503,7 +518,10 @@ namespace DetailsInfo.Data
                 PopPort = Settings.Default.popPort,
                 SmtpServer = Settings.Default.smtpServer,
                 SmtpPort = Settings.Default.smtpPort,
-                UseSsl = Settings.Default.useSsl
+                UseSsl = Settings.Default.useSsl,
+                ToAdress = Settings.Default.toAdress,
+                FromAdress = Settings.Default.fromAdress,
+                NcAnalyzer = Settings.Default.ncAnalyzer,
             };
 
             using (var writer = File.CreateText(UserSettingsPath))
@@ -516,13 +534,14 @@ namespace DetailsInfo.Data
         public static bool ValidateConfig(UserConfig userConfig)
         {
 
-            if (userConfig.ArchivePath == null ||
-                userConfig.MachinePath == null ||
-                userConfig.TempPath == null ||
-                userConfig.PopServer == null ||
-                userConfig.SmtpServer == null ||
+            if (userConfig.ArchivePath is null ||
+                userConfig.MachinePath is null ||
+                userConfig.TempPath is null ||
+                userConfig.PopServer is null ||
+                userConfig.SmtpServer is null ||
                 userConfig.PopPort == 0 ||
-                userConfig.SmtpPort == 0)
+                userConfig.SmtpPort == 0 ||
+                userConfig.ToAdress is null)
             {
                 return false;
             }
@@ -548,7 +567,10 @@ namespace DetailsInfo.Data
                 PopPort = userConfig.PopPort != 0 ? userConfig.PopPort : Settings.Default.popPort,
                 SmtpServer = !string.IsNullOrEmpty(userConfig.SmtpServer) ? userConfig.SmtpServer : Settings.Default.smtpServer,
                 SmtpPort = userConfig.PopPort != 0 ? userConfig.SmtpPort : Settings.Default.smtpPort,
-                UseSsl = userConfig.UseSsl
+                UseSsl = userConfig.UseSsl,
+                ToAdress = userConfig.ToAdress ?? Settings.Default.toAdress,
+                FromAdress = userConfig.FromAdress ?? Settings.Default.fromAdress,
+                NcAnalyzer = userConfig.NcAnalyzer,
             };
 
             using (var writer = File.CreateText(UserSettingsPath))
@@ -571,6 +593,9 @@ namespace DetailsInfo.Data
             Settings.Default.useSsl = tempUserConfig.UseSsl;
             Settings.Default.smtpServer = tempUserConfig.SmtpServer;
             Settings.Default.smtpPort = tempUserConfig.SmtpPort;
+            Settings.Default.toAdress = tempUserConfig.ToAdress;
+            Settings.Default.fromAdress = tempUserConfig.FromAdress;
+            Settings.Default.ncAnalyzer = tempUserConfig.NcAnalyzer;
             Settings.Default.Save();
             return "Файл конфигурации исправлен. ";
         }
@@ -607,8 +632,12 @@ namespace DetailsInfo.Data
             Settings.Default.emailPass = userConfig.EmailPass;
             Settings.Default.popServer = userConfig.PopServer;
             Settings.Default.popPort = userConfig.PopPort;
+            Settings.Default.useSsl = userConfig.UseSsl;
             Settings.Default.smtpServer = userConfig.SmtpServer;
             Settings.Default.smtpPort = userConfig.SmtpPort;
+            Settings.Default.toAdress = userConfig.ToAdress;
+            Settings.Default.fromAdress = userConfig.FromAdress;
+            Settings.Default.ncAnalyzer = userConfig.NcAnalyzer;
             Settings.Default.Save();
             return $"Прочитан файл конфигурации. ";
         }

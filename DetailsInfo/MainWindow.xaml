@@ -90,7 +90,6 @@
         </materialDesign:DialogHost.DialogContent>
 
         <DockPanel>
-
             <!--#region Кнопки на верхней панели -->
             <Grid DockPanel.Dock="Top" Height="auto">
                 <StackPanel Orientation="Horizontal">
@@ -107,6 +106,9 @@
                     </Button>
                     <Button Style="{StaticResource upperPanelButtonStyle}" Click="messageButton_Click" Cursor="Hand">
                         <materialDesign:PackIcon Kind="EmailEdit" Width="25" Height="25"/>
+                    </Button>
+                    <Button Style="{StaticResource upperPanelButtonStyle}" Click="cloudButton_Click" Cursor="Hand">
+                        <materialDesign:PackIcon Kind="CloudDownload" Width="25" Height="25"/>
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -173,6 +175,38 @@
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
 
+                        <materialDesign:DialogHost x:Name="ConfirmCheckDialog" Grid.Column="1">
+                            <materialDesign:DialogHost.DialogContent>
+                                <DockPanel LastChildFill="True" Margin="20" MinWidth="340">
+                                    <ComboBox DockPanel.Dock="Top" Margin="0 10"
+                                        x:Name="CheckReasonCB"
+                                        Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                        IsEnabled="True"
+                                        materialDesign:HintAssist.Hint="Причина отправки" materialDesign:HintAssist.Background="{StaticResource MaterialDesignCardBackground}"/>
+                                    <Button Style="{StaticResource generalButtonStyle}" Click="tabtipButton_Click" DockPanel.Dock="Bottom" Margin="0" Width="auto" Height="50">
+                                        <materialDesign:PackIcon Kind="Keyboard"
+                                                                 Width="25" 
+                                                                 Height="25"/>
+                                    </Button>
+                                    <DockPanel DockPanel.Dock="Bottom" Height="70" Margin="0">
+                                        <Button x:Name="closeCheckDialogButton" DockPanel.Dock="Left" Width="100" Height="50" HorizontalAlignment="Left" Style="{StaticResource generalButtonStyle}"
+                                                Foreground="Red" Click="closeCheckDialogButton_Click" >
+                                            <materialDesign:PackIcon Kind="Cancel"/>
+                                        </Button>
+                                        <Button x:Name="applyCheckButton" DockPanel.Dock="Right" Width="auto" Height="50" HorizontalAlignment="Stretch" Style="{StaticResource generalButtonStyle}"
+                                                Foreground="{DynamicResource SecondaryHueMidBrush}" Margin="5 0 0 0" Click="applyCheckButton_Click">
+                                            <materialDesign:PackIcon Kind="Done"/>
+                                        </Button>
+                                    </DockPanel>
+                                    
+                                    <TextBox x:Name="ReasonCommentTB" Style="{StaticResource MaterialDesignOutlinedTextBox}" 
+                                             Margin="0 10" Height="150" AcceptsReturn="True" TextWrapping="Wrap" materialDesign:TextFieldAssist.HasClearButton="True"
+                                            materialDesign:HintAssist.Hint="Комментарий" materialDesign:HintAssist.Background="{StaticResource MaterialDesignCardBackground}">
+                                    </TextBox>
+                                </DockPanel>
+                            </materialDesign:DialogHost.DialogContent>
+                        </materialDesign:DialogHost>
+
                         <materialDesign:DialogHost x:Name="ImageDialogHost" Grid.Column="1">
                             <materialDesign:DialogHost.DialogContent>
                                 <Grid MinWidth="256" MinHeight="256" Margin="0" >
@@ -185,7 +219,7 @@
                                 </Grid>
                             </materialDesign:DialogHost.DialogContent>
                         </materialDesign:DialogHost>
-                        
+
                         <!--#region Архив УП -->
                         <GroupBox Grid.Column="0" Header="Архив управляющих программ" x:Name="archiveGB" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
                             <materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"

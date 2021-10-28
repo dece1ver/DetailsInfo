@@ -32,6 +32,9 @@ namespace DetailsInfo
         private readonly bool debugMode = false;
 
         #region Поля
+        private const string newOrFixProgramReason = "Новая программа/корректировка старой";
+        private const string variantProgramReason = "Другой вариант изготовления";
+        private readonly string[] reasons = new string[2] { newOrFixProgramReason, variantProgramReason };
         private int _errors;
         private string _errorsList = string.Empty;
         private BindingList<ToolNote> _toolNotes;
@@ -118,7 +121,8 @@ namespace DetailsInfo
             notesDG.ItemsSource = _toolNotes;
             _toolNotes.ListChanged += ToolNotes_ListChanged;
 
-            
+            CheckReasonCB.ItemsSource = reasons;
+            CheckReasonCB.SelectedIndex = 0;
         }
 
         private async Task LoadInfoAsync(bool start = false)
@@ -241,7 +245,7 @@ namespace DetailsInfo
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Foreground = redBrush);
                 }
-                catch (Pop3ProtocolException ex)
+                catch (Pop3ProtocolException )
                 {
                     if (debugMode) AddStatus(_pop3ProtocolException);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
@@ -537,10 +541,10 @@ namespace DetailsInfo
                         OpenButtonVisibility = (_openFromNcFolder && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                         DeleteButtonVisibility = (_deleteFromMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                         AnalyzeButtonVisibility = 
-                        (!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
+                        ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                         || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                         || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
-                        )
+                        ) && Settings.Default.ncAnalyzer)
                         && _analyzeNcProgram && file == _selectedMachineFile ) ? Visibility.Visible : Visibility.Collapsed,
                     });
                 }
@@ -675,6 +679,12 @@ namespace DetailsInfo
         {
             MessageWindow messageWindow = new();
             messageWindow.ShowDialog();
+        }
+
+        private void cloudButton_Click(object sender, RoutedEventArgs e)
+        {
+            _currentArchiveFolder = @"\\DESKTOP-DB65KJ0\Users\Zvyagin_VM\Desktop\Программы к станкам";
+            LoadArchive();
         }
 
         private void settingsButton_Click(object sender, RoutedEventArgs e)
@@ -1045,13 +1055,21 @@ namespace DetailsInfo
             }
         }
 
-        private void checkButton_Click(object sender, RoutedEventArgs e)
+        private void applyCheckButton_Click(object sender, RoutedEventArgs e)
         {
             // формирование пути сохранения
-            string tempName = Path.Combine(Settings.Default.tempPath,
+            var tempProgramFolder = Path.Combine(Settings.Default.tempPath, Reader.CreateTempName(_selectedMachineFile, Reader.GetFileNameOptions.OnlyNCName));
+            if (!Directory.Exists(tempProgramFolder))
+            {
+                Directory.CreateDirectory(tempProgramFolder);
+            }
+            string tempName = Path.Combine(tempProgramFolder,
                 (Settings.Default.autoRenameToMachine
                     ? Reader.CreateTempName(_selectedMachineFile) // формирование нового имени файла
                     : Path.GetFileName(_selectedMachineFile))!);  // сохранение с текущим именем файла
+            var infoFile = tempName + ".info";
+            var info = CheckReasonCB.SelectedItem.ToString() == newOrFixProgramReason ? "Замена" : "Вариант";
+            if (!string.IsNullOrWhiteSpace(ReasonCommentTB.Text)) info += $"\nКомментарий: {ReasonCommentTB.Text}";
             try
             {
                 if (!_tempFolderStatus)
@@ -1059,12 +1077,18 @@ namespace DetailsInfo
                     throw new IOException();
                 }
                 File.Copy(_selectedMachineFile!, tempName, true);
+                using (var writer = File.CreateText(infoFile))
+                {
+                    writer.Write(info);
+                }
                 _transferFromMachine = false;
                 LoadMachine();
                 LoadArchive();
                 if (File.Exists(tempName))
                 {
+                    ReasonCommentTB.Text = string.Empty;
                     File.Delete(_selectedMachineFile);
+                    ConfirmCheckDialog.IsOpen = false;
                     _transferFromArchive = false;
                     _transferFromMachine = false;
                     _deleteFromMachine = false;
@@ -1285,8 +1309,18 @@ namespace DetailsInfo
 
 
 
+
+
         #endregion
 
-        
+        private void closeCheckDialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            ConfirmCheckDialog.IsOpen = false;
+        }
+
+        private void checkButton_Click(object sender, RoutedEventArgs e)
+        {
+            ConfirmCheckDialog.IsOpen = true;
+        }
     }
 }

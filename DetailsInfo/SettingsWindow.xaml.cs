@@ -60,6 +60,8 @@ namespace DetailsInfo
             portTextBox.Text = Settings.Default.popPort.ToString();
             useSslCheckBox.IsChecked = Settings.Default.useSsl;
 
+            ncAnalyzerCheckBox.IsChecked = Settings.Default.ncAnalyzer;
+
             Topmost = Settings.Default.topMost;
         }
 
@@ -171,6 +173,7 @@ namespace DetailsInfo
             Settings.Default.emailPass = emailPassTextBox.Password;
             Settings.Default.popServer = serverTextBox.Text;
             Settings.Default.useSsl = (bool)useSslCheckBox.IsChecked;
+            Settings.Default.ncAnalyzer = (bool)ncAnalyzerCheckBox.IsChecked;
             int encoding, port;
             if (int.TryParse(fileEncodingTextBox.Text, out encoding) && int.TryParse(portTextBox.Text, out port))
             {

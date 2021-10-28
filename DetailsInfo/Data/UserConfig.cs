@@ -18,5 +18,8 @@
         public bool UseSsl { get; set; }
         public string SmtpServer { get; set; }
         public int SmtpPort { get; set; }
+        public string ToAdress { get; set; }
+        public string FromAdress { get; set; }
+        public bool NcAnalyzer { get; set; }
     }
 }

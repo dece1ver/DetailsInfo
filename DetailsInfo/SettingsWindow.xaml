@@ -23,6 +23,7 @@
             <Setter Property="FontWeight" Value="Light"/>
             <Setter Property="Focusable" Value="False"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="materialDesign:RippleAssist.IsDisabled" Value="True"/>
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
         </Style>
     </Window.Resources>
@@ -104,57 +105,45 @@
                 <TextBox Grid.Row="6" Grid.Column="1" x:Name="netLogPathTextBox" Text="&lt;путь>" materialDesign:TextFieldAssist.HasClearButton="True"
                          VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                 <Button Grid.Row="6" Grid.Column="2" x:Name="netLogPathButton" Content="Обзор" Click="netLogPathButton_Click"/>
-
+                
                 <TextBlock Grid.Row="7" Grid.Column="0"
-                           Text="Логин:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
-                <TextBox Grid.Row="7" Grid.Column="1" x:Name="emailLoginTextBox" Grid.ColumnSpan="2" materialDesign:TextFieldAssist.HasClearButton="True"
-                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" Cursor="IBeam"/>
+                           Text="Уведомления:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2">
+                    <TextBox x:Name="emailLoginTextBox" Grid.ColumnSpan="2" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                             materialDesign:TextFieldAssist.HasClearButton="True" MinWidth="100" MaxWidth="200" Margin="0 -10 0 0"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" materialDesign:HintAssist.Hint="Логин"/>
 
-                <TextBlock Grid.Row="8" Grid.Column="0"
-                           Text="Пароль:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
-                <PasswordBox Grid.Row="8" Grid.Column="1" x:Name="emailPassTextBox" Grid.ColumnSpan="2" materialDesign:TextFieldAssist.HasClearButton="True"
-                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
-
-                <Slider x:Name="refreshSlider" Grid.Row="10" Grid.Column="3" Width="150" Minimum="0"
-                        Maximum="10" Style="{StaticResource MaterialDesignDiscreteSlider}" Margin="0 0 0 10"
-                        TickFrequency="1" TickPlacement="BottomRight" />
-
-                <TextBlock Grid.Row="9" Grid.Column="0"
-                           Text="POP3 сервер:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
-
-                <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="LeftToRight">
-                    <TextBox x:Name="serverTextBox" Margin="0 -10 0 0"
-                        materialDesign:HintAssist.Hint="Адрес"
-                        Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                        VerticalAlignment="Center" Cursor="IBeam"/>
+                    <PasswordBox x:Name="emailPassTextBox" Grid.ColumnSpan="2" Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"
+                                 materialDesign:TextFieldAssist.HasClearButton="True" MinWidth="100" MaxWidth="200" Margin="10 -10 0 0"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"  materialDesign:HintAssist.Hint="Пароль"/>
+                    <TextBox x:Name="serverTextBox" Margin="10 -10 0 0" materialDesign:HintAssist.Hint="POP3" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                        VerticalAlignment="Center" MinWidth="100" MaxWidth="200" />
                     <TextBox x:Name="portTextBox"  Margin="10 -10 10 0"
                         materialDesign:HintAssist.Hint="Порт"
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                        VerticalAlignment="Center" Cursor="IBeam"/>
+                        VerticalAlignment="Center" MaxWidth="200" />
                     <CheckBox x:Name="useSslCheckBox" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="SSL"/>
                 </StackPanel>
-                <StackPanel Grid.Row="10" Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="RightToLeft" Margin="5 0">
-                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}">
-                        Интервал просмотра
+                <Border Grid.Row="7" Grid.Column="1" Grid.RowSpan="2" BorderThickness="1" BorderBrush="{DynamicResource MaterialDesignCardBackground}" Margin="0 5" CornerRadius="1" Width="3"
+                        HorizontalAlignment="Right"/>
+                <StackPanel Grid.Row="7" Grid.Column="2" Grid.RowSpan="2" Orientation="Vertical" Margin="5 10">
+                    <Slider x:Name="refreshSlider" Grid.Row="7" Grid.Column="3" Minimum="0"
+                        Maximum="10" Style="{StaticResource MaterialDesignDiscreteSlider}" Margin="10 0 0 0"
+                        TickFrequency="1" TickPlacement="BottomRight" materialDesign:SliderAssist.OnlyShowFocusVisualWhileDragging="True"/>
+                    <TextBlock Grid.Row="8" Grid.Column="3" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13" HorizontalAlignment="Right">
+                        Частота обновлений
                         <LineBreak/>
                         сетевой папки станка
                     </TextBlock>
-                    <Border BorderThickness="1" BorderBrush="{DynamicResource MaterialDesignCardBackground}" Margin="5" CornerRadius="1"/>
-                    <CheckBox x:Name="autoRenameCheckBox" Height="50" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Cursor="Hand">
-                        <TextBlock Margin="5">
-                            Автосокращение названия
-                            <LineBreak/>
-                            УП при передаче на станок
-                        </TextBlock>
-                    </CheckBox>
-                    <CheckBox x:Name="intergratedImageViewer" Height="50" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Cursor="Hand">
-                        <TextBlock Margin="5">
-                            Использовать встроенный
-                            <LineBreak/>
-                            Просмотрщик изображений
-                        </TextBlock>
-                    </CheckBox>
                 </StackPanel>
+                <TextBlock Grid.Row="8" Grid.Column="0"
+                           Text="Разное:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                <StackPanel Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="LeftToRight">
+                    <CheckBox x:Name="autoRenameCheckBox" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Переименование" Cursor="Hand"/>
+                    <CheckBox x:Name="intergratedImageViewer" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Просмотрщик изображений"/>
+                    <CheckBox x:Name="ncAnalyzerCheckBox" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Анализатор УП"/>
+                </StackPanel>
+                
             </Grid>
         </DockPanel>
     </Grid>
