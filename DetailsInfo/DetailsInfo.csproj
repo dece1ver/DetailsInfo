@@ -16,8 +16,8 @@
     <AssemblyName>Details Info</AssemblyName>
     <Version>1.0.8</Version>
     <StartupObject></StartupObject>
-    <AssemblyVersion>1.0.8.5</AssemblyVersion>
-    <FileVersion>1.0.8.5</FileVersion>
+    <AssemblyVersion>1.0.8.6</AssemblyVersion>
+    <FileVersion>1.0.8.6</FileVersion>
     <Description>Типа файловый менеджер</Description>
     <Copyright>dece1ver</Copyright>
     <PackageProjectUrl>https://detailsinfo.azurewebsites.net/</PackageProjectUrl>

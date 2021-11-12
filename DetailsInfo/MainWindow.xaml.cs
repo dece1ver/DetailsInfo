@@ -589,81 +589,89 @@ namespace DetailsInfo
         {
             while (true)
             {
-                if (Settings.Default.refreshInterval > 0)
+                try
                 {
-                    dateTimeTB.Dispatcher.Invoke(() => dateTimeTB.Text = DateTime.Now.ToString("d MMMM yyyy г.  HH:mm"));
+                    if (Settings.Default.refreshInterval > 0)
+                    {
+                        dateTimeTB.Dispatcher.Invoke(() => dateTimeTB.Text = DateTime.Now.ToString("d MMMM yyyy г.  HH:mm"));
 
-                    #region Проверка архива
-                    if (!Reader.CheckPath(Settings.Default.archivePath))
-                    {
-                        if (_archiveStatus) TurnOffArchive();
-                    }
-                    else
-                    {
-                        if (needUpdateArchive)
+                        #region Проверка архива
+                        if (!Reader.CheckPath(Settings.Default.archivePath))
                         {
-                            _archiveStatus = true;
-                            TurnOnArchive();
-                            LoadArchive();
+                            if (_archiveStatus) TurnOffArchive();
                         }
-                    }
-
-                    #endregion
-
-                    #region Проверка промежуточной папки
-                    if (!Reader.CheckPath(Settings.Default.tempPath))
-                    {
-                        _tempFolderStatus = false;
-                        tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.LanDisconnect);
-                        tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = redBrush);
-                        archiveGB.Dispatcher.InvokeAsync(() => archiveGB.Header = $"Архив управляющих программ");
-                        if (debugMode) AddStatus(_noTempFolderLabel);
-                    }
-                    else
-                    {
-                        _tempFolderStatus = true;
-                        tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.LanConnect);
-                        tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = greenBrush);
-                        archiveGB.Dispatcher.InvokeAsync(() => archiveGB.Header = $"Архив управляющих программ | На проверке: {Directory.GetFiles(Settings.Default.tempPath).Length}");
-                        if (debugMode) RemoveStatus(_noTempFolderLabel);
-                    }
-
-                    #endregion
-
-                    #region Проверка сетевой папки станка
-                    if (!Reader.CheckPath(Settings.Default.machinePath))
-                    {
-                        if (_machineStatus) TurnOffMachine();
-                    }
-                    else
-                    {
-                        if (!_machineStatus)
+                        else
                         {
-                            _machineStatus = true;
-                            TurnOnMachine();
+                            if (needUpdateArchive)
+                            {
+                                _archiveStatus = true;
+                                TurnOnArchive();
+                                LoadArchive();
+                            }
                         }
-                        LoadMachine();
-                    }
-                    #endregion
 
-                    #region Проверка таблицы
-                    if (!Reader.CheckPath(Settings.Default.tablePath))
-                    {
-                        tableConnectionIcon.Dispatcher.Invoke(() =>
-                        tableConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.TableRemove);
-                        tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = redBrush);
-                        if (debugMode) AddStatus(_noTableLabel);
-                    }
-                    else
-                    {
-                        tableConnectionIcon.Dispatcher.Invoke(() =>
-                        tableConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Table);
-                        tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = greenBrush);
-                        if (debugMode) AddStatus(_noTableLabel);
-                    }
-                    #endregion
+                        #endregion
 
-                    Thread.Sleep(Settings.Default.refreshInterval * 1000);
+                        #region Проверка промежуточной папки
+                        if (!Reader.CheckPath(Settings.Default.tempPath))
+                        {
+                            _tempFolderStatus = false;
+                            tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.LanDisconnect);
+                            tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = redBrush);
+                            archiveGB.Dispatcher.InvokeAsync(() => archiveGB.Header = $"Архив управляющих программ");
+                            if (debugMode) AddStatus(_noTempFolderLabel);
+                        }
+                        else
+                        {
+                            _tempFolderStatus = true;
+                            tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.LanConnect);
+                            tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = greenBrush);
+                            archiveGB.Dispatcher.InvokeAsync(() => archiveGB.Header = $"Архив управляющих программ | На проверке: {Directory.GetFiles(Settings.Default.tempPath, "*.info", SearchOption.AllDirectories).Length}");
+                            if (debugMode) RemoveStatus(_noTempFolderLabel);
+                        }
+
+                        #endregion
+
+                        #region Проверка сетевой папки станка
+                        if (!Reader.CheckPath(Settings.Default.machinePath))
+                        {
+                            if (_machineStatus) TurnOffMachine();
+                        }
+                        else
+                        {
+                            if (!_machineStatus)
+                            {
+                                _machineStatus = true;
+                                TurnOnMachine();
+                            }
+                            LoadMachine();
+                        }
+                        #endregion
+
+                        #region Проверка таблицы
+                        if (!Reader.CheckPath(Settings.Default.tablePath))
+                        {
+                            tableConnectionIcon.Dispatcher.Invoke(() =>
+                            tableConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.TableRemove);
+                            tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = redBrush);
+                            if (debugMode) AddStatus(_noTableLabel);
+                        }
+                        else
+                        {
+                            tableConnectionIcon.Dispatcher.Invoke(() =>
+                            tableConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Table);
+                            tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = greenBrush);
+                            if (debugMode) AddStatus(_noTableLabel);
+                        }
+                        #endregion
+
+                        Thread.Sleep(Settings.Default.refreshInterval * 1000);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AddError(ex);
+                    Thread.Sleep(3000);
                 }
             }
         }
