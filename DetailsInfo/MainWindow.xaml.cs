@@ -38,6 +38,7 @@ namespace DetailsInfo
         private int _errors;
         private string _errorsList = string.Empty;
         private BindingList<ToolNote> _toolNotes;
+        private ArchiveContent selectedArchiveFolder;
         private List<ArchiveContent> _archiveContent;
         private List<NcFile> _machineContent = new();
         private string _currentArchiveFolder;
@@ -65,6 +66,7 @@ namespace DetailsInfo
         private string[] _findResult;
         private string _selectedArchiveFile;
         private string _selectedMachineFile;
+        private bool _needArchiveScroll;
 
         private readonly SolidColorBrush redBrush = Util.BrushFromHex("#FFF44336");
         private readonly SolidColorBrush greenBrush = Util.BrushFromHex("#FFAEEA00");
@@ -87,6 +89,7 @@ namespace DetailsInfo
         private readonly string _pop3ProtocolException = "Ошибка протокола POP3. ";
         private readonly string _sslHandshakeException = "Неудачная проверка сертификата SSL. ";
         private readonly string _socketException = "Ошибка соединения с сервером уведомлений. ";
+        private readonly string _ioExceptionMail = "Разрыв соединения. ";
         #endregion
 
 
@@ -218,6 +221,7 @@ namespace DetailsInfo
                         if (debugMode) RemoveStatus(_pop3ProtocolException);
                         if (debugMode) RemoveStatus(_sslHandshakeException);
                         if (debugMode) RemoveStatus(_socketException);
+                        if (debugMode) RemoveStatus(_ioExceptionMail);
                         int currentMessagesCount = client.GetMessageCount();
                         if (debugMode) AddStatus($"Messages: {currentMessagesCount} ");
                         if (currentMessagesCount > 0)
@@ -251,7 +255,7 @@ namespace DetailsInfo
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Foreground = redBrush);
                 }
-                catch (MailKit.Security.SslHandshakeException ex)
+                catch (MailKit.Security.SslHandshakeException)
                 {
                     if (debugMode) AddStatus(_sslHandshakeException);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
@@ -260,6 +264,12 @@ namespace DetailsInfo
                 catch (System.Net.Sockets.SocketException)
                 {
                     if (debugMode) AddStatus(_socketException);
+                    emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
+                    emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Foreground = redBrush);
+                }
+                catch (System.IO.IOException)
+                {
+                    if (debugMode) AddStatus(_ioExceptionMail);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EmailOff);
                     emailConnectionIcon.Dispatcher.Invoke(() => emailConnectionIcon.Foreground = redBrush);
                 }
@@ -390,13 +400,15 @@ namespace DetailsInfo
                     {
                         foreach (string folder in dirs)
                         {
-                            _archiveContent.Add(new ArchiveContent
+                            var tempArchiveFolder = new ArchiveContent
                             {
                                 Content = folder,
                                 TransferButtonState = Visibility.Collapsed,
                                 OpenButtonState = Visibility.Collapsed,
                                 OpenFolderState = Visibility.Collapsed
-                            });
+                            };
+                            _archiveContent.Add(tempArchiveFolder); 
+                            if(tempArchiveFolder.Content == _selectedArchiveFile) selectedArchiveFolder = tempArchiveFolder;
                         }
                     }
                     // вносим файлы
@@ -435,6 +447,12 @@ namespace DetailsInfo
                     }
                     await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.IsEnabled = true);
                     await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ItemsSource = _archiveContent);
+                    if (_needArchiveScroll)
+                    {
+                        await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = selectedArchiveFolder);
+                        await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ScrollIntoView(selectedArchiveFolder));
+                        _needArchiveScroll = false;
+                    }
 
                 }
                 catch (UnauthorizedAccessException e)
@@ -606,7 +624,7 @@ namespace DetailsInfo
                             {
                                 _archiveStatus = true;
                                 TurnOnArchive();
-                                LoadArchive();
+                                _ = LoadArchive();
                             }
                         }
 
@@ -692,7 +710,7 @@ namespace DetailsInfo
         private void cloudButton_Click(object sender, RoutedEventArgs e)
         {
             _currentArchiveFolder = @"\\DESKTOP-DB65KJ0\Users\Zvyagin_VM\Desktop\Программы к станкам";
-            LoadArchive();
+            _ = LoadArchive();
         }
 
         private void settingsButton_Click(object sender, RoutedEventArgs e)
@@ -713,7 +731,7 @@ namespace DetailsInfo
                 {
                     TurnOnArchive();
                 }
-                LoadArchive();
+                _ = LoadArchive();
 
                 if (!Reader.CheckPath(Settings.Default.machinePath))
                 {
@@ -782,7 +800,7 @@ namespace DetailsInfo
         {
             _findStatus = FindStatus.DontNeed;
             LoadMachine();
-            LoadArchive();
+            _ = LoadArchive();
         }
 
         private void minimizeButton_Click(object sender, RoutedEventArgs e)
@@ -809,7 +827,7 @@ namespace DetailsInfo
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
                 _currentArchiveFolder = currentItem.Content;
-                LoadArchive();
+                _ = LoadArchive();
                 //statusTextBlock.Text = $"Открыто за {sw.ElapsedMilliseconds} мс";
             }
             else if (File.Exists(currentItem.Content))
@@ -822,7 +840,7 @@ namespace DetailsInfo
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
                 _selectedArchiveFile = currentItem.Content;
-                LoadArchive();
+                _ = LoadArchive();
                 // LoadMachine() написать
             }
             else
@@ -845,9 +863,11 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _selectedArchiveFile = _currentArchiveFolder;
+                _needArchiveScroll = true;
                 _currentArchiveFolder = Directory.GetParent(_currentArchiveFolder)?.ToString();
             }
-            LoadArchive();
+            _ = LoadArchive();
         }
 
         private void archiveRootButton_Click(object sender, RoutedEventArgs e)
@@ -863,7 +883,7 @@ namespace DetailsInfo
             _openFromNcFolder = false;
             _analyzeNcProgram = false;
             _currentArchiveFolder = Settings.Default.archivePath;
-            LoadArchive();
+            _ = LoadArchive();
         }
 
 
@@ -875,7 +895,7 @@ namespace DetailsInfo
                 archiveParentButton.IsEnabled = false;
                 findDialogButton.IsEnabled = false;
                 _findStatus = FindStatus.Find;
-                LoadArchive();
+                _ = LoadArchive();
             }
         }
 
@@ -886,7 +906,7 @@ namespace DetailsInfo
             returnButton.Visibility = Visibility.Visible;
             _findStatus = FindStatus.DontNeed;
 
-            LoadArchive();
+            _ = LoadArchive();
         }
 
         private void returnButton_Click(object sender, RoutedEventArgs e)
@@ -895,7 +915,7 @@ namespace DetailsInfo
             findDialogButton.Visibility = Visibility.Visible;
             returnButton.Visibility = Visibility.Collapsed;
             archivePathTB.Text = "Результаты поиска:";
-            LoadArchive();
+            _ = LoadArchive();
         }
 
         private void transferButton_Click(object sender, RoutedEventArgs e)
@@ -923,7 +943,7 @@ namespace DetailsInfo
                 _analyzeNcProgram = false;
                 WriteLog($"Отправлено на станок: \"{_selectedArchiveFile}\"");
                 LoadMachine();
-                LoadArchive();
+                _ = LoadArchive();
                 SendMessage(Settings.Default.autoRenameToMachine
                     ? $"Файл {Path.GetFileName(_selectedArchiveFile)} отправлен на станок и переименован в {Path.GetFileName(tranferFilePath)}"
                     : $"На станок отправлен файл: {Path.GetFileName(_selectedArchiveFile)}");
@@ -972,7 +992,7 @@ namespace DetailsInfo
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
                 LoadMachine();
-                LoadArchive();
+                _ = LoadArchive();
             }
             catch (Win32Exception)
             {
@@ -987,7 +1007,7 @@ namespace DetailsInfo
                     _openFromNcFolder = false;
                     _analyzeNcProgram = false;
                     LoadMachine();
-                    LoadArchive();
+                    _ = LoadArchive();
                 }
                 catch (Exception exception)
                 {
@@ -1026,7 +1046,7 @@ namespace DetailsInfo
                 _selectedMachineFile = currentItem.FullPath;
                 kostyl.Text = currentItem.Extension;
                 LoadMachine();
-                LoadArchive();
+                _ = LoadArchive();
             }
         }
 
@@ -1042,7 +1062,7 @@ namespace DetailsInfo
                 string newName = Path.Combine(Settings.Default.machinePath, newNameTB.Text) + kostyl.Text;
                 FileSystem.Rename(_selectedMachineFile, newName);
                 LoadMachine();
-                LoadArchive();
+                _ = LoadArchive();
                 SendMessage($"Файл {Path.GetFileName(_selectedMachineFile)} переименован в {Path.GetFileName(newName)}");
                 newNameTB.Text = string.Empty;
                 kostyl.Text = string.Empty;
@@ -1091,7 +1111,7 @@ namespace DetailsInfo
                 }
                 _transferFromMachine = false;
                 LoadMachine();
-                LoadArchive();
+                _ = LoadArchive();
                 if (File.Exists(tempName))
                 {
                     ReasonCommentTB.Text = string.Empty;
@@ -1144,7 +1164,7 @@ namespace DetailsInfo
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
                 LoadMachine();
-                LoadArchive();
+                _ = LoadArchive();
                 SendMessage($"Из сетевой папки станка удален файл: {Path.GetFileName(_selectedMachineFile)}");
             }
             catch (Exception exception)
@@ -1176,7 +1196,7 @@ namespace DetailsInfo
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
                 LoadMachine();
-                LoadArchive();
+                _ = LoadArchive();
             }
             catch (Win32Exception)
             {
@@ -1191,7 +1211,7 @@ namespace DetailsInfo
                     _openFromNcFolder = false;
                     _analyzeNcProgram = false;
                     LoadMachine();
-                    LoadArchive();
+                    _ = LoadArchive();
                 }
                 catch (Exception exception)
                 {
@@ -1215,7 +1235,7 @@ namespace DetailsInfo
             }
             else
             {
-                AnalyzeProgramAsync();
+                _ = AnalyzeProgramAsync();
             }
             
 
