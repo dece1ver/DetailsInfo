@@ -65,6 +65,7 @@ namespace DetailsInfo
         private FindStatus _findStatus = FindStatus.DontNeed;
         private string[] _findResult;
         private string _selectedArchiveFile;
+        private string _selectedForDeletionArchiveFile;
         private string _selectedMachineFile;
         private bool _needArchiveScroll;
 
@@ -102,6 +103,7 @@ namespace DetailsInfo
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            advancedModeIcon.Visibility = Settings.Default.advancedMode ? Visibility.Visible : Visibility.Collapsed;
             if (debugMode) AddStatus(Reader.ReadConfig()); else Reader.ReadConfig();
 
             Topmost = Settings.Default.topMost;
@@ -405,6 +407,7 @@ namespace DetailsInfo
                                 Content = folder,
                                 TransferButtonState = Visibility.Collapsed,
                                 OpenButtonState = Visibility.Collapsed,
+                                DeleteButtonState = Visibility.Collapsed,
                                 OpenFolderState = Visibility.Collapsed
                             };
                             _archiveContent.Add(tempArchiveFolder); 
@@ -425,6 +428,7 @@ namespace DetailsInfo
                                         Content = file,
                                         TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                         OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                        DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                         OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed
                                     });
                                 }
@@ -435,6 +439,7 @@ namespace DetailsInfo
                                         Content = file,
                                         TransferButtonState = Visibility.Collapsed,
                                         OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                        DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                         OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed
                                     });
                                 }
@@ -1021,6 +1026,37 @@ namespace DetailsInfo
 
         }
 
+        private void confirmDeleteFromArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedForDeletionArchiveFile = _selectedArchiveFile;
+            confirmDeleteFromArchiveTB.Text = $"Удалить файл \"{Path.GetFileName(_selectedForDeletionArchiveFile)}\"?";
+            ConfirmDeleteFromArchiveDialogHost.IsOpen = true;
+        }
+        private void closeDeleteFromArchiveDialogButton_Click(object sender, RoutedEventArgs e) => ConfirmDeleteFromArchiveDialogHost.IsOpen = false;
+        private void deleteFromArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                File.Delete(_selectedForDeletionArchiveFile);
+                _deleteFromMachine = false;
+                _transferFromArchive = false;
+                _transferFromMachine = false;
+                _openFromArchive = false;
+                _renameOnMachine = false;
+                _openFromNcFolder = false;
+                _analyzeNcProgram = false;
+                LoadMachine();
+                _ = LoadArchive();
+                SendMessage($"Из архива удален файл: {Path.GetFileName(_selectedForDeletionArchiveFile)}");
+                ConfirmDeleteFromArchiveDialogHost.IsOpen = false;
+            }
+            catch (Exception exception)
+            {
+                WriteLog($"Ошибка при удалении файла");
+                AddError(exception);
+            }
+        }
+
         private void closeImageDialogButton_Click(object sender, RoutedEventArgs e)
         {
             ImageDialogHost.IsOpen = false;
@@ -1086,20 +1122,22 @@ namespace DetailsInfo
         private void applyCheckButton_Click(object sender, RoutedEventArgs e)
         {
             // формирование пути сохранения
-            var tempProgramFolder = Path.Combine(Settings.Default.tempPath, Reader.CreateTempName(_selectedMachineFile, Reader.GetFileNameOptions.OnlyNCName));
-            if (!Directory.Exists(tempProgramFolder))
-            {
-                Directory.CreateDirectory(tempProgramFolder);
-            }
-            string tempName = Path.Combine(tempProgramFolder,
-                (Settings.Default.autoRenameToMachine
-                    ? Reader.CreateTempName(_selectedMachineFile) // формирование нового имени файла
-                    : Path.GetFileName(_selectedMachineFile))!);  // сохранение с текущим именем файла
-            var infoFile = tempName + ".info";
-            var info = CheckReasonCB.SelectedItem.ToString() == newOrFixProgramReason ? "Замена" : "Вариант";
-            if (!string.IsNullOrWhiteSpace(ReasonCommentTB.Text)) info += $"\nКомментарий: {ReasonCommentTB.Text}";
+            
             try
             {
+                var tempProgramFolder = Path.Combine(Settings.Default.tempPath, Reader.CreateTempName(_selectedMachineFile, Reader.GetFileNameOptions.OnlyNCName));
+                if (!Directory.Exists(tempProgramFolder))
+                {
+                    Directory.CreateDirectory(tempProgramFolder);
+                }
+                string tempName = Path.Combine(tempProgramFolder,
+                    (Settings.Default.autoRenameToMachine
+                        ? Reader.CreateTempName(_selectedMachineFile) // формирование нового имени файла
+                        : Path.GetFileName(_selectedMachineFile))!);  // сохранение с текущим именем файла
+                var infoFile = tempName + ".info";
+                var info = CheckReasonCB.SelectedItem.ToString() == newOrFixProgramReason ? "Замена" : "Вариант";
+                if (!string.IsNullOrWhiteSpace(ReasonCommentTB.Text)) info += $"\nКомментарий: {ReasonCommentTB.Text}";
+
                 if (!_tempFolderStatus)
                 {
                     throw new IOException();
@@ -1151,7 +1189,7 @@ namespace DetailsInfo
             }
         }
 
-        private void deleteButton_Click(object sender, RoutedEventArgs e)
+        private void deleteFromMachineButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {

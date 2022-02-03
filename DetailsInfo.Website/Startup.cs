@@ -1,4 +1,3 @@
-using DetailsInfo.Website.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -29,7 +28,6 @@ namespace DetailsInfo.Website
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
             services.AddMudServices();
         }
 

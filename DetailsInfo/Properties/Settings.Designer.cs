@@ -287,5 +287,17 @@ namespace DetailsInfo.Properties {
                 this["ncAnalyzer"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool advancedMode {
+            get {
+                return ((bool)(this["advancedMode"]));
+            }
+            set {
+                this["advancedMode"] = value;
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ namespace DetailsInfo
         public Visibility TransferButtonState { get; set; }
         public Visibility OpenButtonState { get; set; }
         public Visibility OpenFolderState { get; set; }
+        public Visibility DeleteButtonState { get; set; }
         public bool CanBeTransfered => !NonTransferableExtensions.Contains(Path.GetExtension(Content).ToLower());
         public PackIcon Icon => SetIcon(Content);
     }
