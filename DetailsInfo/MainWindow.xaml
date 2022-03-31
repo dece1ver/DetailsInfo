@@ -630,7 +630,7 @@
                                     <DataGridTextColumn Header="Заказ" Width="auto" Binding="{Binding Order}"/>
                                     <DataGridTextColumn Header="Номенклатура" Width="300" Binding="{Binding Name}"/>
                                     <DataGridTextColumn Header="Статус" Width="120" Binding="{Binding Status}"/>
-                                    <DataGridTextColumn Header="Время" Binding="{Binding MachineTime}"/>
+                                    <!--<DataGridTextColumn Header="Время" Binding="{Binding MachineTime}"/>-->
                                     <DataGridTextColumn Header="Комментарий" Width="*" Binding="{Binding Comment}"/>
                                 </DataGrid.Columns>
                             </DataGrid>

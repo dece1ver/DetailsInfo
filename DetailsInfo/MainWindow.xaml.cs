@@ -49,6 +49,7 @@ namespace DetailsInfo
         private bool _machineStatus = true;
 
         private bool _tempFolderStatus = true;
+        private bool _tableStatus = true;
 
         private bool _transferFromArchive;
         private bool _transferFromMachine;
@@ -144,6 +145,10 @@ namespace DetailsInfo
 
                 if (!Reader.CheckPath(Settings.Default.tempPath)) _tempFolderStatus = false;
                 if (_tempFolderStatus) tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = greenBrush);
+
+                if (!Reader.CheckPath(Settings.Default.tablePath)) _tableStatus = false;
+                if (_tableStatus) tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = greenBrush);
+                LoadTable();
 
                 RefreshStatus();
                 if (start)
@@ -607,6 +612,85 @@ namespace DetailsInfo
         }
         #endregion
 
+        #region Таблица деталей
+        /// <summary>
+        /// Выключает отображение таблицы
+        /// </summary>
+        private void TurnOffTable()
+        {
+            _tableStatus = false;
+            tableConnectionIcon.Dispatcher.Invoke(() =>
+            tableConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.TableRemove);
+            tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = redBrush);
+            if (debugMode) AddStatus(_noTableLabel);
+
+        }
+
+        /// <summary>
+        /// Включает отображение таблицы
+        /// </summary>
+        private void TurnOnTable()
+        {
+            _tableStatus = true;
+            tableConnectionIcon.Dispatcher.Invoke(() =>
+            tableConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Table);
+            tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = greenBrush);
+            if (debugMode) RemoveStatus(_noTableLabel);
+        }
+
+        private void LoadTable()
+        {
+            if (_tableStatus)
+            {
+                List<Detail> details = new();
+                int statusOk = 0;
+                int statusWarn = 0;
+
+                foreach (string line in Reader.ReadCsvTable(Settings.Default.tablePath).Skip(1))
+                {
+                    int priority;
+                    if (int.TryParse(line.Split(';')[6].Split('.')[0], out int tPriority))
+                    {
+                        priority = tPriority;
+                    }
+                    else
+                    {
+                        priority = 1000;
+                    }
+
+                    string time;
+                    if (double.TryParse(line.Replace('.', ',').Split(';')[8], out double tTime))
+                    {
+                        time = $"{(int)tTime}м {(tTime - (int)tTime) * 60:N0}c";
+                    }
+                    else
+                    {
+                        time = string.Empty;
+                    }
+
+                    string order = line.Split(';')[5] + "   ";
+                    string name = line.Split(';')[0];
+                    string status = line.Split(';')[1];
+                    string comment = line.Split(';')[4];
+
+                    if (!string.IsNullOrEmpty(name))
+                        details.Add(new Detail { Name = name, Status = status, Comment = comment, Order = order, Priority = priority, MachineTime = time });
+                    if (status == "Отработана")
+                    {
+                        statusOk++;
+                    }
+                    else if (status == "Требует проверки")
+                    {
+                        statusWarn++;
+                    }
+                }
+                statusGB.Dispatcher.Invoke(() => statusGB.Header = $"Список заданий");
+                tableDG.Dispatcher.Invoke(() => tableDG.ItemsSource = details);
+            }
+
+        }
+        #endregion
+
         #region Наблюдатель доступности
         private void WatchInfo()
         {
@@ -671,6 +755,16 @@ namespace DetailsInfo
                         }
                         #endregion
 
+                    #region Проверка таблицы
+                    if (!Reader.CheckPath(Settings.Default.tablePath))
+                    {
+                        TurnOffTable();
+                    }
+                    else
+                    {
+                        TurnOnTable();
+                    }
+                    #endregion
                         #region Проверка таблицы
                         if (!Reader.CheckPath(Settings.Default.tablePath))
                         {
@@ -747,6 +841,17 @@ namespace DetailsInfo
                     TurnOnMachine();
                 }
                 LoadMachine();
+
+                if (!Reader.CheckPath(Settings.Default.tablePath))
+                {
+                    TurnOffTable();
+                }
+                else
+                {
+                    TurnOnTable();
+                }
+                LoadTable();
+
 
                 Settings.Default.needUpdate = false;
             }
