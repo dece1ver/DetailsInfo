@@ -38,7 +38,7 @@ jobs:
       #  run: sed -i 's/<base href="\/" \/>/<base href="\/Sunduk\/" \/>/g' release/wwwroot/index.html
       
       - name: Add .nojekyll file
-        run: touch release.ws/wwwroot/.nojekyll
+        run: touch release/wwwroot/.nojekyll
           
       - name: Uploading files to gh-pages branch
         uses: JamesIves/github-pages-deploy-action@4.1.4
