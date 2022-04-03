@@ -29,23 +29,17 @@ jobs:
 
       # Публикуем
       - name: Publish DI
-        run: dotnet publish DetailsInfo/DetailsInfo.csproj -c Release --output release --nologo
+        run: dotnet publish DetailsInfo/DetailsInfo.csproj -c Release --output release/wwwroot --nologo
         
       - name: Publish DI.Website
-        run: dotnet publish DetailsInfo.Website/DetailsInfo.Website.csproj -c Release --output release.ws --nologo
+        run: dotnet publish DetailsInfo.Website/DetailsInfo.Website.csproj -c Release --output release --nologo
         
       #- name: Change base-tag in index.html from / to BlazorGitHubPagesDemo
       #  run: sed -i 's/<base href="\/" \/>/<base href="\/Sunduk\/" \/>/g' release/wwwroot/index.html
       
       - name: Add .nojekyll file
         run: touch release.ws/wwwroot/.nojekyll
-      
-      - name: Uploading files to gh-pages branch
-        uses: JamesIves/github-pages-deploy-action@4.1.4
-        with:
-          branch: gh-pages
-          folder: release
-      
+          
       - name: Uploading files to gh-pages branch
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
