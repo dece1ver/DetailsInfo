@@ -28,8 +28,8 @@ jobs:
           include-prerelease: false
 
       # Публикуем
-      - name: Publish DI
-        run: dotnet publish DetailsInfo/DetailsInfo.csproj -c Release --output release/wwwroot --nologo
+      #- name: Publish DI
+      #  run: dotnet publish DetailsInfo/DetailsInfo.csproj -c Release --output release/wwwroot --nologo
         
       - name: Publish DI.Website
         run: dotnet publish DetailsInfo.Website/DetailsInfo.Website.csproj -c Release --output release --nologo
