@@ -14,13 +14,14 @@
     <AssemblyOriginatorKeyFile>DetailsInfo_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
     <AssemblyName>Details Info</AssemblyName>
-    <Version>1.0.8</Version>
+    <Version>1.0.9</Version>
     <StartupObject></StartupObject>
-    <AssemblyVersion>1.0.8.9</AssemblyVersion>
-    <FileVersion>1.0.8.9</FileVersion>
+    <AssemblyVersion>1.0.9.3</AssemblyVersion>
+    <FileVersion>1.0.9.3</FileVersion>
     <Description>Типа файловый менеджер</Description>
     <Copyright>dece1ver</Copyright>
-    <PackageProjectUrl>https://detailsinfo.azurewebsites.net/</PackageProjectUrl>
+    <PackageProjectUrl>https://di.sunduk.one/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dece1ver/DetailsInfo</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

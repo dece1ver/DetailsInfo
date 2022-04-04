@@ -146,9 +146,12 @@ namespace DetailsInfo
                 if (!Reader.CheckPath(Settings.Default.tempPath)) _tempFolderStatus = false;
                 if (_tempFolderStatus) tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = greenBrush);
 
-                if (!Reader.CheckPath(Settings.Default.tablePath)) _tableStatus = false;
+                if (!Reader.CheckPath(Settings.Default.tablePath) && !File.Exists(Settings.Default.tablePath)) TurnOffTable();
                 if (_tableStatus) tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = greenBrush);
-                LoadTable();
+                if (LoadTable())
+                {
+                    tableDG.Dispatcher.Invoke(() => tableDG.SortColumn(0));
+                }
 
                 RefreshStatus();
                 if (start)
@@ -638,55 +641,70 @@ namespace DetailsInfo
             if (debugMode) RemoveStatus(_noTableLabel);
         }
 
-        private void LoadTable()
+        private bool LoadTable()
         {
             if (_tableStatus)
             {
-                List<Detail> details = new();
-                int statusOk = 0;
-                int statusWarn = 0;
-
-                foreach (string line in Reader.ReadCsvTable(Settings.Default.tablePath).Skip(1))
+                try
                 {
-                    int priority;
-                    if (int.TryParse(line.Split(';')[6].Split('.')[0], out int tPriority))
-                    {
-                        priority = tPriority;
-                    }
-                    else
-                    {
-                        priority = 1000;
-                    }
+                    List<Detail> details = new();
+                    int statusOk = 0;
+                    int statusWarn = 0;
 
-                    string time;
-                    if (double.TryParse(line.Replace('.', ',').Split(';')[8], out double tTime))
+                    foreach (string line in Reader.ReadCsvTable(Settings.Default.tablePath).Skip(1))
                     {
-                        time = $"{(int)tTime}м {(tTime - (int)tTime) * 60:N0}c";
-                    }
-                    else
-                    {
-                        time = string.Empty;
-                    }
+                        int priority;
+                        if (int.TryParse(line.Split(';')[6].Split('.')[0], out int tPriority))
+                        {
+                            priority = tPriority;
+                        }
+                        else
+                        {
+                            priority = 1000;
+                        }
 
-                    string order = line.Split(';')[5] + "   ";
-                    string name = line.Split(';')[0];
-                    string status = line.Split(';')[1];
-                    string comment = line.Split(';')[4];
+                        //string time;
+                        //if (double.TryParse(line.Replace('.', ',').Split(';')[8], out double tTime))
+                        //{
+                        //    time = $"{(int)tTime}м {(tTime - (int)tTime) * 60:N0}c";
+                        //}
+                        //else
+                        //{
+                        //    time = string.Empty;
+                        //}
 
-                    if (!string.IsNullOrEmpty(name))
-                        details.Add(new Detail { Name = name, Status = status, Comment = comment, Order = order, Priority = priority, MachineTime = time });
-                    if (status == "Отработана")
-                    {
-                        statusOk++;
+                        string order = line.Split(';')[5] + "   ";
+                        string name = line.Split(';')[0];
+                        string status = line.Split(';')[1];
+                        string comment = "   " + line.Split(';')[4];
+
+                        if (!string.IsNullOrEmpty(name))
+                            details.Add(new Detail { Name = name, Status = status, Comment = comment, Order = order, Priority = priority});
+                        if (status == "Отработана")
+                        {
+                            statusOk++;
+                        }
+                        else if (status == "Требует проверки")
+                        {
+                            statusWarn++;
+                        }
                     }
-                    else if (status == "Требует проверки")
-                    {
-                        statusWarn++;
-                    }
+                    statusGB.Dispatcher.Invoke(() => statusGB.Header = $"Список заданий");
+                    tableDG.Dispatcher.Invoke(() => tableDG.ItemsSource = details);
+                    
+                    return true;
                 }
-                statusGB.Dispatcher.Invoke(() => statusGB.Header = $"Список заданий");
-                tableDG.Dispatcher.Invoke(() => tableDG.ItemsSource = details);
+                catch (FileNotFoundException ex)
+                {
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    AddError(ex);
+                    return false;
+                }
             }
+            return false;
 
         }
         #endregion
@@ -755,30 +773,14 @@ namespace DetailsInfo
                         }
                         #endregion
 
-                    #region Проверка таблицы
-                    if (!Reader.CheckPath(Settings.Default.tablePath))
-                    {
-                        TurnOffTable();
-                    }
-                    else
-                    {
-                        TurnOnTable();
-                    }
-                    #endregion
                         #region Проверка таблицы
-                        if (!Reader.CheckPath(Settings.Default.tablePath))
+                        if (!Reader.CheckPath(Settings.Default.tablePath) && !File.Exists(Settings.Default.tablePath))
                         {
-                            tableConnectionIcon.Dispatcher.Invoke(() =>
-                            tableConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.TableRemove);
-                            tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = redBrush);
-                            if (debugMode) AddStatus(_noTableLabel);
+                            TurnOffTable();
                         }
                         else
                         {
-                            tableConnectionIcon.Dispatcher.Invoke(() =>
-                            tableConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Table);
-                            tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = greenBrush);
-                            if (debugMode) AddStatus(_noTableLabel);
+                            TurnOnTable();
                         }
                         #endregion
 

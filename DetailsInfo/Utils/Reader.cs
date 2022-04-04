@@ -222,7 +222,7 @@ namespace DetailsInfo.Data
         /// </summary>
         /// <param name="dataGrid">Экземпляр DataGrid</param>
         /// <param name="columnIndex">Индекс столбца</param>
-        public static void SortColumn(DataGrid dataGrid, int columnIndex)
+        public static void SortColumn(this DataGrid dataGrid, int columnIndex)
         {
             var performSortMethod = typeof(DataGrid)
                                     .GetMethod("PerformSort",

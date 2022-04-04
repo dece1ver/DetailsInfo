@@ -147,7 +147,7 @@
 
                 <StatusBarItem HorizontalAlignment="Right">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon x:Name="tableConnectionIcon" Margin="0 0 10 0" Kind="Table" ToolTip="Список закрепленных деталей"/>
+                        <materialDesign:PackIcon x:Name="tableConnectionIcon" Margin="0 0 10 0" Kind="Table" ToolTip="Список заданий"/>
                         <materialDesign:PackIcon x:Name="archiveConnectionIcon" Margin="0 0 10 0" Kind="FolderHome" ToolTip="Архив УП"/>
                         <materialDesign:PackIcon x:Name="tempFolderConnectionIcon" Margin="0 0 10 0" Kind="LanConnect" ToolTip="Промежуточная"/>
                         <materialDesign:PackIcon x:Name="machineConnectionIcon" Margin="0 0 10 0" Kind="ServerNetwork" ToolTip="Станок"/>

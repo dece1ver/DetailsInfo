@@ -7,6 +7,6 @@
         public string Comment { get; set; }
         public int Priority { get; set; }
         public string Order { get; set; }
-        public string MachineTime { get; set; }
+        //public string MachineTime { get; set; }
     }
 }
