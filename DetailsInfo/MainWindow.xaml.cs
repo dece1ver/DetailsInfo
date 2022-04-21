@@ -105,8 +105,11 @@ namespace DetailsInfo
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            advancedModeIcon.Visibility = Settings.Default.advancedMode ? Visibility.Visible : Visibility.Collapsed;
+            bool advancedMode = Settings.Default.advancedMode;
+            advancedModeIcon.Visibility = advancedMode ? Visibility.Visible : Visibility.Collapsed;
             if (debugMode) AddStatus(Reader.ReadConfig()); else Reader.ReadConfig();
+            this.WindowStyle = advancedMode ? WindowStyle.SingleBorderWindow : WindowStyle.None;
+            this.ResizeMode = advancedMode ? ResizeMode.CanResizeWithGrip : ResizeMode.CanMinimize;
 
             Topmost = Settings.Default.topMost;
             _currentArchiveFolder = Settings.Default.archivePath;
