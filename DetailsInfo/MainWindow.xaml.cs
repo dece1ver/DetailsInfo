@@ -67,6 +67,7 @@ namespace DetailsInfo
         private string[] _findResult;
         private string _selectedArchiveFile;
         private string _selectedForDeletionArchiveFile;
+        private string _selectedForDeletionMachineFile;
         private string _selectedMachineFile;
         private bool _needArchiveScroll;
 
@@ -1296,11 +1297,19 @@ namespace DetailsInfo
             }
         }
 
+        private void confirmDeleteFromMachineButton_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedForDeletionMachineFile = _selectedMachineFile;
+            confirmDeleteFromMachineTB.Text = $"Удалить файл \"{Path.GetFileName(_selectedForDeletionMachineFile)}\"?";
+            ConfirmDeleteFromMachineDialogHost.IsOpen = true;
+        }
+        private void closeDeleteFromMachineDialogButton_Click(object sender, RoutedEventArgs e) => ConfirmDeleteFromMachineDialogHost.IsOpen = false;
+
         private void deleteFromMachineButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                File.Delete(_selectedMachineFile);
+                File.Delete(_selectedForDeletionMachineFile);
                 _deleteFromMachine = false;
                 _transferFromArchive = false;
                 _transferFromMachine = false;
@@ -1310,6 +1319,7 @@ namespace DetailsInfo
                 _analyzeNcProgram = false;
                 LoadMachine();
                 _ = LoadArchive();
+                ConfirmDeleteFromMachineDialogHost.IsOpen = false;
                 SendMessage($"Из сетевой папки станка удален файл: {Path.GetFileName(_selectedMachineFile)}");
             }
             catch (Exception exception)

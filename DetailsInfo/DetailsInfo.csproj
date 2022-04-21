@@ -16,8 +16,8 @@
     <AssemblyName>Details Info</AssemblyName>
     <Version>1.0.9</Version>
     <StartupObject></StartupObject>
-    <AssemblyVersion>1.0.9.3</AssemblyVersion>
-    <FileVersion>1.0.9.3</FileVersion>
+    <AssemblyVersion>1.0.9.4</AssemblyVersion>
+    <FileVersion>1.0.9.4</FileVersion>
     <Description>Типа файловый менеджер</Description>
     <Copyright>dece1ver</Copyright>
     <PackageProjectUrl>https://di.sunduk.one/</PackageProjectUrl>

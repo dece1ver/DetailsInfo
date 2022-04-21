@@ -233,7 +233,7 @@
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right">
                                             <Button
-                                                Style="{StaticResource MaterialDesignFlatButton}"
+                                                Style="{StaticResource generalButtonStyle}"
                                                 Foreground="Red"
                                                 FontSize="16"
                                                 Width="140"
@@ -243,13 +243,47 @@
                                                 Click="deleteFromArchiveButton_Click">
                                             </Button>
                                             <Button
-                                                Style="{StaticResource MaterialDesignFlatButton}"
+                                                Style="{StaticResource generalButtonStyle}"
                                                 FontSize="16"
                                                 Width="100"
                                                 IsCancel="True"
                                                 Margin="0 8 8 0"
                                                 Content="Отмена"
                                                 Click="closeDeleteFromArchiveDialogButton_Click">
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </materialDesign:DialogHost.DialogContent>
+                        </materialDesign:DialogHost>
+
+                        <materialDesign:DialogHost x:Name="ConfirmDeleteFromMachineDialogHost" Grid.Column="1">
+                            <materialDesign:DialogHost.DialogContent>
+                                <Grid>
+                                    <StackPanel Margin="16">
+                                        <TextBlock FontSize="18" Text="Подтверждение" />
+                                        <TextBlock x:Name="confirmDeleteFromMachineTB" Margin="0 25 0 15"/>
+                                        <StackPanel
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right">
+                                            <Button
+                                                Style="{StaticResource generalButtonStyle}"
+                                                Foreground="Red"
+                                                FontSize="16"
+                                                Width="140"
+                                                IsDefault="True"
+                                                Margin="0 8 8 0"
+                                                Content="Удалить"
+                                                Click="deleteFromMachineButton_Click">
+                                            </Button>
+                                            <Button
+                                                Style="{StaticResource generalButtonStyle}"
+                                                FontSize="16"
+                                                Width="100"
+                                                IsCancel="True"
+                                                Margin="0 8 8 0"
+                                                Content="Отмена"
+                                                Click="closeDeleteFromMachineDialogButton_Click">
                                             </Button>
                                         </StackPanel>
                                     </StackPanel>
@@ -561,7 +595,7 @@
                                                         <Button Visibility="{Binding DeleteButtonVisibility}" 
                                                             Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 3 -6"
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
-                                                        Style="{StaticResource generalButtonStyle}" Click="deleteFromMachineButton_Click">
+                                                        Style="{StaticResource generalButtonStyle}" Click="confirmDeleteFromMachineButton_Click">
                                                             <materialDesign:PackIcon Kind="Delete" Foreground="Red"/>
                                                         </Button>
                                                         <Button Visibility="{Binding CheckButtonVisibility}" 
