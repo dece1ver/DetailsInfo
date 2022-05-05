@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
+	<RuntimeFrameworkVersion>5.0.16</RuntimeFrameworkVersion>
     <UseWPF>true</UseWPF>
     <PublishSingleFile>true</PublishSingleFile>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
@@ -13,15 +14,16 @@
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>DetailsInfo_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
-    <AssemblyName>Details Info</AssemblyName>
+    <AssemblyName>Di</AssemblyName>
     <Version>1.0.9</Version>
     <StartupObject></StartupObject>
-    <AssemblyVersion>1.0.9.5</AssemblyVersion>
-    <FileVersion>1.0.9.5</FileVersion>
-    <Description>Типа файловый менеджер</Description>
+    <AssemblyVersion>1.0.9.6</AssemblyVersion>
+    <FileVersion>1.0.9.6</FileVersion>
+    <Description>Менеджер УП</Description>
     <Copyright>dece1ver</Copyright>
     <PackageProjectUrl>https://di.sunduk.one/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dece1ver/DetailsInfo</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -33,11 +35,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.15.0" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.2.1" />
+    <PackageReference Include="MailKit" Version="3.2.0" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Ookii.Dialogs.Wpf" Version="4.0.0" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

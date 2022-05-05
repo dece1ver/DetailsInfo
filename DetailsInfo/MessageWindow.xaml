@@ -83,7 +83,7 @@
                 <TextBlock Grid.Row="2" Grid.Column="0"
                            Text="Пароль:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                 <PasswordBox Grid.Row="2" Grid.Column="1" x:Name="emailPassTextBox" Grid.ColumnSpan="2" materialDesign:TextFieldAssist.HasClearButton="True"
-                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" Cursor="Arrow"/>
 
                 <TextBlock Grid.Row="3" Grid.Column="0"
                            Text="Кому:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>

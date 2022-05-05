@@ -170,7 +170,7 @@ namespace DetailsInfo
             Settings.Default.autoRenameToMachine = (bool)autoRenameCheckBox.IsChecked;
             Settings.Default.integratedImageViewer = (bool)intergratedImageViewer.IsChecked;
             Settings.Default.emailLogin = emailLoginTextBox.Text;
-            Settings.Default.emailPass = emailPassTextBox.Password;
+            Settings.Default.emailPass = Util.Encrypt(emailPassTextBox.Password, "http://areopag");
             Settings.Default.popServer = serverTextBox.Text;
             Settings.Default.useSsl = (bool)useSslCheckBox.IsChecked;
             Settings.Default.ncAnalyzer = (bool)ncAnalyzerCheckBox.IsChecked;

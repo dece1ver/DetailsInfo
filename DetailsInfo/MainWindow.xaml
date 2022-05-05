@@ -130,7 +130,7 @@
                     </Button>
                     <Button x:Name="closeButton" HorizontalAlignment="Right" Click="closeButton_Click" Style="{StaticResource upperPanelButtonStyle}" Cursor="Hand">
                         <materialDesign:PackIcon Kind="Close"
-                                             Height="30" Width="30" Foreground="#FFFF002E" />
+                                             Height="30" Width="30" Foreground="Red" />
                     </Button>
                 </StackPanel>
 
@@ -217,7 +217,7 @@
                                     <Button x:Name="closeImageDialogButton" HorizontalAlignment="Right" VerticalAlignment="Top" Height="50" Width="50"
                                             Click="closeImageDialogButton_Click" Style="{StaticResource MaterialDesignToolForegroundButton}">
                                         <materialDesign:PackIcon Kind="CloseCircle"
-                                             Height="30" Width="30" Foreground="#FFFF002E" />
+                                             Height="30" Width="30" Foreground="Red" />
                                     </Button>
                                 </Grid>
                             </materialDesign:DialogHost.DialogContent>
@@ -292,7 +292,13 @@
                         </materialDesign:DialogHost>
 
                         <!--#region Архив УП -->
-                        <GroupBox Grid.Column="0" Header="Архив управляющих программ" x:Name="archiveGB" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                        <GroupBox Grid.Column="0" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label x:Name="archiveInfoLabel" Content="Архив управляющих программ" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="archiveGB_MouseLeftButtonDoubleClick"/>
+                                    <Label x:Name="checkInfoLabel" Content="" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="archiveCheckGB_MouseLeftButtonDoubleClick"/>
+                                </StackPanel>
+                            </GroupBox.Header>
                             <materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                    DialogTheme="Inherit" CloseOnClickAway="True">
                                 <materialDesign:DialogHost.DialogContent>
@@ -399,6 +405,12 @@
                                                             Style="{StaticResource generalButtonStyle}" Click="transferButton_Click" Margin="0 -6 7 -6">
                                                             <materialDesign:PackIcon Kind="ArrowRight" />
                                                         </Button>
+                                                        <Button Visibility="{Binding AnalyzeButtonState}"
+                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                            Style="{StaticResource generalButtonStyle}" Click="analyzeArchiveNCButton_Click">
+                                                            <materialDesign:PackIcon Kind="CodeTagsCheck"/>
+                                                        </Button>
                                                         <Button Visibility="{Binding OpenButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
                                                             Style="{StaticResource generalButtonStyle}" Click="openButton_Click" Margin="0 -6 7 -6">
@@ -408,6 +420,12 @@
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2" Margin="0 -6 7 -6"
                                                             Style="{StaticResource generalButtonStyle}" Click="openFolderButton_Click">
                                                             <materialDesign:PackIcon Kind="Folder" />
+                                                        </Button>
+                                                        <Button Visibility="{Binding ShowWinExplorerButtonState}"
+                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                            Style="{StaticResource generalButtonStyle}" Click="showWinExplorerButton_Click">
+                                                            <materialDesign:PackIcon Kind="FolderEye"/>
                                                         </Button>
                                                         <Button Visibility="{Binding DeleteButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
@@ -427,7 +445,12 @@
                         <Border Background="{DynamicResource MaterialDesignDivider}" Grid.Column="1" />
 
                         <!--#region Сетевая папка -->
-                        <GroupBox Grid.Column="2" Header="Программы в сетевой папке" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                        <GroupBox Grid.Column="2" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label x:Name="machineInfoLabel" Content="Программы в сетевой папке станка" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="machineGB_MouseLeftButtonDoubleClick"/>
+                                </StackPanel>
+                            </GroupBox.Header>
                             <materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                    DialogTheme="Inherit" CloseOnClickAway="True">
 

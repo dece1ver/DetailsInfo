@@ -36,7 +36,7 @@
             </StatusBar>
             <Grid DockPanel.Dock="Bottom" Height="70">
                 <Button x:Name="closeButton" Width="200" Height="50" HorizontalAlignment="Left"
-                    Background="{DynamicResource MaterialDesignValidationErrorBrush}" BorderBrush="{x:Null}" Margin="10,0,0,0" Click="closeButton_Click" Cursor="Hand" Foreground="Black">
+                    Background="Red" BorderBrush="{x:Null}" Margin="10,0,0,0" Click="closeButton_Click" Cursor="Hand" Foreground="Black">
                     <materialDesign:PackIcon Kind="Close"/>
                 </Button>
                 <Button x:Name="applyButton" Width="200" Height="50" HorizontalAlignment="Right"
@@ -143,7 +143,6 @@
                     <CheckBox x:Name="intergratedImageViewer" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Просмотрщик изображений"/>
                     <CheckBox x:Name="ncAnalyzerCheckBox" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Анализатор УП"/>
                 </StackPanel>
-                
             </Grid>
         </DockPanel>
     </Grid>

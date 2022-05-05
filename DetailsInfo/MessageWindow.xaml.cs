@@ -64,7 +64,7 @@ namespace DetailsInfo
         private async Task SendMessage()
         {
             Settings.Default.emailLogin = emailLoginTextBox.Text;
-            Settings.Default.emailPass = emailPassTextBox.Password;
+            Settings.Default.emailPass = Util.Encrypt(emailPassTextBox.Password, "http://areopag");
 
             Settings.Default.toAdress = toTextBox.Text;
             Settings.Default.fromAdress = fromTextBox.Text;
@@ -98,7 +98,7 @@ namespace DetailsInfo
                     {
                         client.ServerCertificateValidationCallback = (s, c, h, e) => true;
                         client.Connect(Settings.Default.smtpServer, Settings.Default.smtpPort, false);
-                        client.Authenticate(Settings.Default.emailLogin, Settings.Default.emailPass);
+                        client.Authenticate(Settings.Default.emailLogin, Util.Decrypt(Settings.Default.emailPass, "http://areopag"));
                         client.Send(message);
                         client.Disconnect(true);
                     }

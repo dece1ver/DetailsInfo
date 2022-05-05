@@ -57,8 +57,10 @@ namespace DetailsInfo
         private bool _deleteFromMachine;
         private bool _openFromArchive;
         private bool _openFromNcFolder;
+        private bool _analyzeArchiveProgram;
         private bool _analyzeNcProgram;
         private bool _analyzeInfo;
+        private bool _showWinExplorer;
 
         private bool _tabtipStatus;
         private bool _errorStatus;
@@ -80,6 +82,8 @@ namespace DetailsInfo
         public List<NcToolInfo> ProgramTools { get; set; } = new();
 
         private readonly List<string> _status = new();
+
+        bool advancedMode = Settings.Default.advancedMode;
 
         #region Статусы ошибок
         private readonly string _noArchiveLabel = "Архив недоступен. ";
@@ -105,11 +109,13 @@ namespace DetailsInfo
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            bool advancedMode = Settings.Default.advancedMode;
+            
             advancedModeIcon.Visibility = advancedMode ? Visibility.Visible : Visibility.Collapsed;
             if (debugMode) AddStatus(Reader.ReadConfig()); else Reader.ReadConfig();
             this.WindowStyle = advancedMode ? WindowStyle.SingleBorderWindow : WindowStyle.None;
-            this.ResizeMode = advancedMode ? ResizeMode.CanResizeWithGrip : ResizeMode.CanMinimize;
+            this.ResizeMode = advancedMode ? ResizeMode.CanResize : ResizeMode.CanMinimize;
+            this.minimizeButton.Visibility = advancedMode ? Visibility.Collapsed : Visibility.Visible;
+            this.closeButton.Visibility = advancedMode ? Visibility.Collapsed : Visibility.Visible;
 
             Topmost = Settings.Default.topMost;
             _currentArchiveFolder = Settings.Default.archivePath;
@@ -200,7 +206,7 @@ namespace DetailsInfo
             try
             {
                 client.Connect(Settings.Default.popServer, Settings.Default.popPort, Settings.Default.useSsl);
-                client.Authenticate(Settings.Default.emailLogin, Settings.Default.emailPass);
+                client.Authenticate(Settings.Default.emailLogin, Util.Decrypt(Settings.Default.emailPass, "http://areopag"));
                 client.DeleteAllMessages();
                 client.Disconnect(true);
 
@@ -222,7 +228,7 @@ namespace DetailsInfo
                     }
                     client.Connect(Settings.Default.popServer, Settings.Default.popPort, Settings.Default.useSsl);
                     if (debugMode) RemoveStatus(_timeoutException);
-                    client.Authenticate(Settings.Default.emailLogin, Settings.Default.emailPass);
+                    client.Authenticate(Settings.Default.emailLogin, Util.Decrypt(Settings.Default.emailPass, "http://areopag"));
 
                     if (debugMode) AddStatus($"Connected: {client.IsConnected} ");
                     if (debugMode) AddStatus($"Auth: {client.IsAuthenticated} ");
@@ -420,7 +426,9 @@ namespace DetailsInfo
                                 TransferButtonState = Visibility.Collapsed,
                                 OpenButtonState = Visibility.Collapsed,
                                 DeleteButtonState = Visibility.Collapsed,
-                                OpenFolderState = Visibility.Collapsed
+                                OpenFolderState = Visibility.Collapsed,
+                                AnalyzeButtonState = Visibility.Collapsed,
+                                ShowWinExplorerButtonState = Visibility.Collapsed,
                             };
                             _archiveContent.Add(tempArchiveFolder); 
                             if(tempArchiveFolder.Content == _selectedArchiveFile) selectedArchiveFolder = tempArchiveFolder;
@@ -441,7 +449,14 @@ namespace DetailsInfo
                                         TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                         OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                         DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
-                                        OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed
+                                        OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                        AnalyzeButtonState =
+                                        ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                        || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                        || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                        ) && Settings.Default.ncAnalyzer)
+                                        && _analyzeArchiveProgram && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                        ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                     });
                                 }
                                 else
@@ -451,8 +466,10 @@ namespace DetailsInfo
                                         Content = file,
                                         TransferButtonState = Visibility.Collapsed,
                                         OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                        DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
-                                        OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed
+                                        DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                                        OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                        AnalyzeButtonState = Visibility.Collapsed,
+                                        ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                     });
                                 }
                             }
@@ -747,7 +764,7 @@ namespace DetailsInfo
                             _tempFolderStatus = false;
                             tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.LanDisconnect);
                             tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = redBrush);
-                            archiveGB.Dispatcher.InvokeAsync(() => archiveGB.Header = $"Архив управляющих программ");
+                            checkInfoLabel.Dispatcher.InvokeAsync(() => checkInfoLabel.Content = string.Empty);
                             if (debugMode) AddStatus(_noTempFolderLabel);
                         }
                         else
@@ -755,7 +772,7 @@ namespace DetailsInfo
                             _tempFolderStatus = true;
                             tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.LanConnect);
                             tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = greenBrush);
-                            archiveGB.Dispatcher.InvokeAsync(() => archiveGB.Header = $"Архив управляющих программ | На проверке: {Directory.GetFiles(Settings.Default.tempPath, "*.info", SearchOption.AllDirectories).Length}");
+                            checkInfoLabel.Dispatcher.InvokeAsync(() => checkInfoLabel.Content = $" | На проверке: {Directory.GetFiles(Settings.Default.tempPath, "*.info", SearchOption.AllDirectories).Length}");
                             if (debugMode) RemoveStatus(_noTempFolderLabel);
                         }
 
@@ -942,6 +959,8 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
                 _currentArchiveFolder = currentItem.Content;
                 _ = LoadArchive();
                 //statusTextBlock.Text = $"Открыто за {sw.ElapsedMilliseconds} мс";
@@ -955,6 +974,8 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _analyzeArchiveProgram = true;
+                _showWinExplorer = true;
                 _selectedArchiveFile = currentItem.Content;
                 _ = LoadArchive();
                 // LoadMachine() написать
@@ -962,6 +983,58 @@ namespace DetailsInfo
             else
             {
                 SendMessage("Указанное расположение больше не существует в архиве. Попробуйте обновить информацию.");
+            }
+        }
+
+        private void archiveGB_MouseLeftButtonDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (advancedMode)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo("explorer", $"\"{Settings.Default.archivePath}\"") { UseShellExecute = true });
+                    _transferFromArchive = false;
+                    _transferFromMachine = false;
+                    _deleteFromMachine = false;
+                    _openFromArchive = false;
+                    _renameOnMachine = false;
+                    _openFromNcFolder = false;
+                    _analyzeNcProgram = false;
+                    _analyzeArchiveProgram = false;
+                    _showWinExplorer = false;
+                    LoadMachine();
+                    _ = LoadArchive();
+                }
+                catch (Exception exception)
+                {
+                    AddError(exception);
+                }
+            }
+        }
+
+        private void archiveCheckGB_MouseLeftButtonDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (advancedMode)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo("explorer", $"\"{Settings.Default.tempPath}\"") { UseShellExecute = true });
+                    _transferFromArchive = false;
+                    _transferFromMachine = false;
+                    _deleteFromMachine = false;
+                    _openFromArchive = false;
+                    _renameOnMachine = false;
+                    _openFromNcFolder = false;
+                    _analyzeNcProgram = false;
+                    _analyzeArchiveProgram = false;
+                    _showWinExplorer = false;
+                    LoadMachine();
+                    _ = LoadArchive();
+                }
+                catch (Exception exception)
+                {
+                    AddError(exception);
+                }
             }
         }
 
@@ -979,6 +1052,8 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
                 _selectedArchiveFile = _currentArchiveFolder;
                 _needArchiveScroll = true;
                 _currentArchiveFolder = Directory.GetParent(_currentArchiveFolder)?.ToString();
@@ -998,6 +1073,8 @@ namespace DetailsInfo
             _renameOnMachine = false;
             _openFromNcFolder = false;
             _analyzeNcProgram = false;
+            _analyzeArchiveProgram = false;
+            _showWinExplorer = false;
             _currentArchiveFolder = Settings.Default.archivePath;
             _ = LoadArchive();
         }
@@ -1057,6 +1134,8 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
                 WriteLog($"Отправлено на станок: \"{_selectedArchiveFile}\"");
                 LoadMachine();
                 _ = LoadArchive();
@@ -1086,6 +1165,41 @@ namespace DetailsInfo
             }
         }
 
+        private void analyzeArchiveNCButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile).ToLower(CultureInfo.InvariantCulture)))
+            {
+                SendMessage("Файлы Mazatrol неподдерживаются");
+            }
+            else
+            {
+                _ = AnalyzeProgramAsync(_selectedArchiveFile);
+            }
+        }
+
+        private void showWinExplorerButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo("explorer", $"\"{Directory.GetParent(_selectedArchiveFile)}\"") { UseShellExecute = true });
+                _transferFromArchive = false;
+                _transferFromMachine = false;
+                _deleteFromMachine = false;
+                _openFromArchive = false;
+                _renameOnMachine = false;
+                _openFromNcFolder = false;
+                _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
+                LoadMachine();
+                _ = LoadArchive();
+            }
+            catch (Exception exception)
+            {
+                AddError(exception);
+            }
+        }
+
         private void openButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1107,6 +1221,8 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
                 LoadMachine();
                 _ = LoadArchive();
             }
@@ -1122,6 +1238,8 @@ namespace DetailsInfo
                     _renameOnMachine = false;
                     _openFromNcFolder = false;
                     _analyzeNcProgram = false;
+                    _analyzeArchiveProgram = false;
+                    _showWinExplorer = false;
                     LoadMachine();
                     _ = LoadArchive();
                 }
@@ -1156,6 +1274,8 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
                 LoadMachine();
                 _ = LoadArchive();
                 SendMessage($"Из архива удален файл: {Path.GetFileName(_selectedForDeletionArchiveFile)}");
@@ -1190,10 +1310,38 @@ namespace DetailsInfo
                 _openFromArchive = false;
                 _openFromNcFolder = true;
                 _analyzeNcProgram = true;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
                 _selectedMachineFile = currentItem.FullPath;
                 kostyl.Text = currentItem.Extension;
                 LoadMachine();
                 _ = LoadArchive();
+            }
+        }
+
+        private void machineGB_MouseLeftButtonDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (advancedMode)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo("explorer", $"\"{Settings.Default.machinePath}\"") { UseShellExecute = true });
+                    _transferFromArchive = false;
+                    _transferFromMachine = false;
+                    _deleteFromMachine = false;
+                    _openFromArchive = false;
+                    _renameOnMachine = false;
+                    _openFromNcFolder = false;
+                    _analyzeNcProgram = false;
+                    _analyzeArchiveProgram = false;
+                    _showWinExplorer = false;
+                    LoadMachine();
+                    _ = LoadArchive();
+                }
+                catch (Exception exception)
+                {
+                    AddError(exception);
+                }
             }
         }
 
@@ -1273,6 +1421,8 @@ namespace DetailsInfo
                     _renameOnMachine = false;
                     _openFromNcFolder = false;
                     _analyzeNcProgram = false;
+                    _analyzeArchiveProgram = false;
+                    _showWinExplorer = false;
                     LoadMachine();
                     SendMessage($"Отправлен на проверку и очищен из сетевой папки файл: {tempName}");
                     WriteLog($"Отправлено на проверку \"{_selectedMachineFile}\" -> \"{tempName}\"");
@@ -1320,6 +1470,8 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
                 LoadMachine();
                 _ = LoadArchive();
                 ConfirmDeleteFromMachineDialogHost.IsOpen = false;
@@ -1353,6 +1505,8 @@ namespace DetailsInfo
                 _renameOnMachine = false;
                 _openFromNcFolder = false;
                 _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
                 LoadMachine();
                 _ = LoadArchive();
             }
@@ -1368,6 +1522,8 @@ namespace DetailsInfo
                     _renameOnMachine = false;
                     _openFromNcFolder = false;
                     _analyzeNcProgram = false;
+                    _analyzeArchiveProgram = false;
+                    _showWinExplorer = false;
                     LoadMachine();
                     _ = LoadArchive();
                 }
@@ -1393,7 +1549,7 @@ namespace DetailsInfo
             }
             else
             {
-                _ = AnalyzeProgramAsync();
+                _ = AnalyzeProgramAsync(_selectedMachineFile);
             }
             
 
@@ -1405,7 +1561,7 @@ namespace DetailsInfo
             //MessageBox.Show($"{coordinates}\n{temp}", programType);
         }
 
-        private async Task AnalyzeProgramAsync()
+        private async Task AnalyzeProgramAsync(string program)
         {
             _analyzeInfo = true;
             machineDG.Visibility = Visibility.Collapsed;
@@ -1413,7 +1569,7 @@ namespace DetailsInfo
             
             await Task.Run(() =>
             {
-                var analyze = Reader.AnalyzeProgram(_selectedMachineFile, out string programType, out string coordinates, out List<string> warningsH, out List<string> warningsD);
+                var analyze = Reader.AnalyzeProgram(program, out string programType, out string coordinates, out List<string> warningsH, out List<string> warningsD);
                 analyzeDG.Dispatcher.Invoke(() => analyzeDG.ItemsSource = analyze);
                 analyzeProgramTypeTB.Dispatcher.Invoke(() => analyzeProgramTypeTB.Text = programType);
                 analyzeProgramCoordinatesTB.Dispatcher.Invoke(() => analyzeProgramCoordinatesTB.Text = coordinates);
@@ -1507,6 +1663,6 @@ namespace DetailsInfo
         private void checkButton_Click(object sender, RoutedEventArgs e)
         {
             ConfirmCheckDialog.IsOpen = true;
-        }
+        }        
     }
 }
