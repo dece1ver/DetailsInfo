@@ -1,7 +1,6 @@
 ﻿using DetailsInfo.Utils;
 using System;
 using MailKit.Net.Smtp;
-using MailKit;
 using MimeKit;
 using System.Windows;
 using DetailsInfo.Properties;
@@ -104,7 +103,7 @@ namespace DetailsInfo
                     }
                     progressBar.Dispatcher.Invoke(() => progressBar.Visibility = Visibility.Collapsed);
                     messageTextBox.Dispatcher.Invoke(() => messageTextBox.Visibility = Visibility.Visible);
-                    Dispatcher.Invoke(() => Close());
+                    Dispatcher.Invoke(Close);
                 }
                 catch (Exception ex)
                 {

@@ -13,10 +13,10 @@ namespace DetailsInfo.Data
         public static string[] HeidenhainExtensions { get; } = { ".h" };
         public static string[] SinumerikExtensions { get; } = { ".mpf", ".spf" };
         public static string[] OtherNcExtensions { get; } = { ".nc", ".tap" };
-        public static string[] ImageExtensions { get; set; } = { ".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".tif", ".bmp", ".dib" };
+        public static string[] ImageExtensions { get; set; } = { ".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".tif", ".bmp", ".dib", ".dxf" };
         public static string[] VideoExtensions { get; set; } = { ".mp4", ".mpeg", ".wmv", ".webm", ".mkv" };
-        public static string[] DocumentExtensions { get; set; } = { ".pdf", ".xml", ".doc", ".docx", ".docm", ".txt" };
-        public static string[] MiscExtensions { get; set; } = { ".sys", ".tmp", ".lnk", ".rdp", ".ini", ".exe", ".bat", ".cmd", ".com" };
+        public static string[] DocumentExtensions { get; set; } = { ".pdf", ".xml", ".doc", ".docx", ".docm", ".txt", ".rtf" };
+        public static string[] MiscExtensions { get; set; } = { ".sys", ".tmp", ".lnk", ".rdp", ".ini", ".exe", ".bat", ".cmd", ".com", ".ezd" };
         public static string[] SystemFiles { get; set; } = { "Thumbs.db" };
 
         private static string[] _machineExtensions = Array.Empty<string>();

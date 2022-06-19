@@ -107,7 +107,7 @@
                     <Button Style="{StaticResource upperPanelButtonStyle}" Click="messageButton_Click" Cursor="Hand">
                         <materialDesign:PackIcon Kind="EmailEdit" Width="25" Height="25"/>
                     </Button>
-                    <Button Style="{StaticResource upperPanelButtonStyle}" Click="cloudButton_Click" Cursor="Hand">
+                    <Button x:Name="cloudButton" Style="{StaticResource upperPanelButtonStyle}" Click="cloudButton_Click" Cursor="Hand">
                         <materialDesign:PackIcon Kind="CloudDownload" Width="25" Height="25"/>
                     </Button>
                 </StackPanel>
@@ -159,7 +159,7 @@
             </StatusBar>
 
             <TabControl x:Name="tabControl"
-            Style="{StaticResource MaterialDesignNavigatilRailTabControl}"
+            Style="{StaticResource MaterialDesignNavigationRailTabControl}"
             TabStripPlacement="Left" SelectedIndex="0">
 
                 <!--#region Перемещение УП -->
@@ -355,7 +355,9 @@
                                                                  Width="35" 
                                                                  Height="35"/>
                                         </Button>
-
+                                        <CheckBox x:Name="archiveContentSearchCB" Style="{StaticResource MaterialDesignFilterChipOutlineCheckBox}" 
+                                                  Content="Поиск по содержимому" Margin="2 2 0 0"
+                                                  Width="276" Height="50" Checked="archiveContentSearchCB_Checked" Unchecked="archiveContentSearchCB_Unchecked"/>
                                     </StackPanel>
                                 </materialDesign:DialogHost.DialogContent>
                                 <Grid>
@@ -363,12 +365,12 @@
                                         <RowDefinition Height="auto"/>
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
-                                    <ProgressBar Grid.Row="1" x:Name="archiveProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
-                                        Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                    <ProgressBar Grid.Row="1" x:Name="archiveProgressBar" DockPanel.Dock="Right" Height="100" Width="100" 
+                                        Style="{StaticResource MaterialDesignCircularProgressBar}"
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <DockPanel x:Name="archiveButtonsPanel" Visibility="Visible">
                                         <StackPanel Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Left">
-                                            <Button x:Name="archiveRootButton" Style="{StaticResource generalButtonStyle}" Click="archiveRootButton_Click">
+                                            <Button x:Name="archiveRootButton" Style="{StaticResource generalButtonStyle}" Click="archiveRootButton_Click" Cursor="Hand">
                                                 <materialDesign:PackIcon Kind="FolderHomeOutline" Height="25" Width="25" />
                                             </Button>
                                             <Button x:Name="archiveParentButton" Style="{StaticResource generalButtonStyle}" Click="archiveParentButton_Click">
@@ -376,8 +378,12 @@
                                             </Button>
                                         </StackPanel>
                                         <Button x:Name="findDialogButton" Style="{StaticResource generalButtonStyle}"
-                                            DockPanel.Dock="Right" Margin="0" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}" Cursor="Hand" >
+                                            DockPanel.Dock="Right" Margin="0" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}" Cursor="Hand" Click="findDialogButton_Click" >
                                             <materialDesign:PackIcon Kind="Magnify" Height="25" Width="25" />
+                                        </Button>
+                                        <Button x:Name="stopSearchButton" Style="{StaticResource generalButtonStyle}"
+                                                DockPanel.Dock="Right" Margin="0" Cursor="Hand" Visibility="Collapsed" Click="stopSearchButton_Click" >
+                                            <materialDesign:PackIcon Kind="CloseOctagonOutline" Height="25" Width="25" />
                                         </Button>
                                         <ProgressBar x:Name="findProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
                                         Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
@@ -390,6 +396,7 @@
                                                  Text="&lt;путь>" IsReadOnly="True" FontSize="14" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
                                         </TextBox>
                                     </DockPanel>
+                                    
                                     <ListView Grid.Row="1" x:Name="archiveLV" Margin="0,10,0,0" PreviewMouseLeftButtonUp="archiveLV_PreviewMouseLeftButtonUp" 
                                           HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Focusable="False" Visibility="Visible">
                                         <ListView.ItemTemplate>
@@ -524,8 +531,8 @@
                                         <StackPanel Orientation="Horizontal" >
                                         </StackPanel>
                                     </DockPanel>
-                                    <ProgressBar Grid.Row="1" x:Name="machineProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
-                                        Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                    <ProgressBar Grid.Row="1" x:Name="machineProgressBar" DockPanel.Dock="Right" Height="100" Width="100" 
+                                        Style="{StaticResource MaterialDesignCircularProgressBar}"
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <Grid x:Name="analyzeGrid" Visibility="Collapsed" Grid.RowSpan="2" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
                                         <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
