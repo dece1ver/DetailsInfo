@@ -1642,18 +1642,63 @@ namespace DetailsInfo
             
             await Task.Run(() =>
             {
-                var analyze = Reader.AnalyzeProgram(program, out string programType, out string coordinates, out List<string> warningsH, out List<string> warningsD);
+                var analyze = Reader.AnalyzeProgram(
+                    program, 
+                    out var programType, 
+                    out var coordinates, 
+                    out var warningsH, 
+                    out var warningsD,
+                    out var warningsBracket,
+                    out var warningsDots,
+                    out var warningsEmptyAddress,
+                    out var warningsCoolant,
+                    out var warningStartPercent,
+                    out var warningEndPercent,
+                    out var warningsExcessText
+                    );
                 analyzeDG.Dispatcher.Invoke(() => analyzeDG.ItemsSource = analyze);
                 analyzeProgramTypeTB.Dispatcher.Invoke(() => analyzeProgramTypeTB.Text = programType);
                 analyzeProgramCoordinatesTB.Dispatcher.Invoke(() => analyzeProgramCoordinatesTB.Text = coordinates);
                 if (warningsH.Count > 0)
                 {
-                    warningsLengthCompensationTB.Dispatcher.Invoke(() => warningsLengthCompensationTB.Text = $"Несовпадений корретора на длину: {warningsH.Count}\n {string.Join('|', warningsH)}");
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Несовпадений корретора на длину: {warningsH.Count}\n{string.Join('\n', warningsH)}\n\n");
                 }
                 if (warningsD.Count > 0)
                 {
-                    warningsRadiusCompensationTB.Dispatcher.Invoke(() => warningsRadiusCompensationTB.Text = $"Несовпадений корретора на радиус: {warningsD.Count}\n {string.Join('|', warningsD)}");
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Несовпадений корретора на радиус: {warningsD.Count}\n{string.Join('\n', warningsD)}\n\n");
                 }
+                if (warningsBracket.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Несовпадений скобок: {warningsBracket.Count}\n{string.Join('\n', warningsBracket)}\n\n");
+                }
+                if (warningsDots.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Лишние точки: {warningsDots.Count}\n{string.Join('\n', warningsDots)}\n\n");
+                }
+                if (warningsEmptyAddress.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Пустые адреса: {warningsEmptyAddress.Count}\n{string.Join('\n', warningsEmptyAddress)}\n\n");
+                }
+                if (warningsCoolant.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Несовпадений СОЖ: {warningsCoolant.Count}\n{string.Join('\n', warningsCoolant)}\n\n");
+                }
+                switch (warningStartPercent)
+                {
+                    case true when !warningEndPercent:
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в начале УП.\n\n");
+                        break;
+                    case false when warningEndPercent:
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в конце УП.\n\n");
+                        break;
+                    case true when warningEndPercent:
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствуют проценты в начале и в конце УП.\n\n");
+                        break;
+                }
+                //if (warningsExcessText.Count > 0)
+                //{
+                //    warningsExcessTextTB.Dispatcher.Invoke(() => warningsExcessTextTB.Text = $"Лишний текст: {warningsExcessText.Count}\n {string.Join('\n', warningsExcessText)}");
+                //}
             });
             machineProgressBar.Visibility = Visibility.Collapsed;
             analyzeGrid.Visibility = Visibility.Visible;
@@ -1663,8 +1708,7 @@ namespace DetailsInfo
         {
             _analyzeInfo = false;
             analyzeDG.ItemsSource = new List<NcToolInfo>();
-            warningsLengthCompensationTB.Text = string.Empty;
-            warningsRadiusCompensationTB.Text = string.Empty;
+            analyzeResultTB.Text = string.Empty;
             analyzeProgramTypeTB.Text = string.Empty;
             analyzeProgramCoordinatesTB.Text = string.Empty;
             analyzeGrid.Visibility = Visibility.Collapsed;

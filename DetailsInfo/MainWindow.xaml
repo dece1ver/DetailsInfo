@@ -534,24 +534,16 @@
                                     <ProgressBar Grid.Row="1" x:Name="machineProgressBar" DockPanel.Dock="Right" Height="100" Width="100" 
                                         Style="{StaticResource MaterialDesignCircularProgressBar}"
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <Grid x:Name="analyzeGrid" Visibility="Collapsed" Grid.RowSpan="2" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
+                                    <Grid x:Name="analyzeGrid" Visibility="Visible" Grid.RowSpan="2" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
                                         <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
                                             <DockPanel Margin="16" LastChildFill="True" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
-                                                <TextBlock x:Name="analyzeProgramTypeTB" DockPanel.Dock="Top" VerticalAlignment="Center" FontSize="16"/>
-                                                <TextBlock x:Name="analyzeProgramCoordinatesTB" DockPanel.Dock="Top"/>
-                                                <Button DockPanel.Dock="Bottom"
-                                                Style="{StaticResource generalButtonStyle}" Margin="0"
-                                                HorizontalAlignment="Right" Click="analyzeOkButton_Click" Cursor="Hand">
-                                                    <materialDesign:PackIcon Kind="Done" Foreground="{DynamicResource SecondaryHueMidBrush}"
-                                                                         Width="35" 
-                                                                         Height="35"/>
-                                                </Button>
-                                                <TextBlock x:Name="warningsRadiusCompensationTB" DockPanel.Dock="Bottom" FontFamily="Consolas"/>
-                                                <TextBlock x:Name="warningsLengthCompensationTB" DockPanel.Dock="Bottom" FontFamily="Consolas"/>
-                                                <GroupBox Header="Инструмент" materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0" Margin="0 -17 0 10">
+                                                <StackPanel DockPanel.Dock="Top">
+                                                    <TextBlock x:Name="analyzeProgramTypeTB" VerticalAlignment="Center" FontSize="16"/>
+                                                    <TextBlock x:Name="analyzeProgramCoordinatesTB" DockPanel.Dock="Top"/>
+                                                    <GroupBox Header="Инструмент" materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0" Margin="-17 -17 -17 10">
                                                     <DataGrid x:Name="analyzeDG" AutoGenerateColumns="False" EnableRowVirtualization="True" IsReadOnly="True" HeadersVisibility="None"
                                                           Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow" SelectedItem="-1"
-                                                          CanUserReorderColumns="False" CanUserResizeColumns="False">
+                                                          CanUserReorderColumns="False" CanUserResizeColumns="False" Height="150">
                                                         <DataGrid.CellStyle>
                                                             <Style TargetType="DataGridCell">
                                                                 <Setter Property="Padding" Value="2"/>
@@ -606,6 +598,18 @@
                                                         </DataGrid.Columns>
                                                     </DataGrid>
                                                 </GroupBox>
+                                                </StackPanel>
+                                                
+                                                <Button DockPanel.Dock="Bottom"
+                                                Style="{StaticResource generalButtonStyle}" Margin="0"
+                                                HorizontalAlignment="Right" Click="analyzeOkButton_Click" Cursor="Hand">
+                                                    <materialDesign:PackIcon Kind="Done" Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                                                         Width="35" 
+                                                                         Height="35"/>
+                                                </Button>
+                                                <ScrollViewer DockPanel.Dock="Bottom" VerticalScrollBarVisibility="Auto">
+                                                    <TextBlock x:Name="analyzeResultTB" FontFamily="Consolas"/>
+                                                </ScrollViewer>
                                             </DockPanel>
                                         </Border>
                                     </Grid>

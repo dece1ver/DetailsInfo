@@ -308,22 +308,47 @@ namespace DetailsInfo.Data
             textBox.ScrollToHorizontalOffset(double.MaxValue);
         }
 
-        public static List<NcToolInfo> AnalyzeProgram(string programPath, out string caption, out string coordinates, out List<string> warningsH, out List<string> warningsD)
+        public static List<NcToolInfo> AnalyzeProgram(
+            string programPath, 
+            out string caption, 
+            out string coordinates, 
+            out List<string> warningsH, 
+            out List<string> warningsD, 
+            out List<string> warningsBracket, 
+            out List<string> warningsDots,
+            out List<string> warningsEmptyAddress,
+            out List<string> warningsCoolant,
+            out bool warningStartPercent,
+            out bool warningEndPercent,
+            out List<string> warningsExcessText
+            )
         {
             List<NcToolInfo> tools = new();
-            warningsH = new();
-            warningsD = new();
-            bool millProgram = false;
+            warningsH = new List<string>();            // корректор на длину
+            warningsD = new List<string>();            // корректор на радиус
+            warningsBracket = new List<string>();      // скобки
+            warningsDots = new List<string>();         // точки
+            warningsEmptyAddress = new List<string>(); // пустые адреса
+            warningsCoolant = new List<string>();      // СОЖ
+            warningStartPercent = false;               // процент в начале
+            warningEndPercent = false;                 // процент в конце
+            warningsExcessText = new List<string>();   // лишний текст (за скобками)
+            var millProgram = false;
             var lines = File.ReadLines(programPath);
             List<string> coordinateSystems = new();
             NcToolInfo currentTool = new();
-            int currentToolNo = 0;
-            string currentToolComment = string.Empty;
-            int currentH = 0;
-            int currentD = 0;
-            
+            var currentToolNo = 0;
+            var currentToolComment = string.Empty;
+            var currentH = 0;
+            var currentD = 0;
+
+            // проценты
+            if (!lines.First().Trim().Equals("%")) warningStartPercent = true;
+            if (!lines.Last().Trim().Equals("%")) warningEndPercent = true;
+
             foreach (var line in lines)
             {
+                // системы координат
                 if (line.Contains("G54") && !coordinateSystems.Contains("G54"))
                 {
                     coordinateSystems.Add("G54");
@@ -348,7 +373,62 @@ namespace DetailsInfo.Data
                 {
                     coordinateSystems.Add("G59");
                 }
+                
+                // несовпадения скобок
+                if ((line.Contains('(') && !line.Contains(')')) || (!line.Contains('(') && line.Contains(')')))
+                {
+                    warningsBracket.Add(line);
+                }
 
+                // пустые адреса
+                if (line.Contains('(') && line.Contains(')') && !line.Trim().StartsWith('('))
+                {
+                    var text = line.Split('(')[0];
+                    if (new Regex("[XYZA]+[A-Z]", RegexOptions.Compiled).IsMatch(text))
+                    {
+                        warningsEmptyAddress.Add(line);
+                    }
+                }
+                else if (line.Trim().StartsWith('('))
+                {
+
+                }
+                else
+                {
+                    if (new Regex("[XYZA]+[A-Z]", RegexOptions.Compiled).IsMatch(line))
+                    {
+                        warningsEmptyAddress.Add(line);
+                    }
+                }
+
+                // лишние точки
+                if (line.Contains('(') && line.Contains(')') && !line.Trim().StartsWith('('))
+                {
+                    var text = line.Split('(')[0];
+                    if (new Regex(@"[XYZA]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(text))
+                    {
+                        warningsDots.Add(line);
+                    }
+                }
+                else if (line.Trim().StartsWith('('))
+                {
+
+                }
+                else
+                {
+                    if (new Regex(@"[XYZA]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(line))
+                    {
+                        warningsDots.Add(line);
+                    }
+                }
+
+                // лишний текст
+                if (!new Regex(@"[)][\n]", RegexOptions.Compiled).IsMatch(line))
+                {
+                    warningsExcessText.Add(line);
+                }
+
+                // конец программы, добавляем последний инструмент, т.к. инструмент добавляется при вызове следующего, а у последнего следующего нет
                 if (line.Contains("M30"))
                 {
                     if (currentToolNo != 0 && currentToolComment != string.Empty)
@@ -362,8 +442,10 @@ namespace DetailsInfo.Data
                             tools.Add(currentTool);
                         }
                     }
+                    break;
                 }
 
+                // фрезерный инструмент
                 if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && line.Contains("M6") && !line.StartsWith('('))
                 {
                     millProgram = true;
@@ -380,8 +462,9 @@ namespace DetailsInfo.Data
                         }
                     }
 
-                    string toolLine = line.Contains('(') ? line.Split('T')[1].Replace("M6", string.Empty).Split('(')[0].Replace(" ", string.Empty) : line.Split('T')[1].Replace("M6", string.Empty).Replace(" ", string.Empty);
-                    currentD = 0;
+                    var toolLine = line.Contains('(') 
+                        ? line.Split('T')[1].Replace("M6", string.Empty).Split('(')[0].Replace(" ", string.Empty) 
+                        : line.Split('T')[1].Replace("M6", string.Empty).Replace(" ", string.Empty);
                     currentD = 0;
                     if (int.TryParse(toolLine, out currentToolNo))
                     {
@@ -398,6 +481,7 @@ namespace DetailsInfo.Data
                     }
                 }
 
+                // токарный инструмент
                 if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && !millProgram && !line.StartsWith('('))
                 {
                     if (currentToolNo != 0 && currentToolComment != string.Empty)
@@ -420,7 +504,6 @@ namespace DetailsInfo.Data
                     if (toolLine.Contains('F')) toolLine = toolLine.Split('F')[0];
                     if (toolLine.Contains('M')) toolLine = toolLine.Split('M')[0];
                     if (toolLine.Contains('G')) toolLine = toolLine.Split('G')[0];
-                    currentD = 0;
                     currentD = 0;
                     if (int.TryParse(toolLine, out currentToolNo))
                     {

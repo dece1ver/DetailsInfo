@@ -114,8 +114,8 @@
                          VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" materialDesign:HintAssist.Hint="Логин"/>
 
                     <PasswordBox x:Name="emailPassTextBox" Grid.ColumnSpan="2" Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"
-                                 materialDesign:TextFieldAssist.HasClearButton="True" MinWidth="100" MaxWidth="200" Margin="10 -10 0 0"
-                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"  materialDesign:HintAssist.Hint="Пароль"/>
+                                 materialDesign:TextFieldAssist.HasClearButton="True" MinWidth="100" MaxWidth="100" Margin="10 -10 0 0"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"  materialDesign:HintAssist.Hint="Пароль" Cursor="Arrow"/>
                     <TextBox x:Name="serverTextBox" Margin="10 -10 0 0" materialDesign:HintAssist.Hint="POP3" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                         VerticalAlignment="Center" MinWidth="100" MaxWidth="200" />
                     <TextBox x:Name="portTextBox"  Margin="10 -10 10 0"
