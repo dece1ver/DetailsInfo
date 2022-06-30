@@ -534,7 +534,7 @@
                                     <ProgressBar Grid.Row="1" x:Name="machineProgressBar" DockPanel.Dock="Right" Height="100" Width="100" 
                                         Style="{StaticResource MaterialDesignCircularProgressBar}"
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <Grid x:Name="analyzeGrid" Visibility="Visible" Grid.RowSpan="2" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
+                                    <Grid x:Name="analyzeGrid" Visibility="Collapsed" Grid.RowSpan="2" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
                                         <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
                                             <DockPanel Margin="16" LastChildFill="True" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
                                                 <StackPanel DockPanel.Dock="Top">
