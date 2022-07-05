@@ -540,7 +540,7 @@
                                                 <StackPanel DockPanel.Dock="Top">
                                                     <TextBlock x:Name="analyzeProgramTypeTB" VerticalAlignment="Center" FontSize="16"/>
                                                     <TextBlock x:Name="analyzeProgramCoordinatesTB" DockPanel.Dock="Top"/>
-                                                    <GroupBox Header="Инструмент" materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0" Margin="-17 -17 -17 10">
+                                                    <GroupBox x:Name="analyzeGB" Header="Инструмент" materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0" Margin="-17 -17 -17 10">
                                                     <DataGrid x:Name="analyzeDG" AutoGenerateColumns="False" EnableRowVirtualization="True" IsReadOnly="True" HeadersVisibility="None"
                                                           Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow" SelectedItem="-1"
                                                           CanUserReorderColumns="False" CanUserResizeColumns="False" Height="150">

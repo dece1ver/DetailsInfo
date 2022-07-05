@@ -13,7 +13,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Shapes;
 using static DetailsInfo.Data.FileFormats;
+using Path = System.IO.Path;
 
 namespace DetailsInfo.Data
 {
@@ -349,7 +351,7 @@ namespace DetailsInfo.Data
             foreach (var line in lines)
             {
                 // системы координат
-                if (line.Contains("G54") && !coordinateSystems.Contains("G54"))
+                if (line.Contains("G54") && !coordinateSystems.Contains("G54") && !line.Contains("G54.1") && !line.Contains("G54P"))
                 {
                     coordinateSystems.Add("G54");
                 }
@@ -372,6 +374,19 @@ namespace DetailsInfo.Data
                 if (line.Contains("G59") && !coordinateSystems.Contains("G59"))
                 {
                     coordinateSystems.Add("G59");
+                }
+
+                if (new Regex(@"G54[.]1P\d{1,3}", RegexOptions.Compiled) is { } regex541 && regex541.IsMatch(line))
+                {
+                    var match = regex541.Match(line);
+                    if (!coordinateSystems.Contains(match.Value)) coordinateSystems.Add(match.Value);
+                    
+                }
+                if (new Regex(@"G54P\d{1,3}", RegexOptions.Compiled) is { } regex54 && regex54.IsMatch(line))
+                {
+                    var match = regex54.Match(line);
+                    if (!coordinateSystems.Contains(match.Value)) coordinateSystems.Add(match.Value);
+                    
                 }
                 
                 // несовпадения скобок
@@ -423,7 +438,7 @@ namespace DetailsInfo.Data
                 }
 
                 // лишний текст
-                if (!new Regex(@"[)][\n]", RegexOptions.Compiled).IsMatch(line))
+                if (!new Regex(@"[)]$", RegexOptions.Compiled).IsMatch(line.TrimEnd()) && line.Contains(')'))
                 {
                     warningsExcessText.Add(line);
                 }
@@ -570,9 +585,21 @@ namespace DetailsInfo.Data
                 }
             }
             caption = $"{(millProgram ? "Фрезерная" : "Токарная")} программа";
-            coordinates = $"{(coordinateSystems.Count == 1 ? $"Система координат {coordinateSystems[0]}\n" : $"Системы координат: {string.Join(',', coordinateSystems)}\n")}\n";
-            
-            return tools;
+            switch (coordinateSystems.Count)
+            {
+                case 1:
+                    coordinates = $"Система координат {coordinateSystems[0]}\n\n";
+                    break;
+                case > 1:
+                    coordinates = $"Системы координат: {string.Join(", ", coordinateSystems)}\n\n";
+                    break;
+                default:
+                    coordinates = "Системы координат отсутствуют\n\n";
+                    break;
+
+            }
+
+        return tools;
         }
 
         #region Пользовательские настройки

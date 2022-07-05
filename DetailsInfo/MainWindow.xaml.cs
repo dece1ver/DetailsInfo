@@ -492,6 +492,7 @@ namespace DetailsInfo
                         foreach (var file in files)
                         {
                             if (FileFormats.SystemFiles.Contains(Path.GetFileName(file))) continue;
+                            
                             if (Reader.CanBeTransfered(file))
                             {
                                 _archiveContent.Add(new ArchiveContent
@@ -505,7 +506,7 @@ namespace DetailsInfo
                                         ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
                                             || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
                                             || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
-                                             ) && Settings.Default.ncAnalyzer)
+                                             ) && Settings.Default.ncAnalyzer && Reader.CanBeTransfered(file))
                                          && _analyzeArchiveProgram && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                     ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                 });
@@ -654,7 +655,9 @@ namespace DetailsInfo
                             || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                             || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                              ) && Settings.Default.ncAnalyzer)
-                         && _analyzeNcProgram && file == _selectedMachineFile ) ? Visibility.Visible : Visibility.Collapsed,
+                            && _analyzeNcProgram && file == _selectedMachineFile ) 
+                            && Reader.CanBeTransfered(_selectedMachineFile ?? string.Empty) 
+                            ? Visibility.Visible : Visibility.Collapsed,
                 });
             }
 
@@ -1639,7 +1642,11 @@ namespace DetailsInfo
             _analyzeInfo = true;
             machineDG.Visibility = Visibility.Collapsed;
             machineProgressBar.Visibility = Visibility.Visible;
-            
+            analyzeDG.Visibility = Visibility.Collapsed;
+            analyzeGB.Visibility = Visibility.Collapsed;
+            analyzeProgramTypeTB.Dispatcher.Invoke(() => analyzeProgramTypeTB.Text = string.Empty);
+            analyzeProgramCoordinatesTB.Dispatcher.Invoke(() => analyzeProgramCoordinatesTB.Text = string.Empty);
+            analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text = string.Empty);
             await Task.Run(() =>
             {
                 var analyze = Reader.AnalyzeProgram(
@@ -1659,6 +1666,18 @@ namespace DetailsInfo
                 analyzeDG.Dispatcher.Invoke(() => analyzeDG.ItemsSource = analyze);
                 analyzeProgramTypeTB.Dispatcher.Invoke(() => analyzeProgramTypeTB.Text = programType);
                 analyzeProgramCoordinatesTB.Dispatcher.Invoke(() => analyzeProgramCoordinatesTB.Text = coordinates);
+                switch (warningStartPercent)
+                {
+                    case true when !warningEndPercent:
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в начале УП.\n\n");
+                        break;
+                    case false when warningEndPercent:
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в конце УП.\n\n");
+                        break;
+                    case true when warningEndPercent:
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствуют проценты в начале и в конце УП.\n\n");
+                        break;
+                }
                 if (warningsH.Count > 0)
                 {
                     analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Несовпадений корретора на длину: {warningsH.Count}\n{string.Join('\n', warningsH)}\n\n");
@@ -1683,23 +1702,14 @@ namespace DetailsInfo
                 {
                     analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Несовпадений СОЖ: {warningsCoolant.Count}\n{string.Join('\n', warningsCoolant)}\n\n");
                 }
-                switch (warningStartPercent)
+                
+                if (warningsExcessText.Count > 0)
                 {
-                    case true when !warningEndPercent:
-                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в начале УП.\n\n");
-                        break;
-                    case false when warningEndPercent:
-                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в конце УП.\n\n");
-                        break;
-                    case true when warningEndPercent:
-                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствуют проценты в начале и в конце УП.\n\n");
-                        break;
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Лишний текст: {warningsExcessText.Count}\n {string.Join('\n', warningsExcessText)}");
                 }
-                //if (warningsExcessText.Count > 0)
-                //{
-                //    warningsExcessTextTB.Dispatcher.Invoke(() => warningsExcessTextTB.Text = $"Лишний текст: {warningsExcessText.Count}\n {string.Join('\n', warningsExcessText)}");
-                //}
             });
+            analyzeDG.Visibility = Visibility.Visible;
+            analyzeGB.Visibility = Visibility.Visible;
             machineProgressBar.Visibility = Visibility.Collapsed;
             analyzeGrid.Visibility = Visibility.Visible;
         }
@@ -1712,6 +1722,8 @@ namespace DetailsInfo
             analyzeProgramTypeTB.Text = string.Empty;
             analyzeProgramCoordinatesTB.Text = string.Empty;
             analyzeGrid.Visibility = Visibility.Collapsed;
+            analyzeDG.Visibility = Visibility.Collapsed;
+            analyzeGB.Visibility = Visibility.Collapsed;
 
             if (_machineStatus)
             {
