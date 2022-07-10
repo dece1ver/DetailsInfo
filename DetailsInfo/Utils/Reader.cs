@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -322,9 +323,11 @@ namespace DetailsInfo.Data
             out List<string> warningsCoolant,
             out bool warningStartPercent,
             out bool warningEndPercent,
+            out bool warningEndProgram,
             out List<string> warningsExcessText
             )
         {
+            //Stopwatch sw = Stopwatch.StartNew();
             List<NcToolInfo> tools = new();
             warningsH = new List<string>();            // корректор на длину
             warningsD = new List<string>();            // корректор на радиус
@@ -334,9 +337,10 @@ namespace DetailsInfo.Data
             warningsCoolant = new List<string>();      // СОЖ
             warningStartPercent = false;               // процент в начале
             warningEndPercent = false;                 // процент в конце
+            warningEndProgram = true;                  // процент в конце
             warningsExcessText = new List<string>();   // лишний текст (за скобками)
             var millProgram = false;
-            var lines = File.ReadLines(programPath);
+            var lines = File.ReadLines(programPath).ToImmutableList();
             List<string> coordinateSystems = new();
             NcToolInfo currentTool = new();
             var currentToolNo = 0;
@@ -350,6 +354,8 @@ namespace DetailsInfo.Data
 
             foreach (var line in lines)
             {
+                if(line.Trim().Equals("%")) continue;
+
                 // системы координат
                 if (line.Contains("G54") && !coordinateSystems.Contains("G54") && !line.Contains("G54.1") && !line.Contains("G54P"))
                 {
@@ -444,8 +450,9 @@ namespace DetailsInfo.Data
                 }
 
                 // конец программы, добавляем последний инструмент, т.к. инструмент добавляется при вызове следующего, а у последнего следующего нет
-                if (line.Contains("M30"))
+                if (line.Trim().Equals("M30") || line.Trim().Equals("M99"))
                 {
+                    warningEndProgram = false;
                     if (currentToolNo != 0 && currentToolComment != string.Empty)
                     {
                         currentTool.Position = currentToolNo;
@@ -598,6 +605,7 @@ namespace DetailsInfo.Data
                     break;
 
             }
+            //coordinates = $"Время: {sw.ElapsedMilliseconds} мс\n" + coordinates;
 
         return tools;
         }

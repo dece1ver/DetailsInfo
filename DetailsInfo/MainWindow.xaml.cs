@@ -1661,6 +1661,7 @@ namespace DetailsInfo
                     out var warningsCoolant,
                     out var warningStartPercent,
                     out var warningEndPercent,
+                    out var warningEndProgram,
                     out var warningsExcessText
                     );
                 analyzeDG.Dispatcher.Invoke(() => analyzeDG.ItemsSource = analyze);
@@ -1669,14 +1670,19 @@ namespace DetailsInfo
                 switch (warningStartPercent)
                 {
                     case true when !warningEndPercent:
-                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в начале УП.\n\n");
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в начале УП;\n\n");
                         break;
                     case false when warningEndPercent:
-                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в конце УП.\n\n");
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует процент в конце УП;\n\n");
                         break;
                     case true when warningEndPercent:
-                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствуют проценты в начале и в конце УП.\n\n");
+                        analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствуют проценты в начале и в конце УП;\n\n");
                         break;
+                }
+
+                if (warningEndProgram)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует команда завершения программы: ( M2 / M30 / M99 );\n\n");
                 }
                 if (warningsH.Count > 0)
                 {
