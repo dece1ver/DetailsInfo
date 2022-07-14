@@ -351,6 +351,7 @@ namespace DetailsInfo.Data
             // проценты
             if (!lines.First().Trim().Equals("%")) warningStartPercent = true;
             if (!lines.Last().Trim().Equals("%")) warningEndPercent = true;
+            var fString = "D" + lines.Count.ToString().Length;
 
             foreach (var line in lines)
             {
@@ -396,29 +397,42 @@ namespace DetailsInfo.Data
                 }
                 
                 // несовпадения скобок
-                if ((line.Contains('(') && !line.Contains(')')) || (!line.Contains('(') && line.Contains(')')))
+                if (line.Count(c => c is '(') != line.Count(c => c is ')'))
                 {
-                    warningsBracket.Add(line);
+                    warningsBracket.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                }
+                if (line.Count(c => c is '[') != line.Count(c => c is ']'))
+                {
+                    warningsBracket.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
                 }
 
                 // пустые адреса
-                if (line.Contains('(') && line.Contains(')') && !line.Trim().StartsWith('('))
-                {
-                    var text = line.Split('(')[0];
-                    if (new Regex("[XYZA]+[A-Z]", RegexOptions.Compiled).IsMatch(text))
-                    {
-                        warningsEmptyAddress.Add(line);
-                    }
-                }
-                else if (line.Trim().StartsWith('('))
+                if (line.Trim().StartsWith('(') || line.Trim().StartsWith('<') || line.Contains('#'))
                 {
 
                 }
+                else if (line.Contains('(') && line.Contains(')') && !line.Trim().StartsWith('('))
+                {
+                    var text = line.Split('(')[0];
+                    if (new Regex("[XYZARC]+[A-Z]", RegexOptions.Compiled).IsMatch(text))
+                    {
+                        warningsEmptyAddress.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    }
+                }
+                else if (line.Contains('<') && line.Contains('>') && !line.Trim().StartsWith('<'))
+                {
+                    var text = line.Split('<')[0];
+                    if (new Regex("[XYZARC]+[A-Z]", RegexOptions.Compiled).IsMatch(text))
+                    {
+                        warningsEmptyAddress.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    }
+                }
+                
                 else
                 {
-                    if (new Regex("[XYZA]+[A-Z]", RegexOptions.Compiled).IsMatch(line))
+                    if (new Regex("[XYZARC]+[A-Z]", RegexOptions.Compiled).IsMatch(line))
                     {
-                        warningsEmptyAddress.Add(line);
+                        warningsEmptyAddress.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
                     }
                 }
 
@@ -426,9 +440,9 @@ namespace DetailsInfo.Data
                 if (line.Contains('(') && line.Contains(')') && !line.Trim().StartsWith('('))
                 {
                     var text = line.Split('(')[0];
-                    if (new Regex(@"[XYZA]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(text))
+                    if (new Regex(@"[A-Z]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(text))
                     {
-                        warningsDots.Add(line);
+                        warningsDots.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
                     }
                 }
                 else if (line.Trim().StartsWith('('))
@@ -437,16 +451,16 @@ namespace DetailsInfo.Data
                 }
                 else
                 {
-                    if (new Regex(@"[XYZA]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(line))
+                    if (new Regex(@"[A-Z]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(line))
                     {
-                        warningsDots.Add(line);
+                        warningsDots.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
                     }
                 }
 
                 // лишний текст
                 if (!new Regex(@"[)]$", RegexOptions.Compiled).IsMatch(line.TrimEnd()) && line.Contains(')'))
                 {
-                    warningsExcessText.Add(line);
+                    warningsExcessText.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
                 }
 
                 // конец программы, добавляем последний инструмент, т.к. инструмент добавляется при вызове следующего, а у последнего следующего нет
@@ -554,7 +568,7 @@ namespace DetailsInfo.Data
                     if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
                     if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentD))
                     {
-                        if (currentToolNo != currentD) warningsD.Add($" [T{currentToolNo} D{currentD}] {line} ");
+                        if (currentToolNo != currentD) warningsD.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (T{currentToolNo} D{currentD})");
                         currentTool.Position = currentToolNo;
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
@@ -578,7 +592,7 @@ namespace DetailsInfo.Data
                     if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
                     if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentH))
                     {
-                        if (currentToolNo != currentH) warningsH.Add($" [T{currentToolNo} H{currentH}] {line} ");
+                        if (currentToolNo != currentH) warningsH.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (T{currentToolNo} H{currentH})");
                         currentTool.Position = currentToolNo;
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
