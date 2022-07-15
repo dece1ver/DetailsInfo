@@ -538,12 +538,12 @@
                                         <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
                                             <DockPanel Margin="16" LastChildFill="True" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
                                                 <StackPanel DockPanel.Dock="Top">
-                                                    <TextBlock x:Name="analyzeProgramTypeTB" VerticalAlignment="Center" FontSize="16"/>
-                                                    <TextBlock x:Name="analyzeProgramCoordinatesTB" DockPanel.Dock="Top"/>
+                                                    <TextBlock x:Name="analyzeProgramTypeTB" VerticalAlignment="Center" FontSize="16" Margin="0 -9 0 0"/>
+                                                    <TextBlock x:Name="analyzeProgramCoordinatesTB" DockPanel.Dock="Top" Margin="0 0 0 -9"/>
                                                     <GroupBox x:Name="analyzeGB" Header="Инструмент" materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0" Margin="-17 -17 -17 10">
                                                     <DataGrid x:Name="analyzeDG" AutoGenerateColumns="False" EnableRowVirtualization="True" IsReadOnly="True" HeadersVisibility="None"
                                                           Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow" SelectedItem="-1"
-                                                          CanUserReorderColumns="False" CanUserResizeColumns="False" Height="150">
+                                                          CanUserReorderColumns="False" CanUserResizeColumns="False" MaxHeight="200">
                                                         <DataGrid.CellStyle>
                                                             <Style TargetType="DataGridCell">
                                                                 <Setter Property="Padding" Value="2"/>

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Shapes;
+using MimeKit.Encodings;
 using static DetailsInfo.Data.FileFormats;
 using Path = System.IO.Path;
 
@@ -327,6 +328,9 @@ namespace DetailsInfo.Data
             out List<string> warningsExcessText
             )
         {
+            ///
+            /// TODO T0 H__ если нет вызова инструмента (ппр)
+            /// 
             //Stopwatch sw = Stopwatch.StartNew();
             List<NcToolInfo> tools = new();
             warningsH = new List<string>();            // корректор на длину
@@ -355,7 +359,20 @@ namespace DetailsInfo.Data
 
             foreach (var line in lines)
             {
-                if(line.Trim().Equals("%")) continue;
+                if (line.Trim().Equals("%")) continue;
+                if (line.StartsWith('<'))
+                {
+                    if (line.Count(c => c is '<') != line.Count(c => c is '>'))
+                    {
+                        warningsBracket.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    }
+                    continue;
+                }
+
+                var lineWithoutParenthesis = line.Trim();
+                lineWithoutParenthesis = new Regex(@"[(][^)]+[)]", RegexOptions.Compiled).Matches(line)
+                    .Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
+                if (string.IsNullOrEmpty(lineWithoutParenthesis)) continue;
 
                 // системы координат
                 if (line.Contains("G54") && !coordinateSystems.Contains("G54") && !line.Contains("G54.1") && !line.Contains("G54P"))
@@ -407,61 +424,25 @@ namespace DetailsInfo.Data
                 }
 
                 // пустые адреса
-                if (line.Trim().StartsWith('(') || line.Trim().StartsWith('<') || line.Contains('#'))
+                if (!line.Contains('#') && new Regex("[A-Z]+[A-Z]|[A-Z]$", RegexOptions.Compiled) is { } matchEmptyAddress && 
+                    matchEmptyAddress.IsMatch(lineWithoutParenthesis) && 
+                    !matchEmptyAddress.Match(lineWithoutParenthesis).Value.Contains("GOTO") &&
+                    !matchEmptyAddress.Match(lineWithoutParenthesis).Value.Contains("END"))
                 {
-
-                }
-                else if (line.Contains('(') && line.Contains(')') && !line.Trim().StartsWith('('))
-                {
-                    var text = line.Split('(')[0];
-                    if (new Regex("[XYZARC]+[A-Z]", RegexOptions.Compiled).IsMatch(text))
-                    {
-                        warningsEmptyAddress.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
-                    }
-                }
-                else if (line.Contains('<') && line.Contains('>') && !line.Trim().StartsWith('<'))
-                {
-                    var text = line.Split('<')[0];
-                    if (new Regex("[XYZARC]+[A-Z]", RegexOptions.Compiled).IsMatch(text))
-                    {
-                        warningsEmptyAddress.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
-                    }
-                }
-                
-                else
-                {
-                    if (new Regex("[XYZARC]+[A-Z]", RegexOptions.Compiled).IsMatch(line))
-                    {
-                        warningsEmptyAddress.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
-                    }
+                    warningsEmptyAddress.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
                 }
 
                 // лишние точки
-                if (line.Contains('(') && line.Contains(')') && !line.Trim().StartsWith('('))
+                if (new Regex(@"[A-Z]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(lineWithoutParenthesis))
                 {
-                    var text = line.Split('(')[0];
-                    if (new Regex(@"[A-Z]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(text))
-                    {
-                        warningsDots.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
-                    }
-                }
-                else if (line.Trim().StartsWith('('))
-                {
-
-                }
-                else
-                {
-                    if (new Regex(@"[A-Z]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(line))
-                    {
-                        warningsDots.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
-                    }
+                    warningsDots.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
                 }
 
-                // лишний текст
-                if (!new Regex(@"[)]$", RegexOptions.Compiled).IsMatch(line.TrimEnd()) && line.Contains(')'))
-                {
-                    warningsExcessText.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
-                }
+                //// лишний текст 
+                //if (!new Regex(@"[)]$", RegexOptions.Compiled).IsMatch(line.TrimEnd()) && line.Contains(')'))
+                //{
+                //    warningsExcessText.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                //}
 
                 // конец программы, добавляем последний инструмент, т.к. инструмент добавляется при вызове следующего, а у последнего следующего нет
                 if (line.Trim().Equals("M30") || line.Trim().Equals("M99"))
@@ -494,7 +475,14 @@ namespace DetailsInfo.Data
                         currentTool.RadiusCompensation = currentD;
                         if (!tools.Contains(currentTool))
                         {
-                            tools.Add(currentTool);
+                            if (tools.FindAll(t =>
+                                    t.Position == currentTool.Position &&
+                                    t.Comment == currentTool.Comment &&
+                                    t.LengthCompensation == currentTool.LengthCompensation &&
+                                    t.RadiusCompensation != 0).Count == 0)
+                            {
+                                tools.Add(currentTool);
+                            }
                         }
                     }
 
@@ -568,13 +556,30 @@ namespace DetailsInfo.Data
                     if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
                     if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentD))
                     {
-                        if (currentToolNo != currentD) warningsD.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (T{currentToolNo} D{currentD})");
+                        if (currentToolNo != currentD && currentToolNo != 0)
+                        {
+                            warningsD.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (T{currentToolNo} D{currentD})");
+                        }
+                        else if (currentToolNo != currentD && currentToolNo == 0)
+                        {
+                            warningsD.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (D{currentD} - без инструмента)");
+                        }
                         currentTool.Position = currentToolNo;
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
                         if (!tools.Contains(currentTool))
                         {
+                            if (tools.Count > 0)
+                            {
+                                var prevTool = tools[^1];
+                                if (prevTool.Position == currentTool.Position && prevTool.Comment == currentTool.Comment &&
+                                    prevTool.LengthCompensation == currentTool.LengthCompensation && prevTool.RadiusCompensation == 0)
+                                {
+                                    tools.Remove(prevTool);
+                                }
+                                
+                            }
                             tools.Add(currentTool);
                         }
                     }
@@ -592,33 +597,45 @@ namespace DetailsInfo.Data
                     if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
                     if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentH))
                     {
-                        if (currentToolNo != currentH) warningsH.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (T{currentToolNo} H{currentH})");
+                        if (currentToolNo != currentH && currentToolNo != 0)
+                        {
+                            warningsH.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (T{currentToolNo} H{currentH})");
+                        }
+                        else if (currentToolNo != currentH && currentToolNo == 0) 
+
+                        {
+                            warningsH.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (H{currentH} - без инструмента)");
+                        }
+                        currentTool.Position = currentToolNo;
+                        currentTool.Comment = currentToolComment;
+                        currentTool.LengthCompensation = currentH;
+                        currentTool.RadiusCompensation = currentD;
+                        
                         currentTool.Position = currentToolNo;
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
                         if (!tools.Contains(currentTool))
                         {
-                            tools.Add(currentTool);
+                            if (tools.FindAll(t =>
+                                    t.Position == currentTool.Position &&
+                                    t.Comment == currentTool.Comment &&
+                                    t.LengthCompensation == currentTool.LengthCompensation &&
+                                    t.RadiusCompensation != 0).Count == 0)
+                            {
+                                tools.Add(currentTool);
+                            }
                         }
-                    }                    
-                    //compensationsH.Add($"T{currentTool} H{int.Parse(compensationLine.Replace(" ", string.Empty))}");
+                    }
                 }
             }
             caption = $"{(millProgram ? "Фрезерная" : "Токарная")} программа";
-            switch (coordinateSystems.Count)
+            coordinates = coordinateSystems.Count switch
             {
-                case 1:
-                    coordinates = $"Система координат {coordinateSystems[0]}\n\n";
-                    break;
-                case > 1:
-                    coordinates = $"Системы координат: {string.Join(", ", coordinateSystems)}\n\n";
-                    break;
-                default:
-                    coordinates = "Системы координат отсутствуют\n\n";
-                    break;
-
-            }
+                1 => $"Система координат {coordinateSystems[0]}\n\n",
+                > 1 => $"Системы координат: {string.Join(", ", coordinateSystems)}\n\n",
+                _ => "Системы координат отсутствуют\n\n"
+            };
             //coordinates = $"Время: {sw.ElapsedMilliseconds} мс\n" + coordinates;
 
         return tools;
