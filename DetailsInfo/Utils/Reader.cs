@@ -433,7 +433,7 @@ namespace DetailsInfo.Data
                 }
 
                 // лишние точки
-                if (new Regex(@"[A-Z]+[-]?\d+[.]+\d*[.]", RegexOptions.Compiled).IsMatch(lineWithoutParenthesis))
+                if (new Regex(@"[A-Z]+[-]?\d*[.]+\d*[.]", RegexOptions.Compiled).IsMatch(lineWithoutParenthesis))
                 {
                     warningsDots.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
                 }

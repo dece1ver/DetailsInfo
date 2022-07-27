@@ -1682,7 +1682,7 @@ namespace DetailsInfo
 
                 if (warningEndProgram)
                 {
-                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует команда завершения программы: ( M2 / M30 / M99 );\n\n");
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Отсутствует команда завершения программы: ( M30 / M99 );\n\n");
                 }
                 if (warningsH.Count > 0)
                 {
