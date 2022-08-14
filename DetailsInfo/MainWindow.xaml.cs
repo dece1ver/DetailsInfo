@@ -538,6 +538,7 @@ namespace DetailsInfo
                         await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = _selectedArchiveFolder);
                         await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ScrollIntoView(_selectedArchiveFolder));
                         _needArchiveScroll = false;
+                        await archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = null);
                     }
 
                 }
