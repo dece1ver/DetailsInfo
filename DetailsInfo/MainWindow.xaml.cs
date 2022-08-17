@@ -433,7 +433,7 @@ namespace DetailsInfo
                                         if (_stopSearch is true) break;
                                         if (!Reader.CanBeTransfered(allFiles[file])) continue;
                                         AddStatus($"Чтение: {allFiles[file]}");
-                                        archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Поиск УП содержащих \"{findString}\". Проверено: {file + 1}/{allFiles.Length}. Найдено: {files.Count}.");
+                                        archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Поиск: \"{findString}\". {file + 1}/{allFiles.Length}/{files.Count}.");
                                         if (File.ReadLines(allFiles[file]).Any(line => line.Contains(findString)))
                                         {
                                             files.Add(allFiles[file]);
@@ -1310,6 +1310,7 @@ namespace DetailsInfo
         {
             try
             {
+                ConfirmDeleteFromArchiveDialogHost.IsOpen = false;
                 File.Delete(_selectedForDeletionArchiveFile);
                 _deleteFromMachine = false;
                 _transferFromArchive = false;
@@ -1324,7 +1325,6 @@ namespace DetailsInfo
                 LoadMachine();
                 _ = LoadArchive();
                 SendMessage($"Из архива удален файл: {Path.GetFileName(_selectedForDeletionArchiveFile)}");
-                ConfirmDeleteFromArchiveDialogHost.IsOpen = false;
             }
             catch (Exception exception)
             {
@@ -1536,6 +1536,7 @@ namespace DetailsInfo
         {
             try
             {
+                ConfirmDeleteFromMachineDialogHost.IsOpen = false;
                 File.Delete(_selectedForDeletionMachineFile);
                 _deleteFromMachine = false;
                 _transferFromArchive = false;
@@ -1549,7 +1550,6 @@ namespace DetailsInfo
                 _openFolderButton = false;
                 LoadMachine();
                 _ = LoadArchive();
-                ConfirmDeleteFromMachineDialogHost.IsOpen = false;
                 SendMessage($"Из сетевой папки станка удален файл: {Path.GetFileName(_selectedMachineFile)}");
             }
             catch (Exception exception)

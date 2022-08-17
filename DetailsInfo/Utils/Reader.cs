@@ -42,7 +42,7 @@ namespace DetailsInfo.Data
         public static string FindFreeName(string targetFile, string targetFolder, bool checkExtension = true)
         {
             string name = string.Empty;
-            for (int i = 1; i < 9999; i++)
+            for (int i = Settings.Default.startProgramNumber; i < 9999; i++)
             {
                 if (
                     File.Exists(Path.Combine(targetFolder, i.ToString())) ||
@@ -340,10 +340,11 @@ namespace DetailsInfo.Data
             warningsEmptyAddress = new List<string>(); // пустые адреса
             warningsCoolant = new List<string>();      // СОЖ
             warningStartPercent = false;               // процент в начале
-            warningEndPercent = false;                 // процент в конце
+            warningEndPercent = true;                 // процент в конце
             warningEndProgram = true;                  // процент в конце
             warningsExcessText = new List<string>();   // лишний текст (за скобками)
             var millProgram = false;
+            var lazyAnalyze = false;
             var lines = File.ReadLines(programPath).ToImmutableList();
             List<string> coordinateSystems = new();
             NcToolInfo currentTool = new();
@@ -354,12 +355,23 @@ namespace DetailsInfo.Data
 
             // проценты
             if (!lines.First().Trim().Equals("%")) warningStartPercent = true;
-            if (!lines.Last().Trim().Equals("%")) warningEndPercent = true;
+            if (!lines.TakeWhile(line => !string.IsNullOrEmpty(line) || !(line.StartsWith('(') && line.EndsWith(')'))).Last().Trim().Equals("%")) warningEndPercent = true;
             var fString = "D" + lines.Count.ToString().Length;
 
-            foreach (var line in lines)
+            foreach (var line in lines.Skip(1))
             {
-                if (line.Trim().Equals("%")) continue;
+                var lineWithoutParenthesis = line.Trim();
+                lineWithoutParenthesis = new Regex(@"[(][^)]+[)]", RegexOptions.Compiled).Matches(line)
+                    .Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
+                if (string.IsNullOrEmpty(lineWithoutParenthesis)) continue;
+
+                if (lineWithoutParenthesis.Trim().Contains("%"))
+                {
+                    warningEndPercent = false;
+                    break;
+                }
+                if(lazyAnalyze) continue;
+
                 if (line.StartsWith('<'))
                 {
                     if (line.Count(c => c is '<') != line.Count(c => c is '>'))
@@ -368,11 +380,6 @@ namespace DetailsInfo.Data
                     }
                     continue;
                 }
-
-                var lineWithoutParenthesis = line.Trim();
-                lineWithoutParenthesis = new Regex(@"[(][^)]+[)]", RegexOptions.Compiled).Matches(line)
-                    .Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
-                if (string.IsNullOrEmpty(lineWithoutParenthesis)) continue;
 
                 // системы координат
                 if (line.Contains("G54") && !coordinateSystems.Contains("G54") && !line.Contains("G54.1") && !line.Contains("G54P"))
@@ -445,9 +452,10 @@ namespace DetailsInfo.Data
                 //}
 
                 // конец программы, добавляем последний инструмент, т.к. инструмент добавляется при вызове следующего, а у последнего следующего нет
-                if (line.Trim().Equals("M30") || line.Trim().Equals("M99"))
+                if (lineWithoutParenthesis.Contains("M30") || lineWithoutParenthesis.Contains("M99"))
                 {
                     warningEndProgram = false;
+                    lazyAnalyze = true;
                     if (currentToolNo != 0 && currentToolComment != string.Empty)
                     {
                         currentTool.Position = currentToolNo;
@@ -459,11 +467,10 @@ namespace DetailsInfo.Data
                             tools.Add(currentTool);
                         }
                     }
-                    break;
                 }
 
                 // фрезерный инструмент
-                if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && line.Contains("M6") && !line.StartsWith('('))
+                if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && (line.Contains("M6") || line.Contains("M06")) && !line.StartsWith('('))
                 {
                     millProgram = true;
                     
@@ -487,8 +494,15 @@ namespace DetailsInfo.Data
                     }
 
                     var toolLine = line.Contains('(') 
-                        ? line.Split('T')[1].Replace("M6", string.Empty).Split('(')[0].Replace(" ", string.Empty) 
-                        : line.Split('T')[1].Replace("M6", string.Empty).Replace(" ", string.Empty);
+                        ? line.Split('T')[1]
+                            .Replace("M6", string.Empty)
+                            .Replace("M06", string.Empty)
+                            .Split('(')[0]
+                            .Replace(" ", string.Empty) 
+                        : line.Split('T')[1]
+                            .Replace("M6", string.Empty)
+                            .Replace("M06", string.Empty)
+                            .Replace(" ", string.Empty);
                     currentD = 0;
                     if (int.TryParse(toolLine, out currentToolNo))
                     {
@@ -671,6 +685,7 @@ namespace DetailsInfo.Data
                 ToAdress = Settings.Default.toAdress,
                 FromAdress = Settings.Default.fromAdress,
                 NcAnalyzer = Settings.Default.ncAnalyzer,
+                StartProgramNumber = Settings.Default.startProgramNumber,
             };
 
             using (var writer = File.CreateText(UserSettingsPath))
@@ -720,6 +735,7 @@ namespace DetailsInfo.Data
                 ToAdress = userConfig.ToAdress ?? Settings.Default.toAdress,
                 FromAdress = userConfig.FromAdress ?? Settings.Default.fromAdress,
                 NcAnalyzer = userConfig.NcAnalyzer,
+                StartProgramNumber = 1,
             };
 
             using (var writer = File.CreateText(UserSettingsPath))
@@ -745,6 +761,7 @@ namespace DetailsInfo.Data
             Settings.Default.toAdress = tempUserConfig.ToAdress;
             Settings.Default.fromAdress = tempUserConfig.FromAdress;
             Settings.Default.ncAnalyzer = tempUserConfig.NcAnalyzer;
+            Settings.Default.startProgramNumber = tempUserConfig.StartProgramNumber;
             Settings.Default.Save();
             return "Файл конфигурации исправлен. ";
         }
@@ -787,6 +804,7 @@ namespace DetailsInfo.Data
             Settings.Default.toAdress = userConfig.ToAdress;
             Settings.Default.fromAdress = userConfig.FromAdress;
             Settings.Default.ncAnalyzer = userConfig.NcAnalyzer;
+            Settings.Default.startProgramNumber = userConfig.StartProgramNumber;
             Settings.Default.Save();
             return $"Прочитан файл конфигурации. ";
         }

@@ -21,5 +21,6 @@
         public string ToAdress { get; set; }
         public string FromAdress { get; set; }
         public bool NcAnalyzer { get; set; }
+        public int StartProgramNumber { get; set; }
     }
 }

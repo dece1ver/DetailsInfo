@@ -62,6 +62,10 @@ namespace DetailsInfo
 
             ncAnalyzerCheckBox.IsChecked = Settings.Default.ncAnalyzer;
 
+            startProgramNumberTextBox.Text = Settings.Default.startProgramNumber.ToString();
+            startProgramNumberTextBox.Visibility =
+                (bool)autoRenameCheckBox.IsChecked ? Visibility.Visible : Visibility.Collapsed;
+
             Topmost = Settings.Default.topMost;
         }
 
@@ -174,23 +178,31 @@ namespace DetailsInfo
             Settings.Default.popServer = serverTextBox.Text;
             Settings.Default.useSsl = (bool)useSslCheckBox.IsChecked;
             Settings.Default.ncAnalyzer = (bool)ncAnalyzerCheckBox.IsChecked;
-            int encoding, port;
-            if (int.TryParse(fileEncodingTextBox.Text, out encoding) && int.TryParse(portTextBox.Text, out port))
+
+
+            if (int.TryParse(fileEncodingTextBox.Text, out var encoding) && 
+                int.TryParse(portTextBox.Text, out var port) &&
+                int.TryParse(startProgramNumberTextBox.Text, out var startNumber))
             {
+                if (startNumber < 1)
+                {
+                    statusBarTextBox.Text = "Начальный номер должен быть больше нуля.";
+                    return;
+                }
                 Settings.Default.popPort = port;
                 Settings.Default.fileEncoding = encoding;
+                Settings.Default.startProgramNumber = startNumber;
                 Settings.Default.needUpdate = true;
                 Settings.Default.Save();
                 Reader.WriteConfig();
                 Close();
             }
-            else if (!int.TryParse(fileEncodingTextBox.Text, out encoding) && int.TryParse(portTextBox.Text, out port))
+            else
             {
-                statusBarTextBox.Text = "Неверно указана кодировка";
-            }
-            else if (int.TryParse(fileEncodingTextBox.Text, out encoding) && !int.TryParse(portTextBox.Text, out port))
-            {
-                statusBarTextBox.Text = "Неверно указан порт";
+                statusBarTextBox.Text = string.Empty;
+                if (!int.TryParse(fileEncodingTextBox.Text, out encoding)) statusBarTextBox.Text += "Неверно указана кодировка. ";
+                if (!int.TryParse(portTextBox.Text, out port)) statusBarTextBox.Text += "Неверно указан порт. ";
+                if (!int.TryParse(startProgramNumberTextBox.Text, out startNumber)) statusBarTextBox.Text += "Неверно указан начальный номер. ";
             }
         }
 
@@ -207,6 +219,16 @@ namespace DetailsInfo
                 WindowsUtils.RunTabTip();
                 _tabtipStatus = true;
             }
+        }
+
+        private void autoRenameCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            startProgramNumberTextBox.Visibility = Visibility.Visible;
+        }
+
+        private void autoRenameCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            startProgramNumberTextBox.Visibility = Visibility.Collapsed;
         }
     }
 }

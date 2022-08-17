@@ -61,7 +61,8 @@
                     <RowDefinition Height="40"/>
                     <RowDefinition Height="40"/>
                     <RowDefinition Height="40"/>
-                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="30"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource MaterialDesignHeadline5TextBlock}"
@@ -139,10 +140,13 @@
                 <TextBlock Grid.Row="8" Grid.Column="0"
                            Text="Разное:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                 <StackPanel Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="LeftToRight">
-                    <CheckBox x:Name="autoRenameCheckBox" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Переименование" Cursor="Hand"/>
+                    <CheckBox x:Name="autoRenameCheckBox" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Переименование" Cursor="Hand" Checked="autoRenameCheckBox_Checked" Unchecked="autoRenameCheckBox_Unchecked"/>
                     <CheckBox x:Name="intergratedImageViewer" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Просмотрщик изображений"/>
                     <CheckBox x:Name="ncAnalyzerCheckBox" Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}" Content="Анализатор УП"/>
                 </StackPanel>
+                <TextBox x:Name="startProgramNumberTextBox" Grid.Row="9" Grid.Column="1" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                         materialDesign:TextFieldAssist.HasClearButton="True" MinWidth="100" MaxWidth="200" Margin="0 -10 0 0" HorizontalAlignment="Left"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" materialDesign:HintAssist.Hint="Начальный номер" Cursor="Arrow"/>
             </Grid>
         </DockPanel>
     </Grid>
