@@ -15,6 +15,7 @@
         TextElement.FontSize="13"
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto"
+        materialDesign:TransitionAssist.DisableTransitions="False"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}" materialDesign:RippleAssist.IsDisabled="True"
         Title="Закрепленные изделия" Height="768" Width="1366" Loaded="Window_Loaded" WindowState="Maximized" WindowStartupLocation="CenterScreen" WindowStyle="None" FontSize="14" ResizeMode="CanMinimize" Topmost="True">

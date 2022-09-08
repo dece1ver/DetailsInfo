@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -35,6 +36,8 @@ namespace DetailsInfo
         private const bool DebugMode = false;
 
         #region Поля
+        private FileSystemWatcher archiveWatcher = new();
+        private FileSystemWatcher machineWatcher = new();
         private const string NewOrFixProgramReason = "Новая программа/корректировка старой";
         private const string VariantProgramReason = "Другой вариант изготовления";
         private readonly string[] _reasons = new string[2] { NewOrFixProgramReason, VariantProgramReason };
@@ -86,7 +89,7 @@ namespace DetailsInfo
         public string ProgramCoordinates { get; set; } = string.Empty;
         public List<NcToolInfo> ProgramTools { get; set; } = new();
 
-        private readonly List<string> _status = new();
+        private List<string> _status = new();
 
         readonly bool _advancedMode = Settings.Default.advancedMode;
 
@@ -117,7 +120,11 @@ namespace DetailsInfo
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
+            archiveWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            archiveWatcher.Filter = "*.*";
+            machineWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            machineWatcher.Filter = "*.*";
+
             advancedModeIcon.Visibility = _advancedMode ? Visibility.Visible : Visibility.Collapsed;
             if (DebugMode) AddStatus(Reader.ReadConfig()); else Reader.ReadConfig();
             this.WindowStyle = _advancedMode ? WindowStyle.SingleBorderWindow : WindowStyle.None;
@@ -147,16 +154,43 @@ namespace DetailsInfo
             CheckReasonCB.SelectedIndex = 0;
         }
 
+        private void OnCreatedInArchive(object sender, FileSystemEventArgs eventArgs) => Task.Run(() => LoadArchive());
+        private void OnDeletedInArchive(object sender, FileSystemEventArgs eventArgs) => Task.Run(() => LoadArchive());
+        private void OnRenamedInArchive(object sender, RenamedEventArgs eventArgs) => Task.Run(() => LoadArchive());
+
+        private void OnCreatedInMachine(object sender, FileSystemEventArgs eventArgs) => LoadMachine();
+        private void OnDeletedInMachine(object sender, FileSystemEventArgs eventArgs) => LoadMachine();
+        private void OnRenamedInMachine(object sender, RenamedEventArgs eventArgs) => LoadMachine();
+
         private async Task LoadInfoAsync(bool start = false)
         {
             await Task.Run(() =>
             {
+                
                 if (!Reader.CheckPath(Settings.Default.archivePath)) TurnOffArchive();
-                if (_archiveStatus) archiveConnectionIcon.Dispatcher.Invoke(() => archiveConnectionIcon.Foreground = _greenBrush);
+                if (_archiveStatus) 
+                {
+                    archiveConnectionIcon.Dispatcher.Invoke(() => archiveConnectionIcon.Foreground = _greenBrush);
+                    archiveWatcher.Path = _currentArchiveFolder;
+                    archiveWatcher.Created += new FileSystemEventHandler(OnCreatedInArchive);
+                    archiveWatcher.Deleted += new FileSystemEventHandler(OnDeletedInArchive);
+                    archiveWatcher.Renamed += new RenamedEventHandler(OnRenamedInArchive);
+                    archiveWatcher.EnableRaisingEvents = true;
+                }
+
                 _ = LoadArchive();
 
+               
                 if (!Reader.CheckPath(Settings.Default.machinePath)) TurnOffMachine();
-                if (_machineStatus) machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Foreground = _greenBrush);
+                if (_machineStatus)
+                {
+                    machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Foreground = _greenBrush);
+                    machineWatcher.Path = Settings.Default.machinePath;
+                    machineWatcher.Created += new FileSystemEventHandler(OnCreatedInMachine);
+                    machineWatcher.Deleted += new FileSystemEventHandler(OnDeletedInMachine);
+                    machineWatcher.Renamed += new RenamedEventHandler(OnRenamedInMachine);
+                    machineWatcher.EnableRaisingEvents = true;
+                }
                 LoadMachine();
 
                 if (!Reader.CheckPath(Settings.Default.tempPath)) _tempFolderStatus = false;
@@ -606,6 +640,10 @@ namespace DetailsInfo
         {
             if (_findStatus is FindStatus.InProgress) return;
             _archiveStatus = false;
+            machineWatcher.EnableRaisingEvents = false;
+            archiveWatcher.Created -= new FileSystemEventHandler(OnCreatedInArchive);
+            archiveWatcher.Deleted -= new FileSystemEventHandler(OnDeletedInArchive);
+            archiveWatcher.Renamed -= new RenamedEventHandler(OnRenamedInArchive);
             archiveButtonsPanel.Dispatcher.Invoke(() => archiveButtonsPanel.Visibility = Visibility.Collapsed);
             archiveLV.Dispatcher.Invoke(() => archiveLV.Visibility = Visibility.Collapsed);
             archiveConnectionIcon.Dispatcher.Invoke(() => archiveConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.FolderRemove);
@@ -623,6 +661,11 @@ namespace DetailsInfo
         {
             if (_findStatus is FindStatus.InProgress) return;
             _archiveStatus = true;
+            archiveWatcher.Path = _currentArchiveFolder;
+            archiveWatcher.Created += new FileSystemEventHandler(OnCreatedInArchive);
+            archiveWatcher.Deleted += new FileSystemEventHandler(OnDeletedInArchive);
+            archiveWatcher.Renamed += new RenamedEventHandler(OnRenamedInArchive);
+            machineWatcher.EnableRaisingEvents = true;
             archiveButtonsPanel.Dispatcher.Invoke(() => archiveButtonsPanel.Visibility = Visibility.Visible);
             archiveLV.Dispatcher.Invoke(() => archiveLV.Visibility = Visibility.Visible);
             archiveProgressBar.Dispatcher.Invoke(() => archiveProgressBar.Visibility = Visibility.Collapsed);
@@ -674,6 +717,10 @@ namespace DetailsInfo
         private void TurnOffMachine()
         {
             _machineStatus = false;
+            machineWatcher.EnableRaisingEvents = false;
+            machineWatcher.Created -= new FileSystemEventHandler(OnCreatedInMachine);
+            machineWatcher.Deleted -= new FileSystemEventHandler(OnDeletedInMachine);
+            machineWatcher.Renamed -= new RenamedEventHandler(OnRenamedInMachine);
             machineDG.Dispatcher.Invoke(() => machineDG.Visibility = Visibility.Collapsed);
             if (!string.IsNullOrWhiteSpace(Settings.Default.machinePath))
                 machineProgressBar.Dispatcher.Invoke(() => machineProgressBar.Visibility = Visibility.Visible);
@@ -688,6 +735,10 @@ namespace DetailsInfo
         private void TurnOnMachine()
         {
             _machineStatus = true;
+            machineWatcher.Created += new FileSystemEventHandler(OnCreatedInMachine);
+            machineWatcher.Deleted += new FileSystemEventHandler(OnDeletedInMachine);
+            machineWatcher.Renamed += new RenamedEventHandler(OnRenamedInMachine);
+            machineWatcher.EnableRaisingEvents = true;
             if (!_analyzeInfo) machineDG.Dispatcher.Invoke(() => machineDG.Visibility = Visibility.Visible);
             machineProgressBar.Dispatcher.Invoke(() => machineProgressBar.Visibility = Visibility.Collapsed);
             machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.ServerNetwork);
@@ -841,8 +892,8 @@ namespace DetailsInfo
                         {
                             _machineStatus = true;
                             TurnOnMachine();
+                            LoadMachine();
                         }
-                        LoadMachine();
                     }
                     #endregion
 
@@ -883,6 +934,7 @@ namespace DetailsInfo
         private void cloudButton_Click(object sender, RoutedEventArgs e)
         {
             _currentArchiveFolder = @"\\DESKTOP-DB65KJ0\Users\Zvyagin_VM\Desktop\Программы к станкам";
+            ChangeArchiveWatcher();
             _ = LoadArchive();
         }
 
@@ -890,12 +942,13 @@ namespace DetailsInfo
         {
             SettingsWindow settingsWindow = new();
             settingsWindow.ShowDialog();
+
             _errorStatus = false;
             _status.Clear();
             if (Settings.Default.needUpdate)
             {
                 _currentArchiveFolder = Settings.Default.archivePath;
-
+                
                 if (!Reader.CheckPath(Settings.Default.archivePath))
                 {
                     TurnOffArchive();
@@ -906,6 +959,7 @@ namespace DetailsInfo
                 }
                 _ = LoadArchive();
 
+                machineWatcher.Path = Settings.Default.machinePath;
                 if (!Reader.CheckPath(Settings.Default.machinePath))
                 {
                     TurnOffMachine();
@@ -925,8 +979,6 @@ namespace DetailsInfo
                     TurnOnTable();
                 }
                 LoadTable();
-
-
                 Settings.Default.needUpdate = false;
             }
         }
@@ -1014,6 +1066,7 @@ namespace DetailsInfo
                 _showWinExplorer = false;
                 _openFolderButton = false;
                 _currentArchiveFolder = currentItem.Content;
+                ChangeArchiveWatcher();
                 _ = LoadArchive();
                 //statusTextBlock.Text = $"Открыто за {sw.ElapsedMilliseconds} мс";
             }
@@ -1111,6 +1164,7 @@ namespace DetailsInfo
                 _needArchiveScroll = true;
                 _openFolderButton = false;
                 _currentArchiveFolder = Directory.GetParent(_currentArchiveFolder)?.ToString();
+                ChangeArchiveWatcher();
             }
             _ = LoadArchive();
         }
@@ -1131,6 +1185,7 @@ namespace DetailsInfo
             _showWinExplorer = false;
             _openFolderButton = false;
             _currentArchiveFolder = Settings.Default.archivePath;
+            ChangeArchiveWatcher();
             _ = LoadArchive();
         }
 
@@ -1149,7 +1204,7 @@ namespace DetailsInfo
             findDialogButton.Visibility = Visibility.Collapsed;
             returnButton.Visibility = Visibility.Visible;
             _findStatus = FindStatus.DontNeed;
-
+            ChangeArchiveWatcher();
             _ = LoadArchive();
         }
 
@@ -1375,8 +1430,9 @@ namespace DetailsInfo
 
         private void machineDG_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            //var swMain = Stopwatch.StartNew();
             var item = (sender as ListView)?.SelectedItem;
-            if (item == null) return;
+            if (item is null) return;
             var currentItem = (NcFile)item;
             if (!File.Exists(currentItem.FullPath)) return;
             _transferFromMachine = true;
@@ -1391,8 +1447,24 @@ namespace DetailsInfo
             _openFolderButton = false;
             _selectedMachineFile = currentItem.FullPath;
             kostyl.Text = currentItem.Extension;
-            LoadMachine();
-            _ = LoadArchive();
+            _ = MachineClick();
+            
+        }
+
+        async Task MachineClick()
+        {
+            //sw.Stop();
+            //var swMachine = Stopwatch.StartNew();
+            await Task.Run(() => LoadMachine());
+            //swMachine.Stop();
+            
+            //var swArchive = Stopwatch.StartNew();
+            //await Task.Run(() => LoadArchive());
+            //swArchive.Stop();
+
+            //_status = new();
+            
+            //AddStatus($"Перерсовано за: Вызов - {sw.ElapsedMilliseconds} мс, Архив - {swArchive.ElapsedMilliseconds}, Станок - {swMachine.ElapsedMilliseconds}. Общее: {sw.ElapsedMilliseconds + swArchive.ElapsedMilliseconds + swMachine.ElapsedMilliseconds}мс.");
         }
 
         private void machineGB_MouseLeftButtonDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1784,13 +1856,20 @@ namespace DetailsInfo
                 _tabtipStatus = true;
             }
         }
-
-
-
-
-
         #endregion
 
-        
+        private void ChangeArchiveWatcher()
+        {
+            archiveWatcher.EnableRaisingEvents = false;
+            archiveWatcher.Created -= new FileSystemEventHandler(OnCreatedInArchive);
+            archiveWatcher.Deleted -= new FileSystemEventHandler(OnDeletedInArchive);
+            archiveWatcher.Renamed -= new RenamedEventHandler(OnRenamedInArchive);
+            archiveWatcher.Path = _currentArchiveFolder;
+            archiveWatcher.Created += new FileSystemEventHandler(OnCreatedInArchive);
+            archiveWatcher.Deleted += new FileSystemEventHandler(OnDeletedInArchive);
+            archiveWatcher.Renamed += new RenamedEventHandler(OnRenamedInArchive);
+            archiveWatcher.EnableRaisingEvents = true;
+        }
+
     }
 }
