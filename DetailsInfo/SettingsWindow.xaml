@@ -115,7 +115,7 @@
                          VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" materialDesign:HintAssist.Hint="Логин"/>
 
                     <PasswordBox x:Name="emailPassTextBox" Grid.ColumnSpan="2" Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"
-                                 materialDesign:TextFieldAssist.HasClearButton="True" MinWidth="100" MaxWidth="100" Margin="10 -10 0 0"
+                                 materialDesign:TextFieldAssist.HasClearButton="True" MinWidth="100" MaxWidth="100" Margin="10 -10 0 0" MaxHeight="37"
                          VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"  materialDesign:HintAssist.Hint="Пароль" Cursor="Arrow"/>
                     <TextBox x:Name="serverTextBox" Margin="10 -10 0 0" materialDesign:HintAssist.Hint="POP3" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                         VerticalAlignment="Center" MinWidth="100" MaxWidth="200" />
@@ -131,10 +131,8 @@
                     <Slider x:Name="refreshSlider" Grid.Row="7" Grid.Column="3" Minimum="0"
                         Maximum="10" Style="{StaticResource MaterialDesignDiscreteSlider}" Margin="10 0 0 0"
                         TickFrequency="1" TickPlacement="BottomRight" materialDesign:SliderAssist.OnlyShowFocusVisualWhileDragging="True"/>
-                    <TextBlock Grid.Row="8" Grid.Column="3" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13" HorizontalAlignment="Right">
-                        Частота обновлений
-                        <LineBreak/>
-                        сетевой папки станка
+                    <TextBlock Grid.Row="8" Grid.Column="3" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="10" HorizontalAlignment="Left" Margin="10 0 0 5">
+                        Частота проверки доступа
                     </TextBlock>
                 </StackPanel>
                 <TextBlock Grid.Row="8" Grid.Column="0"
