@@ -65,7 +65,8 @@
                 </Button>
 
                 <TextBlock Grid.Row="1" Grid.Column="0"
-                           Text="Логин:" HorizontalAlignment="Right" Margin="0,5,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                           Text="Подключение:" HorizontalAlignment="Right" Margin="0,5,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                
                 <DockPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
                     <TextBox DockPanel.Dock="Right" x:Name="portTextBox" Margin="0 1 0 5" Padding="-1" MinWidth="50"
                         materialDesign:HintAssist.Hint="Порт"
@@ -75,16 +76,11 @@
                         materialDesign:HintAssist.Hint="SMTP сервер"
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                         VerticalAlignment="Center" Cursor="IBeam"/>
-                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="emailLoginTextBox" materialDesign:TextFieldAssist.HasClearButton="True"
-                         VerticalAlignment="Center" HorizontalAlignment="Stretch" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                    
                 </DockPanel>
                 
 
-                <TextBlock Grid.Row="2" Grid.Column="0"
-                           Text="Пароль:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
-                <PasswordBox Grid.Row="2" Grid.Column="1" x:Name="emailPassTextBox" Grid.ColumnSpan="2" materialDesign:TextFieldAssist.HasClearButton="True"
-                         VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" Cursor="Arrow"/>
-
+                
                 <TextBlock Grid.Row="3" Grid.Column="0"
                            Text="Кому:" HorizontalAlignment="Right" Margin="0,0,5,2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                 <TextBox Grid.Row="3" Grid.Column="1" x:Name="toTextBox" Grid.ColumnSpan="2" materialDesign:TextFieldAssist.HasClearButton="True"

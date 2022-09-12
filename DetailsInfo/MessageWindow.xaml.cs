@@ -24,9 +24,6 @@ namespace DetailsInfo
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
-            emailLoginTextBox.Text = Settings.Default.emailLogin;
-            emailPassTextBox.Password = Settings.Default.emailPass;
-
             toTextBox.Text = Settings.Default.toAdress;
             fromTextBox.Text = Settings.Default.fromAdress;
 
@@ -62,9 +59,6 @@ namespace DetailsInfo
 
         private async Task SendMessage()
         {
-            Settings.Default.emailLogin = emailLoginTextBox.Text;
-            Settings.Default.emailPass = Util.Encrypt(emailPassTextBox.Password, "http://areopag");
-
             Settings.Default.toAdress = toTextBox.Text;
             Settings.Default.fromAdress = fromTextBox.Text;
 
@@ -96,7 +90,7 @@ namespace DetailsInfo
                     using (var client = new SmtpClient())
                     {
                         client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-                        client.Connect(Settings.Default.smtpServer, Settings.Default.smtpPort, false);
+                        client.Connect(Settings.Default.smtpServer, Settings.Default.smtpPort, Settings.Default.useSsl);
                         client.Authenticate(Settings.Default.emailLogin, Util.Decrypt(Settings.Default.emailPass, "http://areopag"));
                         client.Send(message);
                         client.Disconnect(true);
