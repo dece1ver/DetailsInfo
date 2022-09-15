@@ -1346,7 +1346,7 @@ namespace DetailsInfo
             Task.Run(SearchInArchive);
         }
 
-        private void transferButton_Click(object sender, RoutedEventArgs e)
+        private async void transferButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1367,8 +1367,8 @@ namespace DetailsInfo
                 _showWinExplorer = false;
                 _openFolderButton = false;
                 WriteLog($"Отправлено на станок: \"{_selectedArchiveFile}\"");
-                LoadMachine();
-                LoadArchive();
+                //LoadMachine();
+                await Task.Run(() => LoadArchive());
                 SendMessage(Settings.Default.autoRenameToMachine
                     ? $"Файл {Path.GetFileName(_selectedArchiveFile)} отправлен на станок и переименован в {Path.GetFileName(transferFilePath)}"
                     : $"На станок отправлен файл: {Path.GetFileName(_selectedArchiveFile)}");
@@ -1506,8 +1506,8 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                LoadMachine();
-                LoadArchive();
+                //LoadMachine();
+                //LoadArchive();
                 SendMessage($"Из архива удален файл: {Path.GetFileName(_selectedForDeletionArchiveFile)}");
             }
             catch (Exception exception)
@@ -1557,7 +1557,7 @@ namespace DetailsInfo
 
         #region Сетевая папка
 
-        private void machineDG_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private async void machineDG_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             //var swMain = Stopwatch.StartNew();
             var item = (sender as ListView)?.SelectedItem;
@@ -1576,24 +1576,7 @@ namespace DetailsInfo
             _openFolderButton = false;
             _selectedMachineFile = currentItem.FullPath;
             kostyl.Text = currentItem.Extension;
-            _ = MachineClick();
-            
-        }
-
-        async Task MachineClick()
-        {
-            //sw.Stop();
-            //var swMachine = Stopwatch.StartNew();
             await Task.Run(() => LoadMachine());
-            //swMachine.Stop();
-            
-            //var swArchive = Stopwatch.StartNew();
-            //await Task.Run(() => LoadArchive());
-            //swArchive.Stop();
-
-            //_status = new();
-            
-            //AddStatus($"Перерсовано за: Вызов - {sw.ElapsedMilliseconds} мс, Архив - {swArchive.ElapsedMilliseconds}, Станок - {swMachine.ElapsedMilliseconds}. Общее: {sw.ElapsedMilliseconds + swArchive.ElapsedMilliseconds + swMachine.ElapsedMilliseconds}мс.");
         }
 
         private void machineGB_MouseLeftButtonDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1632,8 +1615,8 @@ namespace DetailsInfo
                 }
                 var newName = Path.Combine(Settings.Default.machinePath, newNameTB.Text) + kostyl.Text;
                 FileSystem.Rename(_selectedMachineFile, newName);
-                LoadMachine();
-                LoadArchive();
+                //LoadMachine();
+                //LoadArchive();
                 SendMessage($"Файл {Path.GetFileName(_selectedMachineFile)} переименован в {Path.GetFileName(newName)}");
                 newNameTB.Text = string.Empty;
                 kostyl.Text = string.Empty;
@@ -1683,8 +1666,8 @@ namespace DetailsInfo
                     writer.Write(info);
                 }
                 _transferFromMachine = false;
-                LoadMachine();
-                LoadArchive();
+                //LoadMachine();
+                //LoadArchive();
                 if (!File.Exists(tempName)) return;
                 ReasonCommentTB.Text = string.Empty;
                 File.Delete(_selectedMachineFile);
@@ -1699,7 +1682,7 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                LoadMachine();
+                //LoadMachine();
                 SendMessage($"Отправлен на проверку и очищен из сетевой папки файл: {tempName}");
                 WriteLog($"Отправлено на проверку \"{_selectedMachineFile}\" -> \"{tempName}\"");
             }
@@ -1749,8 +1732,8 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                LoadMachine();
-                LoadArchive();
+                //LoadMachine();
+                //LoadArchive();
                 SendMessage($"Из сетевой папки станка удален файл: {Path.GetFileName(_selectedMachineFile)}");
             }
             catch (Exception exception)
