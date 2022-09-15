@@ -120,9 +120,23 @@ namespace DetailsInfo
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            archiveWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            archiveWatcher.NotifyFilter = NotifyFilters.Attributes 
+                                        | NotifyFilters.CreationTime
+                                        | NotifyFilters.DirectoryName
+                                        | NotifyFilters.FileName
+                                        | NotifyFilters.LastAccess
+                                        | NotifyFilters.LastWrite
+                                        | NotifyFilters.Security
+                                        | NotifyFilters.Size;
             archiveWatcher.Filter = "*.*";
-            machineWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            machineWatcher.NotifyFilter = NotifyFilters.Attributes 
+                                        | NotifyFilters.CreationTime
+                                        | NotifyFilters.DirectoryName
+                                        | NotifyFilters.FileName
+                                        | NotifyFilters.LastAccess
+                                        | NotifyFilters.LastWrite
+                                        | NotifyFilters.Security
+                                        | NotifyFilters.Size;
             machineWatcher.Filter = "*.*";
 
             advancedModeIcon.Visibility = _advancedMode ? Visibility.Visible : Visibility.Collapsed;
@@ -159,6 +173,7 @@ namespace DetailsInfo
         private void OnRenamedInArchive(object sender, RenamedEventArgs eventArgs) => LoadArchive();
 
         private void OnCreatedInMachine(object sender, FileSystemEventArgs eventArgs) => LoadMachine();
+        private void OnChangedInMachine(object sender, FileSystemEventArgs eventArgs) => LoadMachine();
         private void OnDeletedInMachine(object sender, FileSystemEventArgs eventArgs) => LoadMachine();
         private void OnRenamedInMachine(object sender, RenamedEventArgs eventArgs) => LoadMachine();
 
@@ -187,6 +202,7 @@ namespace DetailsInfo
                     machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Foreground = _greenBrush);
                     machineWatcher.Path = Settings.Default.machinePath;
                     machineWatcher.Created += new FileSystemEventHandler(OnCreatedInMachine);
+                    machineWatcher.Changed += new FileSystemEventHandler(OnChangedInMachine);
                     machineWatcher.Deleted += new FileSystemEventHandler(OnDeletedInMachine);
                     machineWatcher.Renamed += new RenamedEventHandler(OnRenamedInMachine);
                     machineWatcher.EnableRaisingEvents = true;
@@ -843,6 +859,7 @@ namespace DetailsInfo
             _machineStatus = false;
             machineWatcher.EnableRaisingEvents = false;
             machineWatcher.Created -= new FileSystemEventHandler(OnCreatedInMachine);
+            machineWatcher.Changed -= new FileSystemEventHandler(OnChangedInMachine);
             machineWatcher.Deleted -= new FileSystemEventHandler(OnDeletedInMachine);
             machineWatcher.Renamed -= new RenamedEventHandler(OnRenamedInMachine);
             machineDG.Dispatcher.Invoke(() => machineDG.Visibility = Visibility.Collapsed);
@@ -860,6 +877,7 @@ namespace DetailsInfo
         {
             _machineStatus = true;
             machineWatcher.Created += new FileSystemEventHandler(OnCreatedInMachine);
+            machineWatcher.Changed += new FileSystemEventHandler(OnChangedInMachine);
             machineWatcher.Deleted += new FileSystemEventHandler(OnDeletedInMachine);
             machineWatcher.Renamed += new RenamedEventHandler(OnRenamedInMachine);
             machineWatcher.EnableRaisingEvents = true;
@@ -1355,7 +1373,7 @@ namespace DetailsInfo
                     : Path.Combine(Settings.Default.machinePath, Path.GetFileName(_selectedArchiveFile)!);
 
 
-                File.Copy(_selectedArchiveFile!, transferFilePath);
+                
                 _transferFromArchive = false;
                 _transferFromMachine = false;
                 _deleteFromMachine = false;
@@ -1366,9 +1384,10 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
+                File.Copy(_selectedArchiveFile!, transferFilePath);
                 WriteLog($"Отправлено на станок: \"{_selectedArchiveFile}\"");
-                //LoadMachine();
-                await Task.Run(() => LoadArchive());
+                Task.Run(() => LoadMachine()).GetAwaiter(); // почему не работает await ?
+                LoadArchive();
                 SendMessage(Settings.Default.autoRenameToMachine
                     ? $"Файл {Path.GetFileName(_selectedArchiveFile)} отправлен на станок и переименован в {Path.GetFileName(transferFilePath)}"
                     : $"На станок отправлен файл: {Path.GetFileName(_selectedArchiveFile)}");
@@ -1506,8 +1525,8 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                //LoadMachine();
-                //LoadArchive();
+                LoadMachine();
+                LoadArchive();
                 SendMessage($"Из архива удален файл: {Path.GetFileName(_selectedForDeletionArchiveFile)}");
             }
             catch (Exception exception)
@@ -1732,8 +1751,8 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                //LoadMachine();
-                //LoadArchive();
+                Task.Run(() => LoadMachine()).GetAwaiter();
+                LoadArchive();
                 SendMessage($"Из сетевой папки станка удален файл: {Path.GetFileName(_selectedMachineFile)}");
             }
             catch (Exception exception)

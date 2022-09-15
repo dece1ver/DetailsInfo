@@ -16,8 +16,8 @@
     <AssemblyName>Di</AssemblyName>
     <Version>1.0.12</Version>
     <StartupObject></StartupObject>
-    <AssemblyVersion>1.0.12.3</AssemblyVersion>
-    <FileVersion>1.0.12.3</FileVersion>
+    <AssemblyVersion>1.0.12.4</AssemblyVersion>
+    <FileVersion>1.0.12.4</FileVersion>
     <Description>Менеджер УП</Description>
     <Copyright>dece1ver</Copyright>
     <PackageProjectUrl>https://di.sunduk.one/</PackageProjectUrl>
