@@ -1386,7 +1386,7 @@ namespace DetailsInfo
                 _openFolderButton = false;
                 File.Copy(_selectedArchiveFile!, transferFilePath);
                 WriteLog($"Отправлено на станок: \"{_selectedArchiveFile}\"");
-                Task.Run(() => LoadMachine()).GetAwaiter(); // почему не работает await ?
+                //Task.Run(() => LoadMachine()).GetAwaiter(); // почему не работает await ?
                 LoadArchive();
                 SendMessage(Settings.Default.autoRenameToMachine
                     ? $"Файл {Path.GetFileName(_selectedArchiveFile)} отправлен на станок и переименован в {Path.GetFileName(transferFilePath)}"
@@ -1436,8 +1436,8 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                LoadMachine();
-                LoadArchive();
+                //LoadMachine();
+                //LoadArchive();
             }
             catch (Exception exception)
             {
@@ -1525,8 +1525,8 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                LoadMachine();
-                LoadArchive();
+                //LoadMachine();
+                //LoadArchive();
                 SendMessage($"Из архива удален файл: {Path.GetFileName(_selectedForDeletionArchiveFile)}");
             }
             catch (Exception exception)
@@ -1751,7 +1751,7 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                Task.Run(() => LoadMachine()).GetAwaiter();
+                //Task.Run(() => LoadMachine()).GetAwaiter();
                 LoadArchive();
                 SendMessage($"Из сетевой папки станка удален файл: {Path.GetFileName(_selectedMachineFile)}");
             }
