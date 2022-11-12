@@ -678,6 +678,78 @@
                 <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
                     <TabItem.Header>
                         <materialDesign:PackIcon
+                    Kind="Timetable"
+                    Width="24"
+                    Height="24" />
+                    </TabItem.Header>
+                    <Grid>
+                        <GroupBox Header="Калькулятор выработки" Margin="0,0,0,1" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                            <DockPanel LastChildFill="True">
+                                <Border DockPanel.Dock="Top" Padding="10 10 10 10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}" >
+                                    <StackPanel>
+                                        <TextBlock Text="Наладка" DockPanel.Dock="Top" FontSize="16" Margin="0 0 0 10"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            
+                                            <materialDesign:TimePicker x:Name="SetupStartTp"
+                                                                       Margin="0 0 4 0"
+                                                                       Is24Hours="True"
+                                                                       Width="150" FontSize="14"
+                                                                       materialDesign:HintAssist.Hint="Начало"
+                                                                       Style="{StaticResource MaterialDesignOutlinedTimePicker}" />
+                                            <materialDesign:TimePicker x:Name="SetupEndTp"
+                                                                       Margin="0 0 4 0"
+                                                                       Is24Hours="True"
+                                                                       Width="150"
+                                                                       materialDesign:HintAssist.Hint="Завершение"
+                                                                       Style="{StaticResource MaterialDesignOutlinedTimePicker}" />
+                                            <TextBox x:Name="SetupNormTp"
+                                                     Margin="0 0 4 0"
+                                                     Style="{StaticResource MaterialDesignOutlinedTextBox}" 
+                                                     materialDesign:HintAssist.Hint="Норматив 1С"
+                                                     materialDesign:TextFieldAssist.SuffixText="мин"
+                                                     Width="150">
+                                            </TextBox>
+                                            <Button x:Name="CalcSetupButton" Style="{StaticResource generalButtonStyle}" Click="CalcSetupButton_Click">
+                                                <materialDesign:PackIcon Kind="Calculator"/>
+                                            </Button>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox x:Name="FixJawsCb" Margin="0 10 0 0"
+                                                      Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}"
+                                                      Content="Расточка кулачков" Width="180"/>
+                                            <CheckBox x:Name="MakeAccessoriesCb" Margin="10 10 0 0"
+                                                      Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}"
+                                                      Content="Изготовление оснастки" Width="180" Cursor="Hand"/>
+                                        </StackPanel>
+                                        <TextBox x:Name="SetupInformationTb"
+                                                 Style="{DynamicResource MaterialDesignOutlinedTextBox}" 
+                                                 Margin="0 10 0 0"
+                                                 materialDesign:HintAssist.Hint="Информация"/>
+                                    </StackPanel>
+                                </Border>
+                                <local:DateTimeKeyboardControl DockPanel.Dock="Bottom" 
+                                                               Margin="-2 8"
+                                                               VerticalAlignment="Bottom" 
+                                                               HorizontalAlignment="Right"/>
+                                <Border HorizontalAlignment="Stretch" 
+                                        VerticalAlignment="Stretch" 
+                                        Margin="0 10 0 0"
+                                        materialDesign:ShadowAssist.ShadowDepth="Depth2" 
+                                        CornerRadius="3" BorderThickness="1" 
+                                        BorderBrush="{DynamicResource PrimaryHueDarkBrush}" >
+
+                                </Border>
+                                
+                            </DockPanel>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+                <!--#endregion-->
+
+                <!--#region Список деталей -->
+                <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+                    <TabItem.Header>
+                        <materialDesign:PackIcon
                     Kind="ListStatus"
                     Width="24"
                     Height="24" />

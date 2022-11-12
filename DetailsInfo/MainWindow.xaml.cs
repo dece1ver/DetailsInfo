@@ -110,6 +110,19 @@ namespace DetailsInfo
 
         #endregion
 
+        #region Перерывы
+
+        private DateTime dayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
+        private DateTime dayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
+        private DateTime dayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
+
+
+        // проверить график ночных перерывов
+        private DateTime nightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22);
+        private DateTime nightShiftSecondBreak = DateTime.Today + TimeSpan.FromDays(1);
+        private DateTime nightShiftThirdBreak = DateTime.Today + TimeSpan.FromDays(1) + TimeSpan.FromHours(3);
+
+        #endregion
 
         public MainWindow()
         {
@@ -2002,5 +2015,122 @@ namespace DetailsInfo
             archiveWatcher.EnableRaisingEvents = true;
         }
 
+        #region Нормативы
+
+        private void CalcSetupButton_Click(object sender, RoutedEventArgs e)
+        {
+            bool reduced = false;
+
+            if (SetupStartTp.SelectedTime == null)
+            {
+                SetupInformationTb.Text = $"Некорректно указано начальное время наладки";
+                return;
+            }
+
+            if (SetupEndTp.SelectedTime == null)
+            {
+                SetupInformationTb.Text = $"Некорректно указано конечное время наладки";
+                return;
+            }
+            var startSetupTime = SetupStartTp.SelectedTime.Value;
+            var endSetupTime = SetupEndTp.SelectedTime.Value;
+
+            if (startSetupTime > endSetupTime)
+            {
+                endSetupTime = endSetupTime.AddDays(1);
+            }
+
+            double setupFullTime = (endSetupTime - startSetupTime).TotalMinutes;
+
+            string message = string.Empty;
+
+            message = $"Общее время наладки составило {setupFullTime} минут.\n";
+
+            if (dayShiftFirstBreak >= startSetupTime && dayShiftFirstBreak <= endSetupTime)
+            {
+                reduced = true;
+                setupFullTime -= 15;
+                message += "Наладка происходила во время утреннего перерыва на чай, вычтено 15 минут.\n";
+            }
+
+            if (dayShiftSecondBreak >= startSetupTime && dayShiftSecondBreak <= endSetupTime)
+            {
+                reduced = true;
+                setupFullTime -= 30;
+                message += "Наладка происходила во время обеда, вычтено 30 минут.\n";
+            }
+
+            if (dayShiftThirdBreak >= startSetupTime && dayShiftThirdBreak <= endSetupTime)
+            {
+                reduced = true;
+                setupFullTime -= 15;
+                message += "Наладка происходила во дневного чая, вычтено 15 минут.\n";
+            }
+
+            if (nightShiftFirstBreak >= startSetupTime && nightShiftFirstBreak <= endSetupTime)
+            {
+                reduced = true;
+                setupFullTime -= 30;
+                message += "Наладка происходила во время вечернего перерыва на чай, вычтено 30 минут.\n";
+            }
+
+            if (nightShiftSecondBreak >= startSetupTime && nightShiftSecondBreak <= endSetupTime)
+            {
+                reduced = true;
+                setupFullTime -= 30;
+                message += "Наладка происходила во время ночного обеда, вычтено 30 минут.\n";
+            }
+
+            if (nightShiftThirdBreak >= startSetupTime && nightShiftThirdBreak <= endSetupTime)
+            {
+                reduced = true;
+                setupFullTime -= 30;
+                message += "Наладка происходила во ночного чая, вычтено 30 минут.\n";
+            }
+
+            switch (FixJawsCb.IsChecked)
+            {
+                case true when MakeAccessoriesCb.IsChecked is true:
+                    reduced = true;
+                    setupFullTime -= 60;
+                    message += "Из наладки вычтено 60 минут на расточку кулачков и изготовление оснастки.\n";
+                    break;
+                case true when MakeAccessoriesCb.IsChecked is not true:
+                    reduced = true;
+                    setupFullTime -= 30;
+                    message += "Из наладки вычтено 30 минут на расточку кулачков.\n";
+                    break;
+                default:
+                {
+                    if (MakeAccessoriesCb.IsChecked is true && FixJawsCb.IsChecked is not true)
+                    {
+                        reduced = true;
+                        setupFullTime -= 30;
+                        message += "Из наладки вычтено 30 минут на изготовление оснастки.\n";
+                    }
+
+                    break;
+                }
+            }
+
+            if (reduced) message += $"Фактическое время наладки составило {setupFullTime} минут. ";
+            
+
+
+
+            if (double.TryParse(SetupNormTp.Text, out double setupNormTime))
+            {
+                var productivity = setupNormTime / setupFullTime * 100;
+                message += $"Выполнение нормы: {productivity:N0}%";
+            }
+            
+
+            SetupInformationTb.Text = message.Trim();
+
+        }
+
+        #endregion
+
+        
     }
 }

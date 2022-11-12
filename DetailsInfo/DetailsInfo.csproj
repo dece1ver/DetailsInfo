@@ -55,4 +55,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Page Update="DateTimeKeyboardControl.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+  </ItemGroup>
+
 </Project>
