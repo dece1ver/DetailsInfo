@@ -11,8 +11,7 @@
              TextOptions.TextFormattingMode="Ideal"
              TextOptions.TextRenderingMode="Auto"
              FontFamily="{DynamicResource MaterialDesignFont}"
-             mc:Ignorable="d"
-             d:DesignHeight="216" d:DesignWidth="280">
+             mc:Ignorable="d">
     <UserControl.Resources>
         <Style TargetType="ColumnDefinition">
             <Setter Property="Width" Value="70"/>
@@ -24,6 +23,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Margin" Value="2"/>
             <Setter Property="Height" Value="50"/>
+            <Setter Property="Width" Value="50"/>
             <Setter Property="FontWeight" Value="Light"/>
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="Padding" Value="-5"/>
@@ -31,40 +31,27 @@
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
         </Style>
     </UserControl.Resources>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Button x:Name="button7" Content="7" Grid.Column="0" Grid.Row="0" Click="button7_Click"/>
-        <Button x:Name="button8" Content="8" Grid.Column="1" Grid.Row="0" Click="button8_Click"/>
-        <Button x:Name="button9" Content="9" Grid.Column="2" Grid.Row="0" Click="button9_Click"/>
-        <Button x:Name="buttonBackspace" Grid.Column="4" Grid.Row="0" Click="buttonBackspace_Click">
+    <StackPanel Orientation="Horizontal">
+        
+        
+        <Button x:Name="button1" Content="1" Click="button1_Click"/>
+        <Button x:Name="button2" Content="2" Click="button2_Click"/>
+        <Button x:Name="button3" Content="3" Click="button3_Click"/>
+        <Button x:Name="button4" Content="4" Click="button4_Click"/>
+        <Button x:Name="button5" Content="5" Click="button5_Click"/>
+        <Button x:Name="button6" Content="6" Click="button6_Click"/>
+        <Button x:Name="button7" Content="7" Click="button7_Click"/>
+        <Button x:Name="button8" Content="8" Click="button8_Click"/>
+        <Button x:Name="button9" Content="9" Click="button9_Click"/>
+        <Button x:Name="button0" Content="0" Click="button0_Click"/>
+        <Button x:Name="buttonDot" Content="." Click="buttonDot_Click"/>
+        <Button x:Name="buttonColon" Content=":" Click="buttonColon_Click"/>
+        <Button x:Name="buttonBackspace" Click="buttonBackspace_Click">
             <materialDesign:PackIcon Kind="Backspace"/>
         </Button>
+        <Button x:Name="buttonDel" Content="Del" Click="buttonDel_Click"/>
+        <Button x:Name="buttonClear" Content="Clear" Click="buttonClear_Click"/>
 
-        <Button x:Name="button4" Content="4" Grid.Column="0" Grid.Row="1" Click="button4_Click"/>
-        <Button x:Name="button5" Content="5" Grid.Column="1" Grid.Row="1" Click="button5_Click"/>
-        <Button x:Name="button6" Content="6" Grid.Column="2" Grid.Row="1" Click="button6_Click"/>
-        <Button x:Name="buttonDel" Content="Del" Grid.Column="3" Grid.Row="1" Click="buttonDel_Click"/>
-
-        <Button x:Name="button1" Content="1" Grid.Column="0" Grid.Row="2" Click="button1_Click"/>
-        <Button x:Name="button2" Content="2" Grid.Column="1" Grid.Row="2" Click="button2_Click"/>
-        <Button x:Name="button3" Content="3" Grid.Column="2" Grid.Row="2" Click="button3_Click"/>
-        <Button x:Name="buttonClear" Content="Clear" Grid.Column="3" Grid.Row="2" Click="buttonClear_Click"/>
-
-        <Button x:Name="button0" Width="auto" Content="0" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Click="button0_Click"/>
-        <Button x:Name="buttonDot" Content="." Grid.Column="2" Grid.Row="3" Click="buttonDot_Click"/>
         
-        <Button x:Name="buttonColon" Content=":" Grid.Column="3" Grid.Row="3" Click="buttonColon_Click"/>
-        
-    </Grid>
+    </StackPanel>
 </UserControl>

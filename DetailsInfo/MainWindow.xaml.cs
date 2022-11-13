@@ -2017,6 +2017,11 @@ namespace DetailsInfo
 
         #region Нормативы
 
+        private void SetupEndTp_SelectedTimeChanged(object sender, RoutedPropertyChangedEventArgs<DateTime?> e)
+        {
+            ProductionStartTp.SelectedTime = SetupEndTp.SelectedTime;
+        }
+
         private void CalcSetupButton_Click(object sender, RoutedEventArgs e)
         {
             bool reduced = false;
@@ -2034,6 +2039,12 @@ namespace DetailsInfo
             }
             var startSetupTime = SetupStartTp.SelectedTime.Value;
             var endSetupTime = SetupEndTp.SelectedTime.Value;
+
+            if (startSetupTime == endSetupTime)
+            {
+                SetupInformationTb.Text = $"Время начала и окончания совпадают.";
+                return;
+            }
 
             if (startSetupTime > endSetupTime)
             {
@@ -2088,46 +2099,211 @@ namespace DetailsInfo
                 message += "Наладка происходила во ночного чая, вычтено 30 минут.\n";
             }
 
-            switch (FixJawsCb.IsChecked)
+            if (double.TryParse(SetupDowntimeTp.Text.Replace('.', ','), out double setupDowntime))
             {
-                case true when MakeAccessoriesCb.IsChecked is true:
-                    reduced = true;
-                    setupFullTime -= 60;
-                    message += "Из наладки вычтено 60 минут на расточку кулачков и изготовление оснастки.\n";
-                    break;
-                case true when MakeAccessoriesCb.IsChecked is not true:
-                    reduced = true;
-                    setupFullTime -= 30;
-                    message += "Из наладки вычтено 30 минут на расточку кулачков.\n";
-                    break;
-                default:
-                {
-                    if (MakeAccessoriesCb.IsChecked is true && FixJawsCb.IsChecked is not true)
-                    {
-                        reduced = true;
-                        setupFullTime -= 30;
-                        message += "Из наладки вычтено 30 минут на изготовление оснастки.\n";
-                    }
-
-                    break;
-                }
+                reduced = true;
+                setupFullTime -= setupDowntime;
+                message += $"Вычтен простой: {setupDowntime:N0} мин.\n";
             }
 
-            if (reduced) message += $"Фактическое время наладки составило {setupFullTime} минут. ";
-            
+
+            //switch (FixJawsCb.IsChecked)
+            //{
+            //    case true when MakeAccessoriesCb.IsChecked is true:
+            //        reduced = true;
+            //        setupFullTime -= 60;
+            //        message += "Из наладки вычтено 60 минут на расточку кулачков и изготовление оснастки.\n";
+            //        break;
+            //    case true when MakeAccessoriesCb.IsChecked is not true:
+            //        reduced = true;
+            //        setupFullTime -= 30;
+            //        message += "Из наладки вычтено 30 минут на расточку кулачков.\n";
+            //        break;
+            //    default:
+            //    {
+            //        if (MakeAccessoriesCb.IsChecked is true && FixJawsCb.IsChecked is not true)
+            //        {
+            //            reduced = true;
+            //            setupFullTime -= 30;
+            //            message += "Из наладки вычтено 30 минут на изготовление оснастки.\n";
+            //        }
+
+            //        break;
+            //    }
+            //}
+
+            if (reduced) message += $"Фактическое время наладки с учетом простоев составило {setupFullTime} минут.\n";
 
 
 
-            if (double.TryParse(SetupNormTp.Text, out double setupNormTime))
+
+            if (!double.TryParse(SetupNormTp.Text.Replace('.', ','), out double setupNormTime))
             {
-                var productivity = setupNormTime / setupFullTime * 100;
-                message += $"Выполнение нормы: {productivity:N0}%";
+                SetupInformationTb.Text = "Некорректно указан норматив.";
+                return;
             }
-            
+            double productivity = setupNormTime / setupFullTime * 100;
+            message += $"Выполнение нормы: {productivity:N0}%.";
 
             SetupInformationTb.Text = message.Trim();
 
         }
+
+        private void CalcProductionButton_Click(object sender, RoutedEventArgs e)
+        {
+            bool reduced = false;
+
+            if (ProductionStartTp.SelectedTime == null)
+            {
+                ProductionInformationTb.Text = $"Некорректно указано начальное время изготовления";
+                return;
+            }
+
+            if (ProductionEndTp.SelectedTime == null)
+            {
+                ProductionInformationTb.Text = $"Некорректно указано конечное время изготовления";
+                return;
+            }
+
+            if (!int.TryParse(PartsCountTb.Text, out int partsCount))
+            {
+                ProductionInformationTb.Text = $"Некорректно указано количество деталей";
+                return;
+            }
+            var startProductionTime = ProductionStartTp.SelectedTime.Value;
+            var endProductionTime = ProductionEndTp.SelectedTime.Value;
+
+            if (startProductionTime == endProductionTime)
+            {
+                ProductionInformationTb.Text = $"Время начала и окончания совпадают.";
+                return;
+            }
+
+            if (startProductionTime > endProductionTime)
+            {
+                endProductionTime = endProductionTime.AddDays(1);
+            }
+
+            double productionFullTime = (endProductionTime - startProductionTime).TotalMinutes;
+
+            string message = string.Empty;
+
+            message = $"Общее время изготовления составило {productionFullTime} минут.\n";
+
+            if (dayShiftFirstBreak > startProductionTime && dayShiftFirstBreak <= endProductionTime)
+            {
+                reduced = true;
+                productionFullTime -= 15;
+                message += "Изготовление происходило во время утреннего перерыва на чай, вычтено 15 минут.\n";
+            }
+
+            if (dayShiftSecondBreak > startProductionTime && dayShiftSecondBreak <= endProductionTime)
+            {
+                reduced = true;
+                productionFullTime -= 30;
+                message += "Изготовление происходило во время обеда, вычтено 30 минут.\n";
+            }
+
+            if (dayShiftThirdBreak > startProductionTime && dayShiftThirdBreak <= endProductionTime)
+            {
+                reduced = true;
+                productionFullTime -= 15;
+                message += "Изготовление происходило во дневного чая, вычтено 15 минут.\n";
+            }
+
+            if (nightShiftFirstBreak > startProductionTime && nightShiftFirstBreak <= endProductionTime)
+            {
+                reduced = true;
+                productionFullTime -= 30;
+                message += "Изготовление происходило во время вечернего перерыва на чай, вычтено 30 минут.\n";
+            }
+
+            if (nightShiftSecondBreak > startProductionTime && nightShiftSecondBreak <= endProductionTime)
+            {
+                reduced = true;
+                productionFullTime -= 30;
+                message += "Изготовление происходило во время ночного обеда, вычтено 30 минут.\n";
+            }
+
+            if (nightShiftThirdBreak > startProductionTime && nightShiftThirdBreak <= endProductionTime)
+            {
+                reduced = true;
+                productionFullTime -= 30;
+                message += "Изготовление происходило во ночного чая, вычтено 30 минут.\n";
+            }
+
+            if (double.TryParse(ProductionDowntimeTb.Text.Replace(',','.'), out double productionDowntime))
+            {
+                reduced = true;
+                if (productionDowntime > productionFullTime)
+                {
+                    ProductionInformationTb.Text = $"Время простоя превышает время изготовления.";
+                    return;
+                }
+                productionFullTime -= productionDowntime;
+                message += $"Вычтен простой: {productionDowntime:N0} мин.\n";
+            }
+
+            //string[] machineTimeTbText = ProductionMachineTimeTb.Text.Split(':');
+            //if (machineTimeTbText.Length != 2) return;
+            //double machineTime = double.Parse(machineTimeTbText[0].Replace('_','0')) + double.Parse(machineTimeTbText[1].Replace('_','0')) / 60;
+            //message = $"Машинное время: {machineTime.ToString("F2").Replace(",00","").Replace(',','.')}\n";
+
+
+            if (!double.TryParse(ProductionNormTb.Text.Replace('.', ','), out double productionNormTime))
+            {
+                ProductionInformationTb.Text = $"Некорректно указан норматив.";
+                return;
+            }
+
+            //double setupTime = 0;
+
+            //if (Settings.Default.machinePath.EndsWith("GS-1500"))
+            //{
+            //    message += $"Базовое время на замену 2 минуты.";
+            //    setupTime += 2;
+            //}
+            //else
+            //{
+            //    message += $"Базовое время на замену 1 минута.";
+            //    setupTime += 1;
+            //}
+
+            //if (DirectlyCheckingCb.IsChecked is true)
+            //{
+            //    message += $"На установку детали добавлено 30 секунд для обмеров в станке.";
+            //    setupTime += 0.5;
+            //}
+
+            //if (UsingAccessoriesCb.IsChecked is true)
+            //{
+            //    message += $"На установку детали добавлено 30 секунд для установки в оснастку.";
+            //    setupTime += 0.5;
+            //}
+
+            //if (SetupEveryPartCb.IsChecked is true)
+            //{
+            //    message += $"На установку детали добавлено 5 минут для привязки каждой детали.";
+            //    setupTime += 5;
+            //}
+
+            //if (UsingCraneCb.IsChecked is true)
+            //{
+            //    message += $"На установку детали добавлено 5 минут для установки детали тельфером.";
+            //    setupTime += 5;
+            //}
+
+            double productionNormFullTime = productionNormTime * partsCount;
+            message += $"Норматив на выполнение партии: {productionNormFullTime:N0} минут.\n";
+            if (reduced) message += $"Фактическое время изготовления с учетом простоев составило {productionFullTime:N0} минут.\n";
+
+
+            double productivity = productionNormFullTime / productionFullTime * 100;
+            message += $"Выполнение нормы: {productivity:N0}%";
+
+            ProductionInformationTb.Text = message.Trim();
+        }
+
 
         #endregion
 
