@@ -112,15 +112,13 @@ namespace DetailsInfo
 
         #region Перерывы
 
-        private DateTime dayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
-        private DateTime dayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
-        private DateTime dayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
+        private readonly DateTime DayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
+        private readonly DateTime DayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
+        private readonly DateTime DayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
 
-
-        // проверить график ночных перерывов
-        private DateTime nightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22);
-        private DateTime nightShiftSecondBreak = DateTime.Today + TimeSpan.FromDays(1);
-        private DateTime nightShiftThirdBreak = DateTime.Today + TimeSpan.FromDays(1) + TimeSpan.FromHours(3);
+        private readonly DateTime NightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
+        private readonly DateTime NightShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(1) + TimeSpan.FromMinutes(30);
+        private readonly DateTime NightShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30);
 
         #endregion
 
@@ -2025,6 +2023,12 @@ namespace DetailsInfo
         private void CalcSetupButton_Click(object sender, RoutedEventArgs e)
         {
             bool reduced = false;
+            var dayShiftFirstBreak = DayShiftFirstBreak;
+            var dayShiftSecondBreak = DayShiftSecondBreak;
+            var dayShiftThirdBreak = DayShiftThirdBreak;
+            var nightShiftFirstBreak = NightShiftFirstBreak;
+            var nightShiftSecondBreak = NightShiftSecondBreak;
+            var nightShiftThirdBreak = NightShiftThirdBreak;
 
             if (SetupStartTp.SelectedTime == null)
             {
@@ -2048,6 +2052,8 @@ namespace DetailsInfo
 
             if (startSetupTime > endSetupTime)
             {
+                nightShiftSecondBreak = nightShiftSecondBreak.AddDays(1);
+                nightShiftThirdBreak = nightShiftThirdBreak.AddDays(1);
                 endSetupTime = endSetupTime.AddDays(1);
             }
 
@@ -2152,6 +2158,12 @@ namespace DetailsInfo
         private void CalcProductionButton_Click(object sender, RoutedEventArgs e)
         {
             bool reduced = false;
+            var dayShiftFirstBreak = DayShiftFirstBreak;
+            var dayShiftSecondBreak = DayShiftSecondBreak;
+            var dayShiftThirdBreak = DayShiftThirdBreak;
+            var nightShiftFirstBreak = NightShiftFirstBreak;
+            var nightShiftSecondBreak = NightShiftSecondBreak;
+            var nightShiftThirdBreak = NightShiftThirdBreak;
 
             if (ProductionStartTp.SelectedTime == null)
             {
@@ -2181,6 +2193,8 @@ namespace DetailsInfo
 
             if (startProductionTime > endProductionTime)
             {
+                nightShiftSecondBreak = nightShiftSecondBreak.AddDays(1);
+                nightShiftThirdBreak = nightShiftThirdBreak.AddDays(1);
                 endProductionTime = endProductionTime.AddDays(1);
             }
 
@@ -2190,42 +2204,42 @@ namespace DetailsInfo
 
             message = $"Общее время изготовления составило {productionFullTime} минут.\n";
 
-            if (dayShiftFirstBreak > startProductionTime && dayShiftFirstBreak <= endProductionTime)
+            if (dayShiftFirstBreak >= startProductionTime && dayShiftFirstBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 15;
                 message += "Изготовление происходило во время утреннего перерыва на чай, вычтено 15 минут.\n";
             }
 
-            if (dayShiftSecondBreak > startProductionTime && dayShiftSecondBreak <= endProductionTime)
+            if (dayShiftSecondBreak >= startProductionTime && dayShiftSecondBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 30;
                 message += "Изготовление происходило во время обеда, вычтено 30 минут.\n";
             }
 
-            if (dayShiftThirdBreak > startProductionTime && dayShiftThirdBreak <= endProductionTime)
+            if (dayShiftThirdBreak >= startProductionTime && dayShiftThirdBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 15;
                 message += "Изготовление происходило во дневного чая, вычтено 15 минут.\n";
             }
 
-            if (nightShiftFirstBreak > startProductionTime && nightShiftFirstBreak <= endProductionTime)
+            if (nightShiftFirstBreak >= startProductionTime && nightShiftFirstBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 30;
                 message += "Изготовление происходило во время вечернего перерыва на чай, вычтено 30 минут.\n";
             }
 
-            if (nightShiftSecondBreak > startProductionTime && nightShiftSecondBreak <= endProductionTime)
+            if (nightShiftSecondBreak >= startProductionTime && nightShiftSecondBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 30;
                 message += "Изготовление происходило во время ночного обеда, вычтено 30 минут.\n";
             }
 
-            if (nightShiftThirdBreak > startProductionTime && nightShiftThirdBreak <= endProductionTime)
+            if (nightShiftThirdBreak >= startProductionTime && nightShiftThirdBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 30;
