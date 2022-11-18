@@ -722,9 +722,7 @@
                                                      materialDesign:TextFieldAssist.SuffixText="мин"
                                                      Width="150">
                                             </TextBox>
-                                            <Button x:Name="CalcSetupButton" Style="{StaticResource generalButtonStyle}" Click="CalcSetupButton_Click">
-                                                <materialDesign:PackIcon Kind="Calculator"/>
-                                            </Button>
+                                            
                                         </StackPanel>
                                         <!--<StackPanel Orientation="Horizontal">
                                             <CheckBox x:Name="FixJawsCb" Margin="0 10 0 0"
@@ -734,12 +732,28 @@
                                                       Style="{StaticResource MaterialDesignFilterChipAccentOutlineCheckBox}"
                                                       Content="Изготовление оснастки" Width="180" Cursor="Hand"/>
                                         </StackPanel>-->
-                                        <TextBox x:Name="SetupInformationTb" IsReadOnly="True" Focusable="False"
+                                        <Grid>
+                                            <TextBox Grid.Row="0" Grid.Column="0" x:Name="SetupInformationTb" IsReadOnly="True" Focusable="False"
                                                  Style="{DynamicResource MaterialDesignFloatingHintTextBox}" 
                                                  Margin="0 10 0 0"
                                                  materialDesign:HintAssist.Hint="Информация"
                                                  BorderThickness="0"
                                                  materialDesign:HintAssist.Background="#2a2a2a"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <Button x:Name="CalcSetupButton" Height="58" Width="70" 
+                                                        VerticalAlignment="Bottom"
+                                                        Style="{StaticResource generalButtonStyle}" Click="CalcSetupButton_Click" Cursor="Hand">
+                                                    <materialDesign:PackIcon Kind="Calculator"/>
+                                                </Button>
+                                                <TextBox x:Name="SetupResultTb" Grid.Row="0" Grid.Column="0" 
+                                                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                     Style="{StaticResource MaterialDesignOutlinedTextBox}" 
+                                                     materialDesign:HintAssist.Hint="Выработка"
+                                                     materialDesign:HintAssist.Background="#2a2a2a" HorizontalContentAlignment="Left"
+                                                     materialDesign:TextFieldAssist.SuffixText="%" FontSize="20"
+                                                     Width="150" Visibility="Visible" IsReadOnly="True"/>
+                                            </StackPanel>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
                                 <Border DockPanel.Dock="Top" Padding="10 10 10 10" Margin="0 10 0 0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" Background="{DynamicResource MaterialDesignDarkSeparatorBackground}" >
@@ -794,9 +808,7 @@
                                                      materialDesign:TextFieldAssist.SuffixText="шт"
                                                      Width="150">
                                             </TextBox>
-                                            <Button x:Name="CalcProductionButton" Style="{StaticResource generalButtonStyle}" Click="CalcProductionButton_Click">
-                                                <materialDesign:PackIcon Kind="Calculator"/>
-                                            </Button>
+                                            
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Visibility="Collapsed">
                                             <CheckBox x:Name="DirectlyCheckingCb" Margin="0 10 0 0"
@@ -836,12 +848,29 @@
                                                 </TextBlock>
                                             </CheckBox>
                                         </StackPanel>
-                                        <TextBox x:Name="ProductionInformationTb" IsReadOnly="True" Focusable="False"
+                                        <Grid>
+                                            <TextBox x:Name="ProductionInformationTb" IsReadOnly="True" Focusable="False"
                                                  Style="{DynamicResource MaterialDesignFloatingHintTextBox}" 
                                                  Margin="0 10 0 0"
                                                  materialDesign:HintAssist.Hint="Информация"
                                                  BorderThickness="0"
                                                  materialDesign:HintAssist.Background="#2a2a2a"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <Button x:Name="CalcProductionButton" Height="58" Width="70" 
+                                                        VerticalAlignment="Bottom"
+                                                        Style="{StaticResource generalButtonStyle}" Click="CalcProductionButton_Click" Cursor="Hand">
+                                                    <materialDesign:PackIcon Kind="Calculator"/>
+                                                </Button>
+                                                <TextBox x:Name="ProductionResultTb" Grid.Row="0" Grid.Column="0" 
+                                                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                     Style="{StaticResource MaterialDesignOutlinedTextBox}" 
+                                                     materialDesign:HintAssist.Hint="Выработка"
+                                                     materialDesign:HintAssist.Background="#2a2a2a" HorizontalContentAlignment="Left"
+                                                     materialDesign:TextFieldAssist.SuffixText="%" FontSize="20"
+                                                     Width="150" IsReadOnly="True"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        
                                     </StackPanel>
                                 </Border>
                                 <local:DateTimeKeyboardControl DockPanel.Dock="Top" 

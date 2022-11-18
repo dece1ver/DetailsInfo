@@ -816,7 +816,7 @@ namespace DetailsInfo
             archiveWatcher.Created += new FileSystemEventHandler(OnCreatedInArchive);
             archiveWatcher.Deleted += new FileSystemEventHandler(OnDeletedInArchive);
             archiveWatcher.Renamed += new RenamedEventHandler(OnRenamedInArchive);
-            machineWatcher.EnableRaisingEvents = true;
+            archiveWatcher.EnableRaisingEvents = true;
             archiveButtonsPanel.Dispatcher.Invoke(() => archiveButtonsPanel.Visibility = Visibility.Visible);
             archiveLV.Dispatcher.Invoke(() => archiveLV.Visibility = Visibility.Visible);
             archiveProgressBar.Dispatcher.Invoke(() => archiveProgressBar.Visibility = Visibility.Collapsed);
@@ -1112,13 +1112,14 @@ namespace DetailsInfo
                 }
                 LoadArchive();
 
-                machineWatcher.Path = Settings.Default.machinePath;
+                
                 if (!Reader.CheckPath(Settings.Default.machinePath))
                 {
                     TurnOffMachine();
                 }
                 else
                 {
+                    machineWatcher.Path = Settings.Default.machinePath;
                     TurnOnMachine();
                 }
                 LoadMachine();
@@ -2081,7 +2082,7 @@ namespace DetailsInfo
             {
                 reduced = true;
                 setupFullTime -= 15;
-                message += "Наладка происходила во дневного чая, вычтено 15 минут.\n";
+                message += "Наладка происходила во время дневного чая, вычтено 15 минут.\n";
             }
 
             if (nightShiftFirstBreak >= startSetupTime && nightShiftFirstBreak <= endSetupTime)
@@ -2141,8 +2142,6 @@ namespace DetailsInfo
             if (reduced) message += $"Фактическое время наладки с учетом простоев составило {setupFullTime} минут.\n";
 
 
-
-
             if (!double.TryParse(SetupNormTp.Text.Replace('.', ','), out double setupNormTime))
             {
                 SetupInformationTb.Text = "Некорректно указан норматив.";
@@ -2152,7 +2151,9 @@ namespace DetailsInfo
             message += $"Выполнение нормы: {productivity:N0}%.";
 
             SetupInformationTb.Text = message.Trim();
-
+            SetupResultTb.Text = $"{productivity:N0}";
+            SetupResultTb.Visibility = Visibility.Visible;
+            SetupResultTb.Focus();
         }
 
         private void CalcProductionButton_Click(object sender, RoutedEventArgs e)
@@ -2316,11 +2317,13 @@ namespace DetailsInfo
             message += $"Выполнение нормы: {productivity:N0}%";
 
             ProductionInformationTb.Text = message.Trim();
+            ProductionResultTb.Text = $"{productivity:N0}";
+            ProductionResultTb.Visibility = Visibility.Visible;
+            ProductionResultTb.Focus();
         }
 
 
         #endregion
 
-        
     }
 }
