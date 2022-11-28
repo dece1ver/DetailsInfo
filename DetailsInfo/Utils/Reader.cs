@@ -18,6 +18,7 @@ using System.Windows.Shapes;
 using MimeKit.Encodings;
 using static DetailsInfo.Data.FileFormats;
 using Path = System.IO.Path;
+using static System.Windows.Forms.LinkLabel;
 
 namespace DetailsInfo.Data
 {
@@ -322,6 +323,12 @@ namespace DetailsInfo.Data
             out List<string> warningsDots,
             out List<string> warningsEmptyAddress,
             out List<string> warningsCoolant,
+            out List<string> warningsPolar,
+            out List<string> warningsCyclesCancel,
+            out List<string> warningsMacroCallCancel,
+            out List<string> warningsCustomCyclesCancel,
+            out List<string> warningsFeedType,
+            out List<string> warningsIncrement,
             out bool warningStartPercent,
             out bool warningEndPercent,
             out bool warningEndProgram,
@@ -333,16 +340,22 @@ namespace DetailsInfo.Data
             /// 
             //Stopwatch sw = Stopwatch.StartNew();
             List<NcToolInfo> tools = new();
-            warningsH = new List<string>();            // корректор на длину
-            warningsD = new List<string>();            // корректор на радиус
-            warningsBracket = new List<string>();      // скобки
-            warningsDots = new List<string>();         // точки
-            warningsEmptyAddress = new List<string>(); // пустые адреса
-            warningsCoolant = new List<string>();      // СОЖ
-            warningStartPercent = false;               // процент в начале
-            warningEndPercent = true;                 // процент в конце
-            warningEndProgram = true;                  // процент в конце
-            warningsExcessText = new List<string>();   // лишний текст (за скобками)
+            warningsH = new List<string>();                   // корректор на длину
+            warningsD = new List<string>();                   // корректор на радиус
+            warningsBracket = new List<string>();             // скобки
+            warningsDots = new List<string>();                // точки
+            warningsEmptyAddress = new List<string>();        // пустые адреса
+            warningsCoolant = new List<string>();             // СОЖ
+            warningsPolar = new List<string>();               // выключение полярной СК
+            warningsCyclesCancel = new List<string>();        // выключение циклов
+            warningsMacroCallCancel = new List<string>();     // выключение моих циклов
+            warningsCustomCyclesCancel = new List<string>();  // лишний текст в выключении моих циклов или модальных макро программ
+            warningsFeedType = new List<string>();            // возврат подачи к мм/мин
+            warningsIncrement = new List<string>();           // возврат к абсолютным координатам
+            warningStartPercent = false;                      // процент в начале
+            warningEndPercent = true;                         // процент в конце
+            warningEndProgram = true;                         // процент в конце
+            warningsExcessText = new List<string>();          // лишний текст (за скобками)
             var millProgram = false;
             var lazyAnalyze = false;
             var lines = File.ReadLines(programPath).ToImmutableList();
@@ -352,6 +365,7 @@ namespace DetailsInfo.Data
             var currentToolComment = string.Empty;
             var currentH = 0;
             var currentD = 0;
+            var currentCoolant = Coolant.Off;
 
             // проценты
             if (!lines.First().Trim().Equals("%")) warningStartPercent = true;
@@ -462,11 +476,85 @@ namespace DetailsInfo.Data
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
+                        currentTool.Line = lines.IndexOf(line) + 1;
                         if (!tools.Contains(currentTool))
                         {
                             tools.Add(currentTool);
                         }
                     }
+                }
+
+                // переключение ск в полярную и обратно
+                if(lineWithoutParenthesis.Contains("G16"))
+                {
+                    warningsPolar.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                }
+                if (lineWithoutParenthesis.Contains("G15") && warningsPolar.Count > 0)
+                {
+                    warningsPolar.Remove(warningsPolar.Last());
+                }
+
+                // тип подачи
+                if(lineWithoutParenthesis.Contains("G95"))
+                {
+                    warningsFeedType.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                }
+                if (lineWithoutParenthesis.Contains("G94") && warningsFeedType.Count > 0)
+                {
+                    warningsFeedType.Remove(warningsFeedType.Last());
+                }
+
+                // приращения
+                if(lineWithoutParenthesis.Contains("G91"))
+                {
+                    warningsIncrement.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                }
+                if (lineWithoutParenthesis.Contains("G90") && warningsIncrement.Count > 0)
+                {
+                    warningsIncrement.Remove(warningsIncrement.Last());
+                }
+
+                // циклы
+                if(lineWithoutParenthesis.Contains("G81") 
+                    || lineWithoutParenthesis.Contains("G82") 
+                    || lineWithoutParenthesis.Contains("G83") 
+                    || lineWithoutParenthesis.Contains("G84") 
+                    || lineWithoutParenthesis.Contains("G85"))
+                {
+                    warningsCyclesCancel.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                }
+                if (lineWithoutParenthesis.Contains("G80") && warningsCyclesCancel.Count > 0)
+                {
+                    warningsCyclesCancel.Remove(warningsCyclesCancel.Last());
+                }
+
+                // мои циклы и модальные макро программы
+                if(lineWithoutParenthesis.Contains("G161") 
+                    || lineWithoutParenthesis.Contains("G166")
+                    || lineWithoutParenthesis.Contains("G66"))
+                {
+                    warningsMacroCallCancel.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                }
+                if (lineWithoutParenthesis.Contains("G67") && warningsMacroCallCancel.Count > 0)
+                {
+                    // лишний текст в отключении
+                    if (!lineWithoutParenthesis.StartsWith('N'))
+                    {
+                        if(lineWithoutParenthesis != "G67")
+                        {
+                            warningsCustomCyclesCancel.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                        }
+                    } 
+                    else
+                    {
+                        var re = new Regex(@"N\d*", RegexOptions.Compiled).Matches(lineWithoutParenthesis);
+                        lineWithoutParenthesis = re.Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
+                        if (lineWithoutParenthesis != "G67")
+                        {
+                            warningsCustomCyclesCancel.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                        }
+                    }
+                    warningsCyclesCancel.Remove(warningsCyclesCancel.Last());
                 }
 
                 // фрезерный инструмент
@@ -480,6 +568,7 @@ namespace DetailsInfo.Data
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
+                        currentTool.Line = lines.IndexOf(line) + 1;
                         if (!tools.Contains(currentTool))
                         {
                             if (tools.FindAll(t =>
@@ -528,6 +617,7 @@ namespace DetailsInfo.Data
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = 0;
                         currentTool.RadiusCompensation = 0;
+                        currentTool.Line = lines.IndexOf(line) + 1;
                         if (!tools.Contains(currentTool))
                         {
                             tools.Add(currentTool);
@@ -548,14 +638,35 @@ namespace DetailsInfo.Data
                         try
                         {
                             currentToolComment = $"(" + line.Split("(")[1].Trim();
-                            //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
                         }
                         catch (IndexOutOfRangeException)
                         {
                             currentToolComment = $"(---)";
-                            //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
                         }
                     }
+                }
+
+                if (lineWithoutParenthesis.Contains("M8") || lineWithoutParenthesis.Contains("M58"))
+                {
+                    currentCoolant = Coolant.On;
+                }
+                if (lineWithoutParenthesis.Contains("M9") || lineWithoutParenthesis.Contains("M59"))
+                {
+                    currentCoolant = Coolant.Off;
+                }
+                if (lineWithoutParenthesis.Contains("G01")
+                    || lineWithoutParenthesis.Contains("G1")
+                    || lineWithoutParenthesis.Contains("G72")
+                    || lineWithoutParenthesis.Contains("G71"))
+                {
+                    currentTool.Coolant = currentCoolant;
+                    //if (tools.Count > 0)
+                    //{
+                        //var lastTool = tools.Last();
+                        //int index = tools.IndexOf(lastTool);
+                        //lastTool.Coolant = currentCoolant;
+                        //tools[index] = lastTool;
+                    //}
                 }
 
                 if ((line.Contains("G41") || line.Contains("G42")) && line.Contains('D'))
@@ -643,6 +754,15 @@ namespace DetailsInfo.Data
                     }
                 }
             }
+            if (!millProgram)
+            {
+                foreach (var tool in  tools.Where(x => x.Coolant is Coolant.Off))
+                {
+                    warningsCoolant.Add($"[{tool.Line}]: Т{tool.Position:D4} {tool.Comment}");
+                }
+            }
+            
+            
             caption = $"{(millProgram ? "Фрезерная" : "Токарная")} программа";
             coordinates = coordinateSystems.Count switch
             {

@@ -856,10 +856,11 @@ namespace DetailsInfo
                 });
             }
 
-            if (machineDG.ItemsSource == null || !_machineContent.SequenceEqual(machineDG.ItemsSource as List<NcFile> ?? new List<NcFile>()))
-            {
-                machineDG.Dispatcher.InvokeAsync(() => machineDG.ItemsSource = _machineContent);
-            }
+            //if (machineDG.ItemsSource == null || !_machineContent.SequenceEqual(machineDG.ItemsSource as List<NcFile> ?? new List<NcFile>()))
+            //{
+            //    machineDG.Dispatcher.InvokeAsync(() => machineDG.ItemsSource = _machineContent);
+            //}
+            machineDG.Dispatcher.InvokeAsync(() => machineDG.ItemsSource = _machineContent);
         }
 
         /// <summary>
@@ -1189,8 +1190,11 @@ namespace DetailsInfo
         private void refreshButton_Click(object sender, RoutedEventArgs e)
         {
             _findStatus = FindStatus.DontNeed;
-            LoadMachine();
+            var machinePath = Settings.Default.machinePath;
+            Settings.Default.machinePath = "";
+            Settings.Default.machinePath = machinePath;
             LoadArchive();
+            LoadMachine();
         }
 
         private void minimizeButton_Click(object sender, RoutedEventArgs e)
@@ -1875,6 +1879,12 @@ namespace DetailsInfo
                     out var warningsDots,
                     out var warningsEmptyAddress,
                     out var warningsCoolant,
+                    out var warningsPolar,
+                    out var warningsCyclesCancel,
+                    out var warningsMacroCallCancel,
+                    out var warningsCustomCyclesCancel,
+                    out var warningsFeedType,
+                    out var warningsIncrement,
                     out var warningStartPercent,
                     out var warningEndPercent,
                     out var warningEndProgram,
@@ -1922,9 +1932,32 @@ namespace DetailsInfo
                 }
                 if (warningsCoolant.Count > 0)
                 {
-                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Несовпадений СОЖ: {warningsCoolant.Count}\n{string.Join('\n', warningsCoolant)}\n\n");
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Работа без охлаждения: {warningsCoolant.Count}\n{string.Join('\n', warningsCoolant)}\n\n");
                 }
-                
+                if (warningsPolar.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Не выключен G16: {warningsPolar.Count}\n{string.Join('\n', warningsPolar)}\n\n");
+                }
+                if (warningsCyclesCancel.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Не отменен цикл: {warningsCyclesCancel.Count}\n{string.Join('\n', warningsCyclesCancel)}\n\n");
+                }
+                if (warningsMacroCallCancel.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Не отменен макро вызов: {warningsMacroCallCancel.Count}\n{string.Join('\n', warningsMacroCallCancel)}\n\n");
+                }
+                if (warningsCustomCyclesCancel.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Лишний текст в отмене макро вызова: {warningsCustomCyclesCancel.Count}\n{string.Join('\n', warningsCustomCyclesCancel)}\n\n");
+                }
+                if (warningsFeedType.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Оставлена подача мм/об: {warningsFeedType.Count}\n{string.Join('\n', warningsFeedType)}\n\n");
+                }
+                if (warningsIncrement.Count > 0)
+                {
+                    analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Оставлено инкрементное движение: {warningsIncrement.Count}\n{string.Join('\n', warningsIncrement)}\n\n");
+                }
                 if (warningsExcessText.Count > 0)
                 {
                     analyzeResultTB.Dispatcher.Invoke(() => analyzeResultTB.Text += $"Лишний текст: {warningsExcessText.Count}\n {string.Join('\n', warningsExcessText)}");
