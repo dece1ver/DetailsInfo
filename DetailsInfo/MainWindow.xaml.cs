@@ -1008,9 +1008,11 @@ namespace DetailsInfo
                         if (_needUpdateArchive)
                         {
                             _archiveStatus = true;
+                            archiveWatcher.EnableRaisingEvents = true;
                             TurnOnArchive();
                             LoadArchive();
-                        }
+                        } 
+                        else if (_archiveStatus && !archiveWatcher.EnableRaisingEvents) archiveWatcher.EnableRaisingEvents = true; 
                     }
 
                     #endregion
@@ -1045,9 +1047,11 @@ namespace DetailsInfo
                         if (!_machineStatus)
                         {
                             _machineStatus = true;
+                            machineWatcher.EnableRaisingEvents = true;
                             TurnOnMachine();
                             LoadMachine();
-                        }
+                        } 
+                        else if (_machineStatus && !machineWatcher.EnableRaisingEvents) machineWatcher.EnableRaisingEvents = true;
                     }
                     #endregion
 
@@ -1190,10 +1194,23 @@ namespace DetailsInfo
         private void refreshButton_Click(object sender, RoutedEventArgs e)
         {
             _findStatus = FindStatus.DontNeed;
-            var machinePath = Settings.Default.machinePath;
-            Settings.Default.machinePath = "";
-            Settings.Default.machinePath = machinePath;
+            _transferFromArchive = false;
+            _transferFromMachine = false;
+            _renameOnMachine = false;
+            _deleteFromMachine = false;
+            _openFromArchive = false;
+            _openFromNcFolder = false;
+            _analyzeArchiveProgram = false;
+            _analyzeNcProgram = false;
+            _analyzeInfo = false;
+            _showWinExplorer = false;
+            _stopSearch = false;
+            _openFolderButton = false;
+            TurnOffArchive();
+            TurnOnArchive();
             LoadArchive();
+            TurnOffMachine();
+            TurnOnMachine();
             LoadMachine();
         }
 
@@ -1202,6 +1219,22 @@ namespace DetailsInfo
             WindowState = WindowState.Minimized;
         }
         #endregion
+
+        private void ArchiveGroupBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (_advancedMode)
+            {
+                MessageBox.Show( $"archiveWatcher.EnableRaisingEvents = {archiveWatcher.EnableRaisingEvents}", "Молодой человек, это не для вас написано.", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void MachineGroupBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (_advancedMode)
+            {
+                MessageBox.Show( $"machineWatcher.EnableRaisingEvents = {machineWatcher.EnableRaisingEvents}", "Молодой человек, это не для вас написано.", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
 
         #region Архив
 
@@ -2358,5 +2391,6 @@ namespace DetailsInfo
 
         #endregion
 
+        
     }
 }

@@ -371,9 +371,10 @@ namespace DetailsInfo.Data
             if (!lines.First().Trim().Equals("%")) warningStartPercent = true;
             if (!lines.TakeWhile(line => !string.IsNullOrEmpty(line) || !(line.StartsWith('(') && line.EndsWith(')'))).Last().Trim().Equals("%")) warningEndPercent = true;
             var fString = "D" + lines.Count.ToString().Length;
-
+            int i = 1;
             foreach (var line in lines.Skip(1))
             {
+                i++;
                 var lineWithoutParenthesis = line.Trim();
                 lineWithoutParenthesis = new Regex(@"[(][^)]+[)]", RegexOptions.Compiled).Matches(line)
                     .Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
@@ -390,7 +391,7 @@ namespace DetailsInfo.Data
                 {
                     if (line.Count(c => c is '<') != line.Count(c => c is '>'))
                     {
-                        warningsBracket.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                        warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
                     }
                     continue;
                 }
@@ -437,11 +438,11 @@ namespace DetailsInfo.Data
                 // несовпадения скобок
                 if (line.Count(c => c is '(') != line.Count(c => c is ')'))
                 {
-                    warningsBracket.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
                 }
                 if (line.Count(c => c is '[') != line.Count(c => c is ']'))
                 {
-                    warningsBracket.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
                 }
 
                 // пустые адреса
@@ -450,19 +451,19 @@ namespace DetailsInfo.Data
                     !matchEmptyAddress.Match(lineWithoutParenthesis).Value.Contains("GOTO") &&
                     !matchEmptyAddress.Match(lineWithoutParenthesis).Value.Contains("END"))
                 {
-                    warningsEmptyAddress.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsEmptyAddress.Add($"[{(i).ToString(fString)}]: {line}");
                 }
 
                 // лишние точки
                 if (new Regex(@"[A-Z]+[-]?\d*[.]+\d*[.]", RegexOptions.Compiled).IsMatch(lineWithoutParenthesis))
                 {
-                    warningsDots.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsDots.Add($"[{(i).ToString(fString)}]: {line}");
                 }
 
                 //// лишний текст 
                 //if (!new Regex(@"[)]$", RegexOptions.Compiled).IsMatch(line.TrimEnd()) && line.Contains(')'))
                 //{
-                //    warningsExcessText.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                //    warningsExcessText.Add($"[{(i).ToString(fString)}]: {line}");
                 //}
 
                 // конец программы, добавляем последний инструмент, т.к. инструмент добавляется при вызове следующего, а у последнего следующего нет
@@ -476,38 +477,58 @@ namespace DetailsInfo.Data
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
-                        currentTool.Line = lines.IndexOf(line) + 1;
+                        currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
+                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                        warningsPolar.Clear();
+                        warningsFeedType.Clear();
+                        currentTool.Line = i;
                         if (!tools.Contains(currentTool))
                         {
-                            tools.Add(currentTool);
+                            if (tools.FindAll(t =>
+                                    t.Position == currentTool.Position &&
+                                    t.Comment == currentTool.Comment &&
+                                    t.LengthCompensation == currentTool.LengthCompensation &&
+                                    t.RadiusCompensation == currentTool.RadiusCompensation).Count == 0)
+                            {
+                                tools.Add(currentTool);
+                            }
                         }
                     }
                 }
 
                 // переключение ск в полярную и обратно
-                if(lineWithoutParenthesis.Contains("G16"))
+                if(lineWithoutParenthesis.Contains("G16") && 
+                    !lineWithoutParenthesis.StartsWith("G161") && 
+                    !lineWithoutParenthesis.StartsWith("G162") && 
+                    !lineWithoutParenthesis.StartsWith("G163") && 
+                    !lineWithoutParenthesis.StartsWith("G164") && 
+                    !lineWithoutParenthesis.StartsWith("G165") && 
+                    !lineWithoutParenthesis.StartsWith("G166") && 
+                    !lineWithoutParenthesis.StartsWith("G167") && 
+                    !lineWithoutParenthesis.StartsWith("G168") && 
+                    !lineWithoutParenthesis.StartsWith("G169"))
                 {
-                    warningsPolar.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsPolar.Add($"[{(i).ToString(fString)}]: {line}");
                 }
                 if (lineWithoutParenthesis.Contains("G15") && warningsPolar.Count > 0)
                 {
-                    warningsPolar.Remove(warningsPolar.Last());
+                    warningsPolar.Clear();
                 }
 
                 // тип подачи
                 if(lineWithoutParenthesis.Contains("G95"))
                 {
-                    warningsFeedType.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsFeedType.Add($"[{(i).ToString(fString)}]: {line}");
                 }
                 if (lineWithoutParenthesis.Contains("G94") && warningsFeedType.Count > 0)
                 {
-                    warningsFeedType.Remove(warningsFeedType.Last());
+                    warningsFeedType.Clear();
                 }
 
                 // приращения
                 if(lineWithoutParenthesis.Contains("G91"))
                 {
-                    warningsIncrement.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsIncrement.Add($"[{(i).ToString(fString)}]: {line}");
                 }
                 if (lineWithoutParenthesis.Contains("G90") && warningsIncrement.Count > 0)
                 {
@@ -521,7 +542,7 @@ namespace DetailsInfo.Data
                     || lineWithoutParenthesis.Contains("G84") 
                     || lineWithoutParenthesis.Contains("G85"))
                 {
-                    warningsCyclesCancel.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
                 }
                 if (lineWithoutParenthesis.Contains("G80") && warningsCyclesCancel.Count > 0)
                 {
@@ -533,8 +554,9 @@ namespace DetailsInfo.Data
                     || lineWithoutParenthesis.Contains("G166")
                     || lineWithoutParenthesis.Contains("G66"))
                 {
-                    warningsMacroCallCancel.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                    warningsMacroCallCancel.Add($"[{(i).ToString(fString)}]: {line}");
                 }
+
                 if (lineWithoutParenthesis.Contains("G67") && warningsMacroCallCancel.Count > 0)
                 {
                     // лишний текст в отключении
@@ -542,7 +564,7 @@ namespace DetailsInfo.Data
                     {
                         if(lineWithoutParenthesis != "G67")
                         {
-                            warningsCustomCyclesCancel.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                            warningsCustomCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
                         }
                     } 
                     else
@@ -551,10 +573,10 @@ namespace DetailsInfo.Data
                         lineWithoutParenthesis = re.Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
                         if (lineWithoutParenthesis != "G67")
                         {
-                            warningsCustomCyclesCancel.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line}");
+                            warningsCustomCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
                         }
                     }
-                    warningsCyclesCancel.Remove(warningsCyclesCancel.Last());
+                    warningsMacroCallCancel.Remove(warningsMacroCallCancel.Last());
                 }
 
                 // фрезерный инструмент
@@ -568,18 +590,28 @@ namespace DetailsInfo.Data
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
-                        currentTool.Line = lines.IndexOf(line) + 1;
+                        currentTool.Line = i;
+                        currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
+                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                        warningsPolar.Clear();
+                        warningsFeedType.Clear();
+                        
                         if (!tools.Contains(currentTool))
                         {
                             if (tools.FindAll(t =>
                                     t.Position == currentTool.Position &&
                                     t.Comment == currentTool.Comment &&
                                     t.LengthCompensation == currentTool.LengthCompensation &&
-                                    t.RadiusCompensation != 0).Count == 0)
+                                    t.RadiusCompensation == currentTool.RadiusCompensation).Count == 0)
                             {
                                 tools.Add(currentTool);
                             }
                         }
+                    } 
+                    else
+                    {
+                        currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
+                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
                     }
 
                     var toolLine = line.Contains('(') 
@@ -617,7 +649,7 @@ namespace DetailsInfo.Data
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = 0;
                         currentTool.RadiusCompensation = 0;
-                        currentTool.Line = lines.IndexOf(line) + 1;
+                        currentTool.Line = i;
                         if (!tools.Contains(currentTool))
                         {
                             tools.Add(currentTool);
@@ -683,16 +715,20 @@ namespace DetailsInfo.Data
                     {
                         if (currentToolNo != currentD && currentToolNo != 0)
                         {
-                            warningsD.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (T{currentToolNo} D{currentD})");
+                            warningsD.Add($"[{(i).ToString(fString)}]: {line} - (T{currentToolNo} D{currentD})");
                         }
                         else if (currentToolNo != currentD && currentToolNo == 0)
                         {
-                            warningsD.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (D{currentD} - без инструмента)");
+                            warningsD.Add($"[{(i).ToString(fString)}]: {line} - (D{currentD} - без инструмента)");
                         }
                         currentTool.Position = currentToolNo;
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
+                        //currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
+                        //currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                        //warningsPolar.Clear();
+                        //warningsFeedType.Clear();
                         if (!tools.Contains(currentTool))
                         {
                             if (tools.Count > 0)
@@ -724,12 +760,12 @@ namespace DetailsInfo.Data
                     {
                         if (currentToolNo != currentH && currentToolNo != 0)
                         {
-                            warningsH.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (T{currentToolNo} H{currentH})");
+                            warningsH.Add($"[{(i).ToString(fString)}]: {line} - (T{currentToolNo} H{currentH})");
                         }
                         else if (currentToolNo != currentH && currentToolNo == 0) 
 
                         {
-                            warningsH.Add($"[{(lines.IndexOf(line) + 1).ToString(fString)}]: {line} - (H{currentH} - без инструмента)");
+                            warningsH.Add($"[{(i).ToString(fString)}]: {line} - (H{currentH} - без инструмента)");
                         }
                         currentTool.Position = currentToolNo;
                         currentTool.Comment = currentToolComment;
@@ -740,12 +776,18 @@ namespace DetailsInfo.Data
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
+
+                        //currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
+                        //currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                        //warningsPolar.Clear();
+                        //warningsFeedType.Clear();
                         if (!tools.Contains(currentTool))
                         {
                             if (tools.FindAll(t =>
                                     t.Position == currentTool.Position &&
                                     t.Comment == currentTool.Comment &&
                                     t.LengthCompensation == currentTool.LengthCompensation &&
+                                    t.RadiusCompensation == currentTool.RadiusCompensation &&
                                     t.RadiusCompensation != 0).Count == 0)
                             {
                                 tools.Add(currentTool);
@@ -761,7 +803,16 @@ namespace DetailsInfo.Data
                     warningsCoolant.Add($"[{tool.Line}]: Т{tool.Position:D4} {tool.Comment}");
                 }
             }
-            
+            warningsPolar.Clear();
+            warningsFeedType.Clear();
+            foreach (var tool in tools.FindAll(t => t.PolarWarning is true))
+            {
+                warningsPolar.Add($"[{tool.Line}]: Т{tool.Position} {tool.Comment}");
+            }
+            foreach (var tool in tools.FindAll(t => t.FeedPerSpinWarning is true))
+            {
+                warningsFeedType.Add($"[{tool.Line}]: Т{tool.Position} {tool.Comment}");
+            }
             
             caption = $"{(millProgram ? "Фрезерная" : "Токарная")} программа";
             coordinates = coordinateSystems.Count switch

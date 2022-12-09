@@ -151,9 +151,9 @@
                 <StatusBarItem HorizontalAlignment="Right">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon x:Name="tableConnectionIcon" Margin="0 0 10 0" Kind="Table" ToolTip="Список заданий"/>
-                        <materialDesign:PackIcon x:Name="archiveConnectionIcon" Margin="0 0 10 0" Kind="FolderHome" ToolTip="Архив УП"/>
+                        <materialDesign:PackIcon x:Name="archiveConnectionIcon" Margin="0 0 10 0" Kind="FolderHome" ToolTip="Архив УП" MouseDoubleClick="ArchiveGroupBox_MouseDoubleClick" />
                         <materialDesign:PackIcon x:Name="tempFolderConnectionIcon" Margin="0 0 10 0" Kind="LanConnect" ToolTip="Промежуточная"/>
-                        <materialDesign:PackIcon x:Name="machineConnectionIcon" Margin="0 0 10 0" Kind="ServerNetwork" ToolTip="Станок"/>
+                        <materialDesign:PackIcon x:Name="machineConnectionIcon" Margin="0 0 10 0" Kind="ServerNetwork" ToolTip="Станок" MouseDoubleClick="MachineGroupBox_MouseDoubleClick" />
                         <materialDesign:PackIcon x:Name="emailConnectionIcon" Margin="0 0 10 0" Kind="Email" ToolTip="Сервер уведомлений"/>
                         <TextBlock x:Name="dateTimeTB" d:Text="00.00.0000 00:00"/>
                     </StackPanel>
@@ -297,7 +297,7 @@
                         <!--#region Архив УП -->
                         <GroupBox Grid.Column="0" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
                             <GroupBox.Header>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <Label x:Name="archiveInfoLabel" Content="Архив управляющих программ" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="archiveGB_MouseLeftButtonDoubleClick"/>
                                     <Label x:Name="checkInfoLabel" Content="" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="archiveCheckGB_MouseLeftButtonDoubleClick"/>
                                 </StackPanel>
@@ -457,7 +457,7 @@
                         <!--#region Сетевая папка -->
                         <GroupBox Grid.Column="2" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
                             <GroupBox.Header>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <Label x:Name="machineInfoLabel" Content="Программы в сетевой папке станка" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="machineGB_MouseLeftButtonDoubleClick"/>
                                 </StackPanel>
                             </GroupBox.Header>

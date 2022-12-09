@@ -14,5 +14,7 @@ namespace DetailsInfo.Data
         public int RadiusCompensation { get; set; }
         public Coolant Coolant { get; set;}
         public int Line { get; set;}
+        public bool PolarWarning { get; set; }
+        public bool FeedPerSpinWarning { get; set; }
     }
 }
