@@ -112,13 +112,7 @@ namespace DetailsInfo
 
         #region Перерывы
 
-        private readonly DateTime DayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
-        private readonly DateTime DayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
-        private readonly DateTime DayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
-
-        private readonly DateTime NightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
-        private readonly DateTime NightShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(1) + TimeSpan.FromMinutes(30);
-        private readonly DateTime NightShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30);
+        
 
         #endregion
 
@@ -2089,6 +2083,13 @@ namespace DetailsInfo
 
         private void CalcSetupButton_Click(object sender, RoutedEventArgs e)
         {
+            DateTime DayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
+            DateTime DayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
+            DateTime DayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
+            DateTime NightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
+            DateTime NightShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(1) + TimeSpan.FromMinutes(30);
+            DateTime NightShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30);
+
             bool reduced = false;
             var dayShiftFirstBreak = DayShiftFirstBreak;
             var dayShiftSecondBreak = DayShiftSecondBreak;
@@ -2224,6 +2225,13 @@ namespace DetailsInfo
 
         private void CalcProductionButton_Click(object sender, RoutedEventArgs e)
         {
+            DateTime DayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
+            DateTime DayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
+            DateTime DayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
+            DateTime NightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
+            DateTime NightShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(1) + TimeSpan.FromMinutes(30);
+            DateTime NightShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30);
+
             bool reduced = false;
             var dayShiftFirstBreak = DayShiftFirstBreak;
             var dayShiftSecondBreak = DayShiftSecondBreak;
