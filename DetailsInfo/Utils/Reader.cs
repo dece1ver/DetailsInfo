@@ -30,7 +30,7 @@ namespace DetailsInfo.Data
         public static string LogPath => CheckPath(Settings.Default.netLogPath) ? Path.Combine(Settings.Default.netLogPath, $"{Environment.MachineName}.txt") : LocalLogPath;
         public const string Nameless = "Без названия";
 
-        public enum GetFileNameOptions {FullInfo, OnlyNCName }
+        public enum GetFileNameOptions {FullInfo, OnlyNcName }
 
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace DetailsInfo.Data
         /// <returns>Свободное имя в целевой директории для отправляемого файла</returns>
         public static string FindFreeName(string targetFile, string targetFolder, bool checkExtension = true)
         {
-            string name = string.Empty;
-            for (int i = Settings.Default.startProgramNumber; i < 9999; i++)
+            var name = string.Empty;
+            for (var i = Settings.Default.startProgramNumber; i < 9999; i++)
             {
                 if (
                     File.Exists(Path.Combine(targetFolder, i.ToString())) ||
@@ -104,11 +104,7 @@ namespace DetailsInfo.Data
                 name = "";
             }
             // заменяет все плохие символы на -, чтобы ошибки при записи не было
-            foreach (char item in Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()))
-            {
-                name = name.Replace(item, '-');
-            }
-            return name;
+            return Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()).Aggregate(name, (current, item) => current.Replace(item, '-'));
         }
 
         /// <summary>
@@ -141,16 +137,13 @@ namespace DetailsInfo.Data
                 // Mazatrol Smart
                 if (MazatrolExtensions.Contains(Path.GetExtension(file).ToLower()))
                 {
-                    string name = GetMazatrolSmartName(file) != Nameless ? GetMazatrolSmartName(file) : Path.GetFileNameWithoutExtension(file);
-                    string extension = Path.GetExtension(file);
+                    var name = GetMazatrolSmartName(file) != Nameless ? GetMazatrolSmartName(file) : Path.GetFileNameWithoutExtension(file);
+                    var extension = Path.GetExtension(file);
                     if (options == GetFileNameOptions.FullInfo)
                     {
                         return $"{name} [{DateTime.Now:dd-MM-y HH-mm}]" + extension;
                     }
-                    else
-                    {
-                        return name;
-                    }
+                    return name;
                 }
                 // Sinumerik
 
@@ -164,14 +157,7 @@ namespace DetailsInfo.Data
                 {
                     return Path.GetFileName(file); // дописать обработку
                 }
-                if (options == GetFileNameOptions.FullInfo)
-                {
-                    return $"{GetFanucName(file)} [{DateTime.Now:dd-MM-y HH-mm}] ({Path.GetFileName(file)})";
-                }
-                else
-                {
-                    return GetFanucName(file);
-                }
+                return options == GetFileNameOptions.FullInfo ? $"{GetFanucName(file)} [{DateTime.Now:dd-MM-y HH-mm}] ({Path.GetFileName(file)})" : GetFanucName(file);
             }
             catch
             {
@@ -203,8 +189,7 @@ namespace DetailsInfo.Data
             {
                 // автоматическое определение
                 using StreamReader sr = new(csvTable, true);
-                string line;
-                while ((line = sr.ReadLine()) != null)
+                while (sr.ReadLine() is { } line)
                 {
                     fileLines.Add(line);
                 }
@@ -213,8 +198,7 @@ namespace DetailsInfo.Data
             {
                 // чтение с явно указанной кодировкой в параметрах
                 using StreamReader sr = new(csvTable, Encoding.GetEncoding(Settings.Default.fileEncoding));
-                string line;
-                while ((line = sr.ReadLine()) != null)
+                while (sr.ReadLine() is { } line)
                 {
                     fileLines.Add(line);
                 }
@@ -244,12 +228,12 @@ namespace DetailsInfo.Data
         {
             try
             {
-                using StreamWriter sw = new(LogPath, true, Encoding.UTF8);
+                await using StreamWriter sw = new(LogPath, true, Encoding.UTF8);
                 await sw.WriteLineAsync($"[{DateTime.Now:dd.MM.y HH:mm:ss}] {SystemInformation.UserName}@{Environment.MachineName}: {info}");
             }
             catch
             {
-                using StreamWriter sw = new(LocalLogPath, true, Encoding.UTF8);
+                await using StreamWriter sw = new(LocalLogPath, true, Encoding.UTF8);
                 await sw.WriteLineAsync($"[{DateTime.Now:dd.MM.y HH:mm:ss}] {SystemInformation.UserName}@{Environment.MachineName}: {info}");
             }
         }
@@ -335,9 +319,6 @@ namespace DetailsInfo.Data
             out List<string> warningsExcessText
             )
         {
-            ///
-            /// TODO T0 H__ если нет вызова инструмента (ппр)
-            /// 
             //Stopwatch sw = Stopwatch.StartNew();
             List<NcToolInfo> tools = new();
             warningsH = new List<string>();                   // корректор на длину
@@ -371,7 +352,7 @@ namespace DetailsInfo.Data
             if (!lines.First().Trim().Equals("%")) warningStartPercent = true;
             if (!lines.TakeWhile(line => !string.IsNullOrEmpty(line) || !(line.StartsWith('(') && line.EndsWith(')'))).Last().Trim().Equals("%")) warningEndPercent = true;
             var fString = "D" + lines.Count.ToString().Length;
-            int i = 1;
+            var i = 1;
             foreach (var line in lines.Skip(1))
             {
                 i++;
@@ -477,8 +458,8 @@ namespace DetailsInfo.Data
                         currentTool.Comment = currentToolComment;
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
-                        currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
-                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                        currentTool.PolarWarning = warningsPolar.Count > 0;
+                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
                         warningsPolar.Clear();
                         warningsFeedType.Clear();
                         currentTool.Line = i;
@@ -591,8 +572,8 @@ namespace DetailsInfo.Data
                         currentTool.LengthCompensation = currentH;
                         currentTool.RadiusCompensation = currentD;
                         currentTool.Line = i;
-                        currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
-                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                        currentTool.PolarWarning = warningsPolar.Count > 0;
+                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
                         warningsPolar.Clear();
                         warningsFeedType.Clear();
                         
@@ -610,8 +591,8 @@ namespace DetailsInfo.Data
                     } 
                     else
                     {
-                        currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
-                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                        currentTool.PolarWarning = warningsPolar.Count > 0;
+                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
                     }
 
                     var toolLine = line.Contains('(') 

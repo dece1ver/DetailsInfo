@@ -1705,7 +1705,7 @@ namespace DetailsInfo
             
             try
             {
-                var tempProgramFolder = Path.Combine(Settings.Default.tempPath, Reader.CreateTempName(_selectedMachineFile, Reader.GetFileNameOptions.OnlyNCName));
+                var tempProgramFolder = Path.Combine(Settings.Default.tempPath, Reader.CreateTempName(_selectedMachineFile, Reader.GetFileNameOptions.OnlyNcName));
                 if (!Directory.Exists(tempProgramFolder))
                 {
                     Directory.CreateDirectory(tempProgramFolder);
@@ -2083,20 +2083,14 @@ namespace DetailsInfo
 
         private void CalcSetupButton_Click(object sender, RoutedEventArgs e)
         {
-            DateTime DayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
-            DateTime DayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
-            DateTime DayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
-            DateTime NightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
-            DateTime NightShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(1) + TimeSpan.FromMinutes(30);
-            DateTime NightShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30);
+            var dayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
+            var dayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
+            var dayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
+            var nightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
+            var nightShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(1) + TimeSpan.FromMinutes(30);
+            var nightShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30);
 
-            bool reduced = false;
-            var dayShiftFirstBreak = DayShiftFirstBreak;
-            var dayShiftSecondBreak = DayShiftSecondBreak;
-            var dayShiftThirdBreak = DayShiftThirdBreak;
-            var nightShiftFirstBreak = NightShiftFirstBreak;
-            var nightShiftSecondBreak = NightShiftSecondBreak;
-            var nightShiftThirdBreak = NightShiftThirdBreak;
+            var reduced = false;
 
             if (SetupStartTp.SelectedTime == null)
             {
@@ -2125,55 +2119,55 @@ namespace DetailsInfo
                 endSetupTime = endSetupTime.AddDays(1);
             }
 
-            double setupFullTime = (endSetupTime - startSetupTime).TotalMinutes;
+            var setupFullTime = (endSetupTime - startSetupTime).TotalMinutes;
 
-            string message = string.Empty;
+            var message = string.Empty;
 
             message = $"Общее время наладки составило {setupFullTime} минут.\n";
 
-            if (dayShiftFirstBreak >= startSetupTime && dayShiftFirstBreak <= endSetupTime)
+            if (dayShiftFirstBreak > startSetupTime && dayShiftFirstBreak <= endSetupTime)
             {
                 reduced = true;
                 setupFullTime -= 15;
                 message += "Наладка происходила во время утреннего перерыва на чай, вычтено 15 минут.\n";
             }
 
-            if (dayShiftSecondBreak >= startSetupTime && dayShiftSecondBreak <= endSetupTime)
+            if (dayShiftSecondBreak > startSetupTime && dayShiftSecondBreak <= endSetupTime)
             {
                 reduced = true;
                 setupFullTime -= 30;
                 message += "Наладка происходила во время обеда, вычтено 30 минут.\n";
             }
 
-            if (dayShiftThirdBreak >= startSetupTime && dayShiftThirdBreak <= endSetupTime)
+            if (dayShiftThirdBreak > startSetupTime && dayShiftThirdBreak <= endSetupTime)
             {
                 reduced = true;
                 setupFullTime -= 15;
                 message += "Наладка происходила во время дневного чая, вычтено 15 минут.\n";
             }
 
-            if (nightShiftFirstBreak >= startSetupTime && nightShiftFirstBreak <= endSetupTime)
+            if (nightShiftFirstBreak > startSetupTime && nightShiftFirstBreak <= endSetupTime)
             {
                 reduced = true;
                 setupFullTime -= 30;
                 message += "Наладка происходила во время вечернего перерыва на чай, вычтено 30 минут.\n";
             }
 
-            if (nightShiftSecondBreak >= startSetupTime && nightShiftSecondBreak <= endSetupTime)
+            if (nightShiftSecondBreak > startSetupTime && nightShiftSecondBreak <= endSetupTime)
             {
                 reduced = true;
                 setupFullTime -= 30;
                 message += "Наладка происходила во время ночного обеда, вычтено 30 минут.\n";
             }
 
-            if (nightShiftThirdBreak >= startSetupTime && nightShiftThirdBreak <= endSetupTime)
+            if (nightShiftThirdBreak > startSetupTime && nightShiftThirdBreak <= endSetupTime)
             {
                 reduced = true;
                 setupFullTime -= 30;
                 message += "Наладка происходила во ночного чая, вычтено 30 минут.\n";
             }
 
-            if (double.TryParse(SetupDowntimeTp.Text.Replace('.', ','), out double setupDowntime))
+            if (double.TryParse(SetupDowntimeTp.Text.Replace('.', ','), out var setupDowntime))
             {
                 reduced = true;
                 setupFullTime -= setupDowntime;
@@ -2209,12 +2203,12 @@ namespace DetailsInfo
             if (reduced) message += $"Фактическое время наладки с учетом простоев составило {setupFullTime} минут.\n";
 
 
-            if (!double.TryParse(SetupNormTp.Text.Replace('.', ','), out double setupNormTime))
+            if (!double.TryParse(SetupNormTp.Text.Replace('.', ','), out var setupNormTime))
             {
                 SetupInformationTb.Text = "Некорректно указан норматив.";
                 return;
             }
-            double productivity = setupNormTime / setupFullTime * 100;
+            var productivity = setupNormTime / setupFullTime * 100;
             message += $"Выполнение нормы: {productivity:N0}%.";
 
             SetupInformationTb.Text = message.Trim();
@@ -2225,20 +2219,14 @@ namespace DetailsInfo
 
         private void CalcProductionButton_Click(object sender, RoutedEventArgs e)
         {
-            DateTime DayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
-            DateTime DayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
-            DateTime DayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
-            DateTime NightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
-            DateTime NightShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(1) + TimeSpan.FromMinutes(30);
-            DateTime NightShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30);
+            var dayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
+            var dayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
+            var dayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
+            var nightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
+            var nightShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(1) + TimeSpan.FromMinutes(30);
+            var nightShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30);
 
-            bool reduced = false;
-            var dayShiftFirstBreak = DayShiftFirstBreak;
-            var dayShiftSecondBreak = DayShiftSecondBreak;
-            var dayShiftThirdBreak = DayShiftThirdBreak;
-            var nightShiftFirstBreak = NightShiftFirstBreak;
-            var nightShiftSecondBreak = NightShiftSecondBreak;
-            var nightShiftThirdBreak = NightShiftThirdBreak;
+            var reduced = false;
 
             if (ProductionStartTp.SelectedTime == null)
             {
@@ -2252,7 +2240,7 @@ namespace DetailsInfo
                 return;
             }
 
-            if (!int.TryParse(PartsCountTb.Text, out int partsCount))
+            if (!int.TryParse(PartsCountTb.Text, out var partsCount))
             {
                 ProductionInformationTb.Text = $"Некорректно указано количество деталей";
                 return;
@@ -2273,55 +2261,53 @@ namespace DetailsInfo
                 endProductionTime = endProductionTime.AddDays(1);
             }
 
-            double productionFullTime = (endProductionTime - startProductionTime).TotalMinutes;
+            var productionFullTime = (endProductionTime - startProductionTime).TotalMinutes;
 
-            string message = string.Empty;
+            var message = $"Общее время изготовления составило {productionFullTime} минут.\n";
 
-            message = $"Общее время изготовления составило {productionFullTime} минут.\n";
-
-            if (dayShiftFirstBreak >= startProductionTime && dayShiftFirstBreak <= endProductionTime)
+            if (dayShiftFirstBreak > startProductionTime && dayShiftFirstBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 15;
                 message += "Изготовление происходило во время утреннего перерыва на чай, вычтено 15 минут.\n";
             }
 
-            if (dayShiftSecondBreak >= startProductionTime && dayShiftSecondBreak <= endProductionTime)
+            if (dayShiftSecondBreak > startProductionTime && dayShiftSecondBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 30;
                 message += "Изготовление происходило во время обеда, вычтено 30 минут.\n";
             }
 
-            if (dayShiftThirdBreak >= startProductionTime && dayShiftThirdBreak <= endProductionTime)
+            if (dayShiftThirdBreak > startProductionTime && dayShiftThirdBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 15;
                 message += "Изготовление происходило во дневного чая, вычтено 15 минут.\n";
             }
 
-            if (nightShiftFirstBreak >= startProductionTime && nightShiftFirstBreak <= endProductionTime)
+            if (nightShiftFirstBreak > startProductionTime && nightShiftFirstBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 30;
                 message += "Изготовление происходило во время вечернего перерыва на чай, вычтено 30 минут.\n";
             }
 
-            if (nightShiftSecondBreak >= startProductionTime && nightShiftSecondBreak <= endProductionTime)
+            if (nightShiftSecondBreak > startProductionTime && nightShiftSecondBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 30;
                 message += "Изготовление происходило во время ночного обеда, вычтено 30 минут.\n";
             }
 
-            if (nightShiftThirdBreak >= startProductionTime && nightShiftThirdBreak <= endProductionTime)
+            if (nightShiftThirdBreak > startProductionTime && nightShiftThirdBreak <= endProductionTime)
             {
                 reduced = true;
                 productionFullTime -= 30;
                 message += "Изготовление происходило во ночного чая, вычтено 30 минут.\n";
             }
 
-            if (double.TryParse(ProductionDowntimeTb.Text.Replace(',','.'), out double productionDowntime))
+            if (double.TryParse(ProductionDowntimeTb.Text.Replace(',','.'), out var productionDowntime))
             {
                 reduced = true;
                 if (productionDowntime > productionFullTime)
@@ -2339,7 +2325,7 @@ namespace DetailsInfo
             //message = $"Машинное время: {machineTime.ToString("F2").Replace(",00","").Replace(',','.')}\n";
 
 
-            if (!double.TryParse(ProductionNormTb.Text.Replace('.', ','), out double productionNormTime))
+            if (!double.TryParse(ProductionNormTb.Text.Replace('.', ','), out var productionNormTime))
             {
                 ProductionInformationTb.Text = $"Некорректно указан норматив.";
                 return;
@@ -2382,12 +2368,12 @@ namespace DetailsInfo
             //    setupTime += 5;
             //}
 
-            double productionNormFullTime = productionNormTime * partsCount;
+            var productionNormFullTime = productionNormTime * partsCount;
             message += $"Норматив на выполнение партии: {productionNormFullTime:N0} минут.\n";
             if (reduced) message += $"Фактическое время изготовления с учетом простоев составило {productionFullTime:N0} минут.\n";
 
 
-            double productivity = productionNormFullTime / productionFullTime * 100;
+            var productivity = productionNormFullTime / productionFullTime * 100;
             message += $"Выполнение нормы: {productivity:N0}%";
 
             ProductionInformationTb.Text = message.Trim();

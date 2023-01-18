@@ -11,6 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DetailsInfo.Website", "DetailsInfo.Website\DetailsInfo.Website.csproj", "{CFC11F6C-4B78-4A92-B061-35C00B1DDF9C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821} = {E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
