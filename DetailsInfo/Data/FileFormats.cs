@@ -73,6 +73,11 @@ namespace DetailsInfo.Data
             {
                 iconKind = PackIconKind.Folder;
             }
+            // lnk
+            else if (Path.GetExtension(file).ToLower() == ".lnk")
+            {
+                iconKind = PackIconKind.Link;
+            }
             // Mazatrol Smart
             else if (MazatrolExtensions.Contains(Path.GetExtension(file).ToLower()))
             {

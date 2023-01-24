@@ -11,7 +11,7 @@ namespace DetailsInfo.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Path.GetFileName(value.ToString());
+            return Path.GetFileName(value.ToString().Replace(".lnk", "").Replace(".LNK", ""));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

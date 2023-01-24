@@ -1497,6 +1497,26 @@ namespace DetailsInfo
                     image.Source = new BitmapImage(new Uri(_selectedArchiveFile!));
                     ImageDialogHost.IsOpen = true;
                 }
+                else if (Path.GetExtension(_selectedArchiveFile)?.ToLower() == ".lnk")
+                {
+                    IWshRuntimeLibrary.IWshShell shell = new IWshRuntimeLibrary.WshShell();
+                    IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(_selectedArchiveFile);
+
+                    if (Directory.Exists(shortcut.TargetPath))
+                    {
+                        _currentArchiveFolder = shortcut.TargetPath;
+                        findDialogButton.Visibility = Visibility.Collapsed;
+                        returnButton.Visibility = Visibility.Visible;
+                        _findStatus = FindStatus.DontNeed;
+                        ChangeArchiveWatcher();
+                        LoadArchive();
+                        
+                    }
+                    else
+                    {
+                        SendMessage("Путь по ссылке не существует.");
+                    }
+                }
                 else
                 {
                     Process.Start(new ProcessStartInfo(_selectedArchiveFile!) { UseShellExecute = true });
