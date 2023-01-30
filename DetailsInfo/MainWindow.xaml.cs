@@ -1530,8 +1530,9 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                // LoadMachine();
-                // LoadArchive();
+                if (_findStatus is not FindStatus.Finded) return;
+                LoadMachine();
+                LoadArchive();
             }
             catch (Win32Exception)
             {
@@ -1548,6 +1549,7 @@ namespace DetailsInfo
                     _analyzeArchiveProgram = false;
                     _showWinExplorer = false;
                     _openFolderButton = false;
+                    if (_findStatus is not FindStatus.Finded) return;
                     LoadMachine();
                     LoadArchive();
                 }
