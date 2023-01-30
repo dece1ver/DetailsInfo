@@ -448,115 +448,113 @@ namespace DetailsInfo
         /// </summary>
         private void LoadArchive()
         {
-            if (_archiveStatus)
+            if (!_archiveStatus) return;
+            try
             {
-                try
-                {
-                    _archiveContent = new();
-                    List<string> dirs = new();
-                    List<string> files = new();
-                    var findString = string.Empty;
-                    dirs = Directory.EnumerateDirectories(_currentArchiveFolder).ToList();
-                    files = Directory.EnumerateFiles(_currentArchiveFolder).ToList();
+                _archiveContent = new();
+                List<string> dirs = new();
+                List<string> files = new();
+                var findString = string.Empty;
+                dirs = Directory.EnumerateDirectories(_currentArchiveFolder).ToList();
+                files = Directory.EnumerateFiles(_currentArchiveFolder).ToList();
 
-                    // вносим папки
-                    if (dirs.Count > 0)
+                // вносим папки
+                if (dirs.Count > 0)
+                {
+                    foreach (var folder in dirs)
                     {
-                        foreach (var folder in dirs)
+                        var tempArchiveFolder = new ArchiveContent
                         {
-                            var tempArchiveFolder = new ArchiveContent
-                            {
-                                Content = folder,
-                                TransferButtonState = Visibility.Collapsed,
-                                OpenButtonState = Visibility.Collapsed,
-                                DeleteButtonState = Visibility.Collapsed,
-                                OpenFolderState = Visibility.Collapsed,
-                                AnalyzeButtonState = Visibility.Collapsed,
-                                ShowWinExplorerButtonState = Visibility.Collapsed,
-                            };
-                            _archiveContent.Add(tempArchiveFolder); 
-                            if(tempArchiveFolder.Content == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
-                        }
+                            Content = folder,
+                            TransferButtonState = Visibility.Collapsed,
+                            OpenButtonState = Visibility.Collapsed,
+                            DeleteButtonState = Visibility.Collapsed,
+                            OpenFolderState = Visibility.Collapsed,
+                            AnalyzeButtonState = Visibility.Collapsed,
+                            ShowWinExplorerButtonState = Visibility.Collapsed,
+                        };
+                        _archiveContent.Add(tempArchiveFolder); 
+                        if(tempArchiveFolder.Content == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
                     }
-                    // вносим файлы
-                    if (files.Count > 0)
+                }
+                // вносим файлы
+                if (files.Count > 0)
+                {
+                    foreach (var file in files)
                     {
-                        foreach (var file in files)
-                        {
-                            if (FileFormats.SystemFiles.Contains(Path.GetFileName(file))) continue;
+                        if (FileFormats.SystemFiles.Contains(Path.GetFileName(file))) continue;
                             
-                            if (Reader.CanBeTransfered(file))
+                        if (Reader.CanBeTransfered(file))
+                        {
+                            _archiveContent.Add(new ArchiveContent
                             {
-                                _archiveContent.Add(new ArchiveContent
-                                {
-                                    Content = file,
-                                    TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                    OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                    DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
-                                    OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile && _openFolderButton) ? Visibility.Visible : Visibility.Collapsed,
-                                    AnalyzeButtonState =
-                                        ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
-                                            || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
-                                            || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
-                                                ) && Settings.Default.ncAnalyzer && Reader.CanBeTransfered(file))
-                                            && _analyzeArchiveProgram && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                    ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
-                                });
-                            }
-                            else
+                                Content = file,
+                                TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                                OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile && _openFolderButton) ? Visibility.Visible : Visibility.Collapsed,
+                                AnalyzeButtonState =
+                                    ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                        || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                        || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                         ) && Settings.Default.ncAnalyzer && Reader.CanBeTransfered(file))
+                                     && _analyzeArchiveProgram && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                            });
+                        }
+                        else
+                        {
+                            _archiveContent.Add(new ArchiveContent
                             {
-                                _archiveContent.Add(new ArchiveContent
-                                {
-                                    Content = file,
-                                    TransferButtonState = Visibility.Collapsed,
-                                    OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                    DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
-                                    OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
-                                    AnalyzeButtonState = Visibility.Collapsed,
-                                    ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
-                                });
-                            }
+                                Content = file,
+                                TransferButtonState = Visibility.Collapsed,
+                                OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                                OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                AnalyzeButtonState = Visibility.Collapsed,
+                                ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                            });
                         }
                     }
-                    if (archiveLV.ItemsSource == null || !_archiveContent.SequenceEqual(archiveLV.ItemsSource as List<ArchiveContent> ?? new List<ArchiveContent>()))
-                    {
-                        archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ItemsSource = _archiveContent);
-                    }
+                }
+                if (archiveLV.ItemsSource == null || !_archiveContent.SequenceEqual(archiveLV.ItemsSource as List<ArchiveContent> ?? new List<ArchiveContent>()))
+                {
+                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ItemsSource = _archiveContent);
+                }
                     
-                    if (_needArchiveScroll)
-                    {
-                        archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = _selectedArchiveFolder);
-                        archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ScrollIntoView(_selectedArchiveFolder));
-                        _needArchiveScroll = false;
-                        archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = null);
-                    }
+                if (_needArchiveScroll)
+                {
+                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = _selectedArchiveFolder);
+                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ScrollIntoView(_selectedArchiveFolder));
+                    _needArchiveScroll = false;
+                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = null);
+                }
 
-                }
-                catch (UnauthorizedAccessException e)
-                {
-                    SendMessage("Ошибка доступа.");
-                    WriteLog($"Ошибка доступа. {e} {e.Message} {e.StackTrace}");
-                }
-                catch (DirectoryNotFoundException e)
-                {
-                    SendMessage("Указанное расположение больше не существует в архиве. Попробуйте вернуться в корень архива.");
-                    WriteLog($"Ошибка при чтении архива. {e} {e.Message} {e.StackTrace}");
-                }
-                catch (IOException e)
-                {
-                    SendMessage("Не удается получить доступ к архиву.");
-                    WriteLog($"Ошибка при чтении архива. {e} {e.Message} {e.StackTrace}");
-                    TurnOffArchive();
-                }
-                catch (Exception e)
-                {
-                    AddError(e);
-                }
-                
-                archivePathTB.Dispatcher.Invoke(() => archivePathTB.Text = _currentArchiveFolder);
-                //archivePathTB.Dispatcher.Invoke(() => archivePathTB.CaretIndex = archivePathTB.Text.Length);
-                archivePathTB.Dispatcher.Invoke(() => archivePathTB.ScrollToHorizontalOffset(double.MaxValue));
             }
+            catch (UnauthorizedAccessException e)
+            {
+                SendMessage("Ошибка доступа.");
+                WriteLog($"Ошибка доступа. {e} {e.Message} {e.StackTrace}");
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                SendMessage("Указанное расположение больше не существует в архиве. Попробуйте вернуться в корень архива.");
+                WriteLog($"Ошибка при чтении архива. {e} {e.Message} {e.StackTrace}");
+            }
+            catch (IOException e)
+            {
+                SendMessage("Не удается получить доступ к архиву.");
+                WriteLog($"Ошибка при чтении архива. {e} {e.Message} {e.StackTrace}");
+                TurnOffArchive();
+            }
+            catch (Exception e)
+            {
+                AddError(e);
+            }
+                
+            archivePathTB.Dispatcher.Invoke(() => archivePathTB.Text = _currentArchiveFolder);
+            //archivePathTB.Dispatcher.Invoke(() => archivePathTB.CaretIndex = archivePathTB.Text.Length);
+            archivePathTB.Dispatcher.Invoke(() => archivePathTB.ScrollToHorizontalOffset(double.MaxValue));
         }
 
         /// <summary>
@@ -1500,7 +1498,7 @@ namespace DetailsInfo
                 else if (Path.GetExtension(_selectedArchiveFile)?.ToLower() == ".lnk")
                 {
                     IWshRuntimeLibrary.IWshShell shell = new IWshRuntimeLibrary.WshShell();
-                    IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(_selectedArchiveFile);
+                    var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(_selectedArchiveFile);
 
                     if (Directory.Exists(shortcut.TargetPath))
                     {
@@ -1532,8 +1530,8 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                LoadMachine();
-                LoadArchive();
+                // LoadMachine();
+                // LoadArchive();
             }
             catch (Win32Exception)
             {
