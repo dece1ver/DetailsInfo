@@ -8,12 +8,12 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
-        TextElement.FontSize="12"
+        TextElement.FontSize="12" 
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignShadowBrush}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="Конфигурация" Height="600" Width="800" FontSize="14" Loaded="Window_Loaded" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource MaterialDesignBodyLight}" Topmost="True" Foreground="{DynamicResource MaterialDesignBody}">
+        Title="Конфигурация" Height="600" Width="800" FontSize="14" Loaded="Window_Loaded" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner" BorderBrush="{DynamicResource MaterialDesignBodyLight}" Topmost="True" Foreground="{DynamicResource MaterialDesignBody}" ShowInTaskbar="False">
     <Window.Resources>
         <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
             <!--<Setter Property="Width" Value="70"/>-->

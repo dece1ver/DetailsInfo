@@ -14,7 +14,7 @@
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignShadowBrush}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="Конфигурация" Height="400" Width="600" FontSize="14" ResizeMode="NoResize" ShowInTaskbar="False" WindowStyle="None" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource MaterialDesignBodyLight}" Loaded="Window_Loaded" Topmost="True"
+        Title="Конфигурация" Height="400" Width="600" FontSize="14" ResizeMode="NoResize" ShowInTaskbar="False" WindowStyle="None" WindowStartupLocation="CenterOwner" BorderBrush="{DynamicResource MaterialDesignBodyLight}" Loaded="Window_Loaded" Topmost="True"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <DockPanel Background="{DynamicResource MaterialDesignDarkBackground}" Margin="1,1,1,1" >
         <Grid DockPanel.Dock="Bottom" Height="70">

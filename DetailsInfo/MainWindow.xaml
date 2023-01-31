@@ -20,7 +20,7 @@
         materialDesign:ElevationAssist.Elevation="Dp0"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}" materialDesign:RippleAssist.IsDisabled="True"
-        Title="Закрепленные изделия" Height="768" Width="1366" Loaded="Window_Loaded" WindowState="Maximized" WindowStartupLocation="CenterScreen" WindowStyle="None" FontSize="14" ResizeMode="CanMinimize" Topmost="True">
+        Title="Di" Height="768" Width="1366" Loaded="Window_Loaded" WindowState="Maximized" WindowStartupLocation="CenterScreen" WindowStyle="None" FontSize="14" ResizeMode="CanMinimize" Topmost="True">
     <Window.Resources>
         <cv:PriorityConverter x:Key="priorityConverter" />
         <cv:ArchiveConverter x:Key="archiveConverter" />
@@ -370,7 +370,7 @@
                                     <ProgressBar Grid.Row="1" x:Name="archiveProgressBar" DockPanel.Dock="Right" Height="100" Width="100" 
                                         Style="{StaticResource MaterialDesignCircularProgressBar}"
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <DockPanel x:Name="archiveButtonsPanel" Visibility="Visible">
+                                    <DockPanel Grid.Row="0" x:Name="archiveButtonsPanel" Visibility="Visible">
                                         <StackPanel Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Left">
                                             <Button x:Name="archiveRootButton" Style="{StaticResource generalButtonStyle}" Click="archiveRootButton_Click" Cursor="Hand">
                                                 <materialDesign:PackIcon Kind="FolderHomeOutline" Height="25" Width="25" />
@@ -675,7 +675,7 @@
                 <!--#endregion-->
 
                 <!--#region Электронный журнал -->
-                <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+                <TabItem Visibility="Collapsed" Style="{StaticResource MaterialDesignNavigationRailTabItem}">
                     <TabItem.Header>
                         <materialDesign:PackIcon
                             Kind="Timetable"
@@ -684,7 +684,29 @@
                     </TabItem.Header>
                     <Grid>
                         <GroupBox Header="Электронный журнал" Margin="0,0,0,1" materialDesign:ShadowAssist.ShadowDepth="Depth0">
-
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <DockPanel Grid.Row="0" Visibility="Visible">
+                                    <StackPanel Orientation="Horizontal"  DockPanel.Dock="Right">
+                                        <ComboBox Text="Коробов Е.Е." Margin="10 0" Width="200" Focusable="False"
+                                                  Style="{StaticResource MaterialDesignOutlinedComboBox}" materialDesign:HintAssist.Hint="Оператор" SelectedIndex="0">
+                                            <ComboBoxItem Content="Коробов Е.Е." />
+                                        </ComboBox>
+                                        <Button Style="{StaticResource generalButtonStyle}"
+                                                DockPanel.Dock="Right" Margin="0" Width="200"
+                                                Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}" >
+                                            <materialDesign:PackIcon Kind="TablePlus" Height="25" Width="25" />
+                                        </Button>
+                                    </StackPanel>
+                                    <TextBox DockPanel.Dock="Left" Text="Victor A110" Width="200" VerticalAlignment="Center"
+                                             Style="{StaticResource MaterialDesignOutlinedTextBox}" IsReadOnly="True"
+                                             materialDesign:HintAssist.Hint="Станок" Focusable="False"/>
+                                    <Label/>
+                                </DockPanel>
+                            </Grid>
                         </GroupBox>
                     </Grid>
                 </TabItem>

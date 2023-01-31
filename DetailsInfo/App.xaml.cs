@@ -57,25 +57,23 @@ namespace DetailsInfo
                 while (_eventWaitHandle.WaitOne())
                 {
                     _ = Current.Dispatcher.BeginInvoke((Action)(() =>
-                      {
+                    {
                         // could be set or removed anytime
-                        if (!Current.MainWindow.Equals(null))
-                          {
-                              var mw = Current.MainWindow;
+                        if (Current.MainWindow!.Equals(null)) return;
+                        var mw = Current.MainWindow;
 
-                              if (mw.WindowState == WindowState.Minimized || mw.Visibility != Visibility.Visible)
-                              {
-                                  mw.Show();
-                                  mw.WindowState = WindowState.Maximized;
-                              }
+                        if (mw.WindowState == WindowState.Minimized || mw.Visibility != Visibility.Visible)
+                        {
+                            mw.Show();
+                            mw.WindowState = WindowState.Maximized;
+                        }
 
-                            // According to some sources these steps are required to be sure it went to foreground.
-                            mw.Activate();
-                              mw.Topmost = true;
-                              mw.Topmost = false;
-                              mw.Focus();
-                          }
-                      }));
+                        // According to some sources these steps are required to be sure it went to foreground.
+                        mw.Activate();
+                        mw.Topmost = true;
+                        mw.Topmost = false;
+                        mw.Focus();
+                    }));
                 }
             })
             .Start();

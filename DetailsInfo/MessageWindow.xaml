@@ -13,7 +13,7 @@
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignShadowBrush}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="Отправка сообщения" Height="600" Width="800" FontSize="14" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource MaterialDesignBodyLight}" Topmost="True" Foreground="{DynamicResource MaterialDesignBody}" Loaded="Window_Loaded">
+        Title="Отправка сообщения" Height="600" Width="800" FontSize="14" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner" BorderBrush="{DynamicResource MaterialDesignBodyLight}" Topmost="True" Foreground="{DynamicResource MaterialDesignBody}" Loaded="Window_Loaded" ShowInTaskbar="False">
     <Window.Resources>
         <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
             <!--<Setter Property="Width" Value="70"/>-->
@@ -35,7 +35,7 @@
             </StatusBar>
             <Grid DockPanel.Dock="Bottom" Height="70">
                 <Button x:Name="closeButton" Width="200" Height="50" HorizontalAlignment="Left"
-                    Background="{DynamicResource MaterialDesignValidationErrorBrush}" BorderBrush="{x:Null}" Margin="10,0,0,0" Click="closeButton_Click" Cursor="Hand" Foreground="Black">
+                    Background="Red" BorderBrush="{x:Null}" Margin="10,0,0,0" Click="closeButton_Click" Cursor="Hand" Foreground="Black">
                     <materialDesign:PackIcon Kind="Close"/>
                 </Button>
                 <Button x:Name="applyButton" Width="200" Height="50" HorizontalAlignment="Right"

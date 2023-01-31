@@ -1075,7 +1075,7 @@ namespace DetailsInfo
 
         private void messageButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageWindow messageWindow = new();
+            MessageWindow messageWindow = new() {Owner = this};
             messageWindow.ShowDialog();
         }
 
@@ -1088,7 +1088,7 @@ namespace DetailsInfo
 
         private void settingsButton_Click(object sender, RoutedEventArgs e)
         {
-            SettingsWindow settingsWindow = new();
+            SettingsWindow settingsWindow = new() {Owner = this};
             settingsWindow.ShowDialog();
 
             _errorStatus = false;
@@ -1134,7 +1134,7 @@ namespace DetailsInfo
 
         private void helpButton_Click(object sender, RoutedEventArgs e)
         {
-            HelpWindow helpWindow = new(_errorsList);
+            HelpWindow helpWindow = new(_errorsList) {Owner = this};
             helpWindow.ShowDialog();
             _status.Clear();
         }
