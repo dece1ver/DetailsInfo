@@ -517,18 +517,20 @@ namespace DetailsInfo
                         }
                     }
                 }
-                if (archiveLV.ItemsSource == null || !_archiveContent.SequenceEqual(archiveLV.ItemsSource as List<ArchiveContent> ?? new List<ArchiveContent>()))
+                if (archiveLV.ItemsSource == null || archiveLV.Items.Count == 0 || !_archiveContent.SequenceEqual(archiveLV.ItemsSource as List<ArchiveContent> ?? new List<ArchiveContent>()))
                 {
-                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ItemsSource = _archiveContent);
-                }
+                    archiveLV.Dispatcher.Invoke(() => archiveLV.ItemsSource = _archiveContent);
+                } 
                     
                 if (_needArchiveScroll)
                 {
-                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = _selectedArchiveFolder);
-                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.ScrollIntoView(_selectedArchiveFolder));
+                    archiveLV.Dispatcher.Invoke(() => archiveLV.SelectedItem = _selectedArchiveFolder);
+                    archiveLV.Dispatcher.Invoke(() => archiveLV.ScrollIntoView(_selectedArchiveFolder));
                     _needArchiveScroll = false;
-                    archiveLV.Dispatcher.InvokeAsync(() => archiveLV.SelectedItem = null);
+                    archiveLV.Dispatcher.Invoke(() => archiveLV.SelectedItem = null);
                 }
+                archivePathTB.Dispatcher.Invoke(() => archivePathTB.Text = _currentArchiveFolder);
+                archivePathTB.Dispatcher.Invoke(() => archivePathTB.ScrollToHorizontalOffset(double.MaxValue));
 
             }
             catch (UnauthorizedAccessException e)
@@ -551,10 +553,6 @@ namespace DetailsInfo
             {
                 AddError(e);
             }
-                
-            archivePathTB.Dispatcher.Invoke(() => archivePathTB.Text = _currentArchiveFolder);
-            //archivePathTB.Dispatcher.Invoke(() => archivePathTB.CaretIndex = archivePathTB.Text.Length);
-            archivePathTB.Dispatcher.Invoke(() => archivePathTB.ScrollToHorizontalOffset(double.MaxValue));
         }
 
         /// <summary>

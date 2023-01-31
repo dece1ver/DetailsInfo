@@ -9,12 +9,7 @@ namespace DetailsInfo.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (int.Parse(value.ToString()) == 1000)
-            {
-                return "";
-            }
-
-            return value;
+            return int.Parse(value?.ToString() ?? string.Empty) == 1000 ? "" : value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

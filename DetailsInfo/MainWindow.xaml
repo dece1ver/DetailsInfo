@@ -23,7 +23,6 @@
         Title="Закрепленные изделия" Height="768" Width="1366" Loaded="Window_Loaded" WindowState="Maximized" WindowStartupLocation="CenterScreen" WindowStyle="None" FontSize="14" ResizeMode="CanMinimize" Topmost="True">
     <Window.Resources>
         <cv:PriorityConverter x:Key="priorityConverter" />
-        <cv:WidthConverter x:Key="widthConverter" />
         <cv:ArchiveConverter x:Key="archiveConverter" />
         <cv:NcNameConverter x:Key="ncNameConverter" />
         <cv:NcToolLengthConverter x:Key="ncToolLengthConverter" />
@@ -675,7 +674,23 @@
                 </TabItem>
                 <!--#endregion-->
 
-                <!--#region Список деталей -->
+                <!--#region Электронный журнал -->
+                <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
+                    <TabItem.Header>
+                        <materialDesign:PackIcon
+                            Kind="Timetable"
+                            Width="24"
+                            Height="24" />
+                    </TabItem.Header>
+                    <Grid>
+                        <GroupBox Header="Электронный журнал" Margin="0,0,0,1" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+                <!--#endregion-->
+
+                <!--#region Калькулятор выработки -->
                 <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
                     <TabItem.Header>
                         <materialDesign:PackIcon
@@ -882,7 +897,7 @@
                     </Grid>
                 </TabItem>
                 <!--#endregion-->
-
+                
                 <!--#region Список деталей -->
                 <TabItem Style="{StaticResource MaterialDesignNavigationRailTabItem}">
                     <TabItem.Header>
