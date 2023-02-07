@@ -64,7 +64,7 @@
         </Style>
         <Style TargetType="GroupBox" BasedOn="{StaticResource MaterialDesignGroupBox}">
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="materialDesign:ShadowAssist.ShadowDepth" Value="Depth3"/>
+            <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp0"/>
             <Setter Property="BorderBrush" Value="{StaticResource MaterialDesignPaper}"/>
         </Style>
     </Window.Resources>
@@ -294,7 +294,7 @@
                         </materialDesign:DialogHost>
 
                         <!--#region Архив УП -->
-                        <GroupBox Grid.Column="0" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                        <GroupBox Grid.Column="0" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ElevationAssist.Elevation="Dp0">
                             <GroupBox.Header>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <Label x:Name="archiveInfoLabel" Content="Архив управляющих программ" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="archiveGB_MouseLeftButtonDoubleClick"/>
@@ -454,7 +454,7 @@
                         <Border Background="{DynamicResource MaterialDesignDivider}" Grid.Column="1" />
 
                         <!--#region Сетевая папка -->
-                        <GroupBox Grid.Column="2" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                        <GroupBox Grid.Column="2" TextBlock.Foreground="{StaticResource MaterialDesignBodyLight}" materialDesign:ElevationAssist.Elevation="Dp0">
                             <GroupBox.Header>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <Label x:Name="machineInfoLabel" Content="Программы в сетевой папке станка" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="machineGB_MouseLeftButtonDoubleClick"/>
@@ -536,13 +536,13 @@
                                     <ProgressBar Grid.Row="1" x:Name="machineProgressBar" DockPanel.Dock="Right" Height="100" Width="100" 
                                         Style="{StaticResource MaterialDesignCircularProgressBar}"
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <Grid x:Name="analyzeGrid" Visibility="Collapsed" Grid.RowSpan="2" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
-                                        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
-                                            <DockPanel Margin="16" LastChildFill="True" materialDesign:ShadowAssist.ShadowDepth="Depth2" >
+                                    <Grid x:Name="analyzeGrid" Visibility="Collapsed" Grid.RowSpan="2" materialDesign:ElevationAssist.Elevation="Dp2" >
+                                        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ElevationAssist.Elevation="Dp2" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
+                                            <DockPanel Margin="16" LastChildFill="True" materialDesign:ElevationAssist.Elevation="Dp2" >
                                                 <StackPanel DockPanel.Dock="Top">
                                                     <TextBlock x:Name="analyzeProgramTypeTB" VerticalAlignment="Center" FontSize="16" Margin="0 -9 0 0"/>
                                                     <TextBlock x:Name="analyzeProgramCoordinatesTB" DockPanel.Dock="Top" Margin="0 0 0 -9"/>
-                                                    <GroupBox x:Name="analyzeGB" Header="Инструмент" materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0" Margin="-17 -17 -17 10">
+                                                    <GroupBox x:Name="analyzeGB" Header="Инструмент" materialDesign:ElevationAssist.Elevation="Dp0" BorderThickness="0" Margin="-17 -17 -17 10">
                                                     <DataGrid x:Name="analyzeDG" AutoGenerateColumns="False" EnableRowVirtualization="True" IsReadOnly="True" HeadersVisibility="None"
                                                           Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow" SelectedItem="-1"
                                                           CanUserReorderColumns="False" CanUserResizeColumns="False" MaxHeight="200">
@@ -683,7 +683,7 @@
                             Height="24" />
                     </TabItem.Header>
                     <Grid>
-                        <GroupBox Header="Электронный журнал" Margin="0,0,0,1" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                        <GroupBox Header="Электронный журнал" Margin="0,0,0,1" materialDesign:ElevationAssist.Elevation="Dp0">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -721,9 +721,9 @@
                     Height="24" />
                     </TabItem.Header>
                     <Grid>
-                        <GroupBox Header="Калькулятор выработки" Margin="0,0,0,1" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                        <GroupBox Header="Калькулятор выработки" Margin="0,0,0,1" materialDesign:ElevationAssist.Elevation="Dp0">
                             <DockPanel LastChildFill="True">
-                                <Border DockPanel.Dock="Top" Padding="10 10 10 10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" 
+                                <Border DockPanel.Dock="Top" Padding="10 10 10 10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ElevationAssist.Elevation="Dp2" CornerRadius="3" BorderThickness="1" 
                                         Background="{DynamicResource MaterialDesignDarkSeparatorBackground}" >
                                     <StackPanel>
                                         <TextBlock Text="Наладка" DockPanel.Dock="Top" FontSize="16" Margin="0 0 0 10"/>
@@ -793,7 +793,7 @@
                                         </Grid>
                                     </StackPanel>
                                 </Border>
-                                <Border DockPanel.Dock="Top" Padding="10 10 10 10" Margin="0 10 0 0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth2" CornerRadius="3" BorderThickness="1" Background="{DynamicResource MaterialDesignDarkSeparatorBackground}" >
+                                <Border DockPanel.Dock="Top" Padding="10 10 10 10" Margin="0 10 0 0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" materialDesign:ElevationAssist.Elevation="Dp2" CornerRadius="3" BorderThickness="1" Background="{DynamicResource MaterialDesignDarkSeparatorBackground}" >
                                     <StackPanel>
                                         <TextBlock Text="Изготовление" DockPanel.Dock="Top" FontSize="16" Margin="0 0 0 10" />
                                         <StackPanel Orientation="Horizontal">
@@ -929,7 +929,7 @@
                     Height="24" />
                     </TabItem.Header>
                     <Grid>
-                        <GroupBox x:Name="statusGB" Header="Список закрепленных деталей" Margin="0,0,0,1" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+                        <GroupBox x:Name="statusGB" Header="Список закрепленных деталей" Margin="0,0,0,1" materialDesign:ElevationAssist.Elevation="Dp0">
                             <DataGrid x:Name="tableDG" AutoGenerateColumns="False" IsReadOnly="True" EnableRowVirtualization="True" 
                                     Foreground="{DynamicResource MaterialDesignBodyLight}" SelectionUnit="FullRow" 
                                     CanUserReorderColumns="False" CanUserResizeColumns="False">
@@ -964,7 +964,7 @@
                     Height="24" />
                     </TabItem.Header>
                     <Grid>
-                        <GroupBox x:Name="notesGB" Header="Заметки" materialDesign:ShadowAssist.ShadowDepth="Depth0" Margin="0,0,0,1">
+                        <GroupBox x:Name="notesGB" Header="Заметки" materialDesign:ElevationAssist.Elevation="Dp0" Margin="0,0,0,1">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="auto"/>

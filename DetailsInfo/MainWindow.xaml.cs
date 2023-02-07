@@ -1295,8 +1295,8 @@ namespace DetailsInfo
                     _analyzeArchiveProgram = false;
                     _showWinExplorer = false;
                     _openFolderButton = false;
-                    LoadMachine();
-                    LoadArchive();
+                    //LoadMachine();
+                    //LoadArchive();
                 }
                 catch (Exception exception)
                 {
@@ -1517,7 +1517,8 @@ namespace DetailsInfo
                 {
                     Process.Start(new ProcessStartInfo(_selectedArchiveFile!) { UseShellExecute = true });
                 }
-                
+
+                if (_findStatus is FindStatus.Finded) return;
                 _transferFromArchive = false;
                 _transferFromMachine = false;
                 _deleteFromMachine = false;
@@ -1528,7 +1529,7 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                if (_findStatus is not FindStatus.Finded) return;
+                
                 LoadMachine();
                 LoadArchive();
             }
