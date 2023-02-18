@@ -1081,7 +1081,9 @@ namespace DetailsInfo
 
         private void cloudButton_Click(object sender, RoutedEventArgs e)
         {
-            _currentArchiveFolder = @"\\DESKTOP-DB65KJ0\Users\Zvyagin_VM\Desktop\Программы к станкам";
+            const string cloudPath = @"\\hv-luga\nc\Резерв\Программы к станкам";
+            if (!Directory.Exists(cloudPath)) return;
+            _currentArchiveFolder = cloudPath;
             ChangeArchiveWatcher();
             LoadArchive();
         }
