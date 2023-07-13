@@ -22,6 +22,8 @@ using MaterialDesignThemes.Wpf;
 using MimeKit;
 using Application = System.Windows.Application;
 using ListView = System.Windows.Controls.ListView;
+using IWshRuntimeLibrary;
+using File = System.IO.File;
 #pragma warning disable CS0162
 
 namespace DetailsInfo
@@ -217,7 +219,7 @@ namespace DetailsInfo
                 if (!Reader.CheckPath(Settings.Default.tempPath)) _tempFolderStatus = false;
                 if (_tempFolderStatus) tempFolderConnectionIcon.Dispatcher.Invoke(() => tempFolderConnectionIcon.Foreground = _greenBrush);
 
-                if (!Reader.CheckPath(Settings.Default.tablePath) && !File.Exists(Settings.Default.tablePath)) TurnOffTable();
+                if (!Reader.CheckPath(Settings.Default.tablePath) && !System.IO.File.Exists(Settings.Default.tablePath)) TurnOffTable();
                 if (_tableStatus) tableConnectionIcon.Dispatcher.Invoke(() => tableConnectionIcon.Foreground = _greenBrush);
                 if (LoadTable())
                 {
@@ -449,41 +451,16 @@ namespace DetailsInfo
         private void LoadArchive()
         {
             if (!_archiveStatus) return;
+            
             try
             {
-                _archiveContent = new();
-                List<string> dirs = new();
-                List<string> files = new();
-                var findString = string.Empty;
-                dirs = Directory.EnumerateDirectories(_currentArchiveFolder).ToList();
-                files = Directory.EnumerateFiles(_currentArchiveFolder).ToList();
-
-                // вносим папки
-                if (dirs.Count > 0)
+                if (_findStatus == FindStatus.Finded)
                 {
-                    foreach (var folder in dirs)
-                    {
-                        var tempArchiveFolder = new ArchiveContent
-                        {
-                            Content = folder,
-                            TransferButtonState = Visibility.Collapsed,
-                            OpenButtonState = Visibility.Collapsed,
-                            DeleteButtonState = Visibility.Collapsed,
-                            OpenFolderState = Visibility.Collapsed,
-                            AnalyzeButtonState = Visibility.Collapsed,
-                            ShowWinExplorerButtonState = Visibility.Collapsed,
-                        };
-                        _archiveContent.Add(tempArchiveFolder); 
-                        if(tempArchiveFolder.Content == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
-                    }
-                }
-                // вносим файлы
-                if (files.Count > 0)
-                {
-                    foreach (var file in files)
+                    _archiveContent = new();
+                    foreach (var file in _findResult)
                     {
                         if (FileFormats.SystemFiles.Contains(Path.GetFileName(file))) continue;
-                            
+
                         if (Reader.CanBeTransfered(file))
                         {
                             _archiveContent.Add(new ArchiveContent
@@ -517,6 +494,76 @@ namespace DetailsInfo
                         }
                     }
                 }
+                else
+                {
+                    _archiveContent = new();
+                    List<string> dirs = new();
+                    List<string> files = new();
+                    var findString = string.Empty;
+                    dirs = Directory.EnumerateDirectories(_currentArchiveFolder).ToList();
+                    files = Directory.EnumerateFiles(_currentArchiveFolder).ToList();
+
+                    // вносим папки
+                    if (dirs.Count > 0)
+                    {
+                        foreach (var folder in dirs)
+                        {
+                            var tempArchiveFolder = new ArchiveContent
+                            {
+                                Content = folder,
+                                TransferButtonState = Visibility.Collapsed,
+                                OpenButtonState = Visibility.Collapsed,
+                                DeleteButtonState = Visibility.Collapsed,
+                                OpenFolderState = Visibility.Collapsed,
+                                AnalyzeButtonState = Visibility.Collapsed,
+                                ShowWinExplorerButtonState = Visibility.Collapsed,
+                            };
+                            _archiveContent.Add(tempArchiveFolder);
+                            if (tempArchiveFolder.Content == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
+                        }
+                    }
+                    // вносим файлы
+                    if (files.Count > 0)
+                    {
+                        foreach (var file in files)
+                        {
+                            if (FileFormats.SystemFiles.Contains(Path.GetFileName(file))) continue;
+
+                            if (Reader.CanBeTransfered(file))
+                            {
+                                _archiveContent.Add(new ArchiveContent
+                                {
+                                    Content = file,
+                                    TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                    OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                    DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                                    OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile && _openFolderButton) ? Visibility.Visible : Visibility.Collapsed,
+                                    AnalyzeButtonState =
+                                        ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                            || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                            || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
+                                             ) && Settings.Default.ncAnalyzer && Reader.CanBeTransfered(file))
+                                         && _analyzeArchiveProgram && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                    ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                                });
+                            }
+                            else
+                            {
+                                _archiveContent.Add(new ArchiveContent
+                                {
+                                    Content = file,
+                                    TransferButtonState = Visibility.Collapsed,
+                                    OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                    DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                                    OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                    AnalyzeButtonState = Visibility.Collapsed,
+                                    ShowWinExplorerButtonState = (_showWinExplorer && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
+                                });
+                            }
+                        }
+                    }
+                }
+
                 if (archiveLV.ItemsSource == null || archiveLV.Items.Count == 0 || !_archiveContent.SequenceEqual(archiveLV.ItemsSource as List<ArchiveContent> ?? new List<ArchiveContent>()))
                 {
                     archiveLV.Dispatcher.Invoke(() => archiveLV.ItemsSource = _archiveContent);
