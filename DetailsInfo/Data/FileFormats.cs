@@ -9,6 +9,7 @@ namespace DetailsInfo.Data
     public static class FileFormats
     {
         public static int IconSize => 44;
+        public static string[] SkipMachineExtensions { get; } = { ".dep" };
         public static string[] MazatrolExtensions { get; } = { ".pbg", ".pbd"};
         public static string[] EiaExtensions { get; } = { ".eia" };
         public static string[] HeidenhainExtensions { get; } = { ".h" };

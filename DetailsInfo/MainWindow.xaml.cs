@@ -875,6 +875,7 @@ namespace DetailsInfo
             _machineContent = new List<NcFile>();
             foreach (var file in Directory.GetFiles(Settings.Default.machinePath))
             {
+                if (FileFormats.SkipMachineExtensions.Contains(Path.GetExtension(file)?.ToLower(CultureInfo.InvariantCulture))) continue;
                 _machineContent.Add(new NcFile
                 {
                     FullPath = file,
@@ -1251,6 +1252,15 @@ namespace DetailsInfo
             TurnOffMachine();
             TurnOnMachine();
             LoadMachine();
+        }
+
+        private void DeleteDeps()
+        {
+            foreach (var file in Directory.GetFiles(Settings.Default.machinePath))
+            {
+                try { if (Path.GetExtension(file)?.ToLower(CultureInfo.InvariantCulture) == ".dep") File.Delete(file); } 
+                catch { SendMessage($"Не удалось удалить файл: {file}"); }
+            }
         }
 
         private void minimizeButton_Click(object sender, RoutedEventArgs e)
@@ -1815,6 +1825,7 @@ namespace DetailsInfo
                 //LoadMachine();
                 SendMessage($"Отправлен на проверку и очищен из сетевой папки файл: {tempName}");
                 WriteLog($"Отправлено на проверку \"{_selectedMachineFile}\" -> \"{tempName}\"");
+                DeleteDeps();
             }
             catch (UnauthorizedAccessException)
             {
@@ -1865,6 +1876,7 @@ namespace DetailsInfo
                 //Task.Run(() => LoadMachine()).GetAwaiter();
                 LoadArchive();
                 SendMessage($"Из сетевой папки станка удален файл: {Path.GetFileName(_selectedMachineFile)}");
+                DeleteDeps();
             }
             catch (Exception exception)
             {
