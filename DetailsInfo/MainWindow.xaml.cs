@@ -1783,7 +1783,7 @@ namespace DetailsInfo
             
             try
             {
-                var tempProgramFolder = Path.Combine(Settings.Default.tempPath, Reader.CreateTempName(_selectedMachineFile, Reader.GetFileNameOptions.OnlyNcName));
+                var tempProgramFolder = Path.Combine(Settings.Default.tempPath, Reader.CreateTempName(_selectedMachineFile, Reader.GetFileNameOptions.OnlyNcName)).TrimEnd();
                 if (!Directory.Exists(tempProgramFolder))
                 {
                     Directory.CreateDirectory(tempProgramFolder);
@@ -2461,10 +2461,6 @@ namespace DetailsInfo
             ProductionResultTb.Visibility = Visibility.Visible;
             ProductionResultTb.Focus();
         }
-
-
         #endregion
-
-        
     }
 }
