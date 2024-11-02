@@ -2461,6 +2461,44 @@ namespace DetailsInfo
             ProductionResultTb.Visibility = Visibility.Visible;
             ProductionResultTb.Focus();
         }
+
+        public void HandleIncomingUrl(string url)
+        {
+            try
+            {
+                Uri uri = new Uri(url);
+                if (uri.IsUnc) { }
+                var path = uri.HostNameType is UriHostNameType.Dns ? $"\\\\{System.Web.HttpUtility.UrlDecode(uri.AbsoluteUri)[8..]}" : $"{System.Web.HttpUtility.UrlDecode(uri.AbsoluteUri)[9..]}";
+                findDialogButton.Visibility = Visibility.Visible;
+                returnButton.Visibility = Visibility.Collapsed;
+                _findStatus = FindStatus.DontNeed;
+                if (Reader.CheckPath(path))
+                {
+                    _transferFromArchive = false;
+                    _transferFromMachine = false;
+                    _deleteFromMachine = false;
+                    _openFromArchive = false;
+                    _renameOnMachine = false;
+                    _openFromNcFolder = false;
+                    _analyzeNcProgram = false;
+                    _analyzeArchiveProgram = false;
+                    _showWinExplorer = false;
+                    _selectedArchiveFile = _currentArchiveFolder;
+                    _needArchiveScroll = true;
+                    _openFolderButton = false;
+                    _currentArchiveFolder = path;
+                    ChangeArchiveWatcher();
+                } else
+                {
+                    SendMessage($"Невозможно перейти в \"{path}\"");
+                }
+                LoadArchive();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка обработки URL: {ex.Message}");
+            }
+        }
         #endregion
     }
 }
