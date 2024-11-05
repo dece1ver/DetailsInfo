@@ -97,17 +97,13 @@ namespace DetailsInfo
 
             try
             {
-                // Регистрируем протокол только для основного экземпляра
                 string appPath = Process.GetCurrentProcess().MainModule.FileName;
                 RegisterUrlProtocol(UriProtocol, appPath);
 
-                // Создаем event handle для коммуникации между экземплярами
                 _eventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, UniqueEventName);
 
-                // Запускаем именованный канал для получения данных
                 StartPipeServer();
 
-                // Обрабатываем начальные аргументы
                 string urlArgument = e.Args.FirstOrDefault(arg => arg.StartsWith(UriPrefix));
                 if (!string.IsNullOrEmpty(urlArgument))
                 {
@@ -116,12 +112,11 @@ namespace DetailsInfo
                     {
                         if (MainWindow is MainWindow mw)
                         {
-                            mw.HandleIncomingUrl(urlArgument);
+                            mw.OnStartWithArg(urlArgument);
                         }
                     }));
                 }
 
-                // Запускаем поток для обработки последующих вызовов
                 StartMessageLoop();
             }
             catch (Exception ex)

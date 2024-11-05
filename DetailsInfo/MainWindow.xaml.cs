@@ -24,6 +24,7 @@ using Application = System.Windows.Application;
 using ListView = System.Windows.Controls.ListView;
 using IWshRuntimeLibrary;
 using File = System.IO.File;
+using System.Web;
 #pragma warning disable CS0162
 
 namespace DetailsInfo
@@ -183,6 +184,11 @@ namespace DetailsInfo
         private void OnChangedInMachine(object sender, FileSystemEventArgs eventArgs) => LoadMachine();
         private void OnDeletedInMachine(object sender, FileSystemEventArgs eventArgs) => LoadMachine();
         private void OnRenamedInMachine(object sender, RenamedEventArgs eventArgs) => LoadMachine();
+
+        public void OnStartWithArg(string arg) 
+        {
+            Loaded += (_, _) => HandleIncomingUrl(arg) ;
+        }
 
         private async Task LoadInfoAsync(bool start = false)
         {
@@ -2466,9 +2472,15 @@ namespace DetailsInfo
         {
             try
             {
-                Uri uri = new Uri(url);
-                if (uri.IsUnc) { }
-                var path = uri.HostNameType is UriHostNameType.Dns ? $"\\\\{System.Web.HttpUtility.UrlDecode(uri.AbsoluteUri)[8..]}" : $"{System.Web.HttpUtility.UrlDecode(uri.AbsoluteUri)[9..]}";
+                string tmpUrl = url.Replace("dinfo:", "");
+
+                UriBuilder builder = new UriBuilder
+                {
+                    Scheme = "dinfo",
+                    Path = tmpUrl,
+                };
+                Uri uri = builder.Uri;
+                var path = uri.HostNameType is UriHostNameType.Dns ? $"\\\\{string.Join("\\", HttpUtility.UrlDecode(uri.AbsoluteUri)[6..].Trim('/').Split('/')[2..])}" : $"{HttpUtility.UrlDecode(uri.AbsoluteUri)[9..]}";
                 findDialogButton.Visibility = Visibility.Visible;
                 returnButton.Visibility = Visibility.Collapsed;
                 _findStatus = FindStatus.DontNeed;
@@ -2496,7 +2508,7 @@ namespace DetailsInfo
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка обработки URL: {ex.Message}");
+                MessageBox.Show($"Ошибка обработки URL: {url}\n{ex.Message}");
             }
         }
         #endregion
