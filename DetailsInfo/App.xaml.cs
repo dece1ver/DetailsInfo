@@ -52,8 +52,12 @@ namespace DetailsInfo
             // Сброс advanced режима при каждом запуске
             Settings.Default.advancedMode = false;
 
-            // Обработка аргумента -advanced
-            if (e.Args.Contains("-advanced"))
+            // Обработка расширенного режима
+            if (e.Args.Contains("-advanced") 
+                || Utils.WindowsUtils.IsRunAsAdministrator() 
+                && MessageBox.Show(
+                    "Приложение запущено с повышенными правами. Хотите активировать расширенный режим? Нажмите \"Да\" для включения или \"Нет\" для продолжения в стандартном режиме.", 
+                    "Выбор режима", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 Settings.Default.advancedMode = true;
                 LogMessage("Включен advanced режим");

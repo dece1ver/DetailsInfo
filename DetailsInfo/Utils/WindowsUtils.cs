@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text;
 
 namespace DetailsInfo.Utils
@@ -112,6 +113,19 @@ namespace DetailsInfo.Utils
                         PostMessage(tIpBandWnd, (uint)WMessages.WmLbuttonup, 1, 65537);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Проверяет, запущено ли приложение с правами администратора.
+        /// </summary>
+        /// <returns>True, если запущено с правами администратора; иначе False.</returns>
+        public static bool IsRunAsAdministrator()
+        {
+            using (var identity = WindowsIdentity.GetCurrent())
+            {
+                var principal = new WindowsPrincipal(identity);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
         }
 

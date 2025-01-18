@@ -3,17 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DetailsInfo", "DetailsInfo\DetailsInfo.csproj", "{E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B3957B57-6BB9-4B0C-BE11-FA55083C2CCF}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DetailsInfo.Website", "DetailsInfo.Website\DetailsInfo.Website.csproj", "{CFC11F6C-4B78-4A92-B061-35C00B1DDF9C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821} = {E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +16,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7FA7B9F-4E35-413F-9BA7-D4AE4FC54821}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CFC11F6C-4B78-4A92-B061-35C00B1DDF9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CFC11F6C-4B78-4A92-B061-35C00B1DDF9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFC11F6C-4B78-4A92-B061-35C00B1DDF9C}.Release|Any CPU.ActiveCfg = Release|Any CPU

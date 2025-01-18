@@ -1136,7 +1136,7 @@ namespace DetailsInfo
         private void cloudButton_Click(object sender, RoutedEventArgs e)
         {
             const string cloudPath = @"\\hv-luga\nc\Резерв\Программы к станкам";
-            if (!Directory.Exists(cloudPath)) return;
+            if (!Reader.CheckPath(cloudPath)) return;
             _currentArchiveFolder = cloudPath;
             ChangeArchiveWatcher();
             LoadArchive();
