@@ -508,11 +508,13 @@ namespace DetailsInfo
                     var findString = string.Empty;
                     dirs = Directory.EnumerateDirectories(_currentArchiveFolder).ToList();
                     files = Directory.EnumerateFiles(_currentArchiveFolder).ToList();
+                    var validDirs = dirs.Where(d => Path.GetFileName(d) != "_").ToList();
+                    var validFiles = files.Where(f => Path.GetFileName(f) != "_").ToList();
 
                     // вносим папки
-                    if (dirs.Count > 0)
+                    if (validDirs.Count > 0)
                     {
-                        foreach (var folder in dirs)
+                        foreach (var folder in validDirs)
                         {
                             var tempArchiveFolder = new ArchiveContent
                             {
@@ -529,9 +531,9 @@ namespace DetailsInfo
                         }
                     }
                     // вносим файлы
-                    if (files.Count > 0)
+                    if (validFiles.Count > 0)
                     {
-                        foreach (var file in files)
+                        foreach (var file in validFiles)
                         {
                             if (FileFormats.SystemFiles.Contains(Path.GetFileName(file))) continue;
 
@@ -675,13 +677,14 @@ namespace DetailsInfo
                             else
                             {
                                 await archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Поиск файлов содержащих в названии \"{findTextBox.Text}\"...");
-                                await Task.Run(() => 
-                                {
-                                    files = Directory
-                                        .EnumerateFiles(_currentArchiveFolder, "*.*", SearchOption.AllDirectories)
-                                        .Where(file => file.ToLower().Contains(findString, StringComparison.OrdinalIgnoreCase))
-                                        .ToList();
-                                });
+                                files = Directory
+                                .EnumerateFiles(_currentArchiveFolder, "*.*", SearchOption.AllDirectories)
+                                .Where(file =>
+                                    file.ToLower().Contains(findString, StringComparison.OrdinalIgnoreCase) &&
+                                    !Path.GetDirectoryName(file)
+                                        .Split(Path.DirectorySeparatorChar)
+                                        .Any(dir => dir.Equals("_", StringComparison.OrdinalIgnoreCase)))
+                                .ToList();
                             }
                             break;
                         // возврат к результатам поиска
