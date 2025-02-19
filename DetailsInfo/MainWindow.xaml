@@ -221,6 +221,14 @@
                                         <materialDesign:PackIcon Kind="CloseCircle"
                                              Height="30" Width="30" Foreground="Red" />
                                     </Button>
+                                    <StackPanel x:Name="SwitchImageButtonsPanel" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+                                        <Button x:Name="switchPreviousImageButton" Style="{StaticResource MaterialDesignIconForegroundButton}" Margin="5" Click="switchPreviousImageButton_Click">
+                                            <materialDesign:PackIcon Kind="NavigateBefore" Foreground="Red" Height="50" Width="50" />
+                                        </Button>
+                                        <Button x:Name="switchNextImageButton" Style="{StaticResource MaterialDesignIconForegroundButton}" Margin="5" Click="switchNextImageButton_Click">
+                                            <materialDesign:PackIcon Kind="NavigateNext" Foreground="Red" Height="50" Width="50" />
+                                        </Button>
+                                    </StackPanel>
                                 </Grid>
                             </materialDesign:DialogHost.DialogContent>
                         </materialDesign:DialogHost>

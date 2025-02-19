@@ -79,6 +79,8 @@ namespace DetailsInfo
         private FindStatus _findStatus = FindStatus.DontNeed;
         private List<string> _findResult;
         private string _selectedArchiveFile;
+        private string _selectedImage;
+        private string _selectedImagesDir;
         private string _selectedForDeletionArchiveFile;
         private string _selectedForDeletionMachineFile;
         private string _selectedMachineFile;
@@ -1555,7 +1557,10 @@ namespace DetailsInfo
             {
                 if (Settings.Default.integratedImageViewer && FileFormats.ImageExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower()))
                 {
-                    image.Source = new BitmapImage(new Uri(_selectedArchiveFile!));
+                    _selectedImage = _selectedArchiveFile;
+                    _selectedImagesDir = _selectedArchiveFolder.Content;
+                    _selectedImagesDir ??= archivePathTB.Text;
+                    image.Source = new BitmapImage(new Uri(_selectedImage!));
                     ImageDialogHost.IsOpen = true;
                 }
                 else if (Path.GetExtension(_selectedArchiveFile)?.ToLower() == ".lnk")
@@ -1627,6 +1632,50 @@ namespace DetailsInfo
                 AddError(exception);
             }
 
+        }
+
+        private void switchPreviousImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var images = Directory.EnumerateFiles(_selectedImagesDir).Where(f => FileFormats.ImageExtensions.Contains(Path.GetExtension(f))).ToList();
+            var currentIndex = images.IndexOf(_selectedImage);
+            string path;
+            if (currentIndex == -1)
+            {
+                SendMessage("Не получилось :с");
+                return;
+            }
+            if (currentIndex == 0)
+            {
+                path = images[^1];
+            }
+            else 
+            {
+                path = images[currentIndex - 1];
+            }
+            image.Source = new BitmapImage(new Uri(path));
+            _selectedImage = path;
+        }
+
+        private void switchNextImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var images = Directory.EnumerateFiles(_selectedImagesDir).Where(f => FileFormats.ImageExtensions.Contains(Path.GetExtension(f))).ToList();
+            var currentIndex = images.IndexOf(_selectedImage);
+            string path;
+            if (currentIndex == -1)
+            {
+                SendMessage("Не получилось :с");
+                return;
+            }
+            if (currentIndex >= images.Count - 1)
+            {
+                path = images[0];
+            }
+            else 
+            {
+                path = images[currentIndex + 1];
+            }
+            image.Source = new BitmapImage(new Uri(path));
+            _selectedImage = path;
         }
 
         private void confirmDeleteFromArchiveButton_Click(object sender, RoutedEventArgs e)
@@ -2512,5 +2561,6 @@ namespace DetailsInfo
             }
         }
         #endregion
+
     }
 }
