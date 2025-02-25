@@ -266,6 +266,27 @@
                                 </Grid>
                             </materialDesign:DialogHost.DialogContent>
                         </materialDesign:DialogHost>
+                        
+                         <materialDesign:DialogHost x:Name="SelectUsbDeviceDialogHost" Grid.Column="1" 
+                                                    CloseOnClickAway="True">
+                             <materialDesign:DialogHost.DialogContent>
+                                 <Grid>
+                                     
+                                     <GroupBox Header="Выберите устройство">
+                                          <ListView Grid.Row="1" x:Name="removableDevicesLV" DisplayMemberPath="Description" MinWidth="250"
+                                                    PreviewMouseLeftButtonUp="removableDevicesLV_PreviewMouseLeftButtonUp">
+    
+                                          </ListView>
+                                     </GroupBox>
+                                     <Button Grid.Row="0" Margin="2" Width="32" Click="closeSelectUsbDialogButton_Click" VerticalAlignment="Top" HorizontalAlignment="Right"
+                                        Style="{StaticResource MaterialDesignFlatButton}" BorderThickness="0" Padding="-10">
+                                     <materialDesign:PackIcon Kind="CancelBold" Foreground="Red" VerticalAlignment="Center"
+                                         Width="35" 
+                                         Height="35"/>
+                                </Button>
+                                 </Grid>
+                             </materialDesign:DialogHost.DialogContent>
+                         </materialDesign:DialogHost>
 
                         <materialDesign:DialogHost x:Name="ConfirmDeleteFromMachineDialogHost" Grid.Column="1">
                             <materialDesign:DialogHost.DialogContent>
@@ -370,6 +391,7 @@
                                                   Width="276" Height="50" Checked="archiveContentSearchCB_Checked" Unchecked="archiveContentSearchCB_Unchecked"/>
                                     </StackPanel>
                                 </materialDesign:DialogHost.DialogContent>
+
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="auto"/>
@@ -380,6 +402,9 @@
                                         Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <DockPanel Grid.Row="0" x:Name="archiveButtonsPanel" Visibility="Visible">
                                         <StackPanel Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Left">
+                                            <Button x:Name="removebleDeviceButton" Style="{StaticResource generalButtonStyle}" Click="removebleDeviceButton_Click" Cursor="Hand">
+                                                <materialDesign:PackIcon Kind="UsbFlashDriveOutline" Height="25" Width="25" />
+                                            </Button>
                                             <Button x:Name="archiveRootButton" Style="{StaticResource generalButtonStyle}" Click="archiveRootButton_Click" Cursor="Hand">
                                                 <materialDesign:PackIcon Kind="FolderHomeOutline" Height="25" Width="25" />
                                             </Button>

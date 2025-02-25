@@ -25,6 +25,10 @@ using ListView = System.Windows.Controls.ListView;
 using IWshRuntimeLibrary;
 using File = System.IO.File;
 using System.Web;
+using System.Management;
+using System.Windows.Interop;
+using System.Windows.Forms;
+using MessageBox = System.Windows.MessageBox;
 #pragma warning disable CS0162
 
 namespace DetailsInfo
@@ -39,6 +43,10 @@ namespace DetailsInfo
         private const bool DebugMode = false;
 
         #region Поля
+        private const int WM_DEVICECHANGE = 0x0219;
+        private const int DBT_DEVICEARRIVAL = 0x8000;
+        private const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
+        private List<UsbDrive> _drives;
         private FileSystemWatcher archiveWatcher = new();
         private FileSystemWatcher machineWatcher = new();
         private const string NewOrFixProgramReason = "Новая программа/корректировка старой";
@@ -117,7 +125,7 @@ namespace DetailsInfo
 
         #region Перерывы
 
-        
+
 
         #endregion
 
@@ -130,7 +138,7 @@ namespace DetailsInfo
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            archiveWatcher.NotifyFilter = NotifyFilters.Attributes 
+            archiveWatcher.NotifyFilter = NotifyFilters.Attributes
                                         | NotifyFilters.CreationTime
                                         | NotifyFilters.DirectoryName
                                         | NotifyFilters.FileName
@@ -139,7 +147,7 @@ namespace DetailsInfo
                                         | NotifyFilters.Security
                                         | NotifyFilters.Size;
             archiveWatcher.Filter = "*.*";
-            machineWatcher.NotifyFilter = NotifyFilters.Attributes 
+            machineWatcher.NotifyFilter = NotifyFilters.Attributes
                                         | NotifyFilters.CreationTime
                                         | NotifyFilters.DirectoryName
                                         | NotifyFilters.FileName
@@ -176,6 +184,9 @@ namespace DetailsInfo
 
             CheckReasonCB.ItemsSource = _reasons;
             CheckReasonCB.SelectedIndex = 0;
+
+            UpdateUsbDrives();
+            StartUsbMonitoring();
         }
 
         private void OnCreatedInArchive(object sender, FileSystemEventArgs eventArgs) => LoadArchive();
@@ -187,18 +198,18 @@ namespace DetailsInfo
         private void OnDeletedInMachine(object sender, FileSystemEventArgs eventArgs) => LoadMachine();
         private void OnRenamedInMachine(object sender, RenamedEventArgs eventArgs) => LoadMachine();
 
-        public void OnStartWithArg(string arg) 
+        public void OnStartWithArg(string arg)
         {
-            Loaded += (_, _) => HandleIncomingUrl(arg) ;
+            Loaded += (_, _) => HandleIncomingUrl(arg);
         }
 
         private async Task LoadInfoAsync(bool start = false)
         {
             await Task.Run(() =>
             {
-                
+
                 if (!Reader.CheckPath(Settings.Default.archivePath)) TurnOffArchive();
-                if (_archiveStatus) 
+                if (_archiveStatus)
                 {
                     archiveConnectionIcon.Dispatcher.Invoke(() => archiveConnectionIcon.Foreground = _greenBrush);
                     archiveWatcher.Path = _currentArchiveFolder;
@@ -210,7 +221,7 @@ namespace DetailsInfo
 
                 LoadArchive();
 
-               
+
                 if (!Reader.CheckPath(Settings.Default.machinePath)) TurnOffMachine();
                 if (_machineStatus)
                 {
@@ -289,7 +300,7 @@ namespace DetailsInfo
             }
             catch
             {
-                
+
                 // ignored
             }
 
@@ -459,7 +470,7 @@ namespace DetailsInfo
         private void LoadArchive()
         {
             if (!_archiveStatus) return;
-            
+
             try
             {
                 if (_findStatus == FindStatus.Finded)
@@ -575,8 +586,8 @@ namespace DetailsInfo
                 if (archiveLV.ItemsSource == null || archiveLV.Items.Count == 0 || !_archiveContent.SequenceEqual(archiveLV.ItemsSource as List<ArchiveContent> ?? new List<ArchiveContent>()))
                 {
                     archiveLV.Dispatcher.Invoke(() => archiveLV.ItemsSource = _archiveContent);
-                } 
-                    
+                }
+
                 if (_needArchiveScroll)
                 {
                     archiveLV.Dispatcher.Invoke(() => archiveLV.SelectedItem = _selectedArchiveFolder);
@@ -615,7 +626,7 @@ namespace DetailsInfo
         /// </summary>
         private async Task SearchInArchive()
         {
-            
+
             if (_findStatus is FindStatus.InProgress) return;
             if (_archiveStatus)
             {
@@ -642,16 +653,16 @@ namespace DetailsInfo
                             await stopSearchButton.Dispatcher.InvokeAsync(() => stopSearchButton.Visibility = Visibility.Visible);
                             await findDialogButton.Dispatcher.InvokeAsync(() => findDialogButton.Visibility = Visibility.Collapsed);
                             var contentSearch = (bool)archiveContentSearchCB.Dispatcher.InvokeAsync(() => archiveContentSearchCB.IsChecked).Result;
-                            
+
                             if (DebugMode) AddStatus(FindInProcess);
                             await archiveProgressBar.Dispatcher.InvokeAsync(() => archiveProgressBar.Visibility = Visibility.Visible);
                             if (contentSearch)
                             {
                                 await archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Подсчет файлов...");
-                                await Task.Run(() => 
+                                await Task.Run(() =>
                                 {
                                     allFiles = Directory.GetFiles(_currentArchiveFolder, "*.*", SearchOption.AllDirectories);
-                                    
+
                                     archiveProgressBar.Dispatcher.InvokeAsync(() => archiveProgressBar.Maximum = allFiles.Length);
                                     archiveProgressBar.Dispatcher.InvokeAsync(() => archiveProgressBar.Value = 0);
                                     archiveProgressBar.Dispatcher.InvokeAsync(() => archiveProgressBar.IsIndeterminate = false);
@@ -671,13 +682,13 @@ namespace DetailsInfo
                                     archiveProgressBar.Dispatcher.InvokeAsync(() => archiveProgressBar.Maximum = 1);
                                     archiveProgressBar.Dispatcher.InvokeAsync(() => archiveProgressBar.Value = 0);
                                     archiveProgressBar.Dispatcher.InvokeAsync(() => archiveProgressBar.IsIndeterminate = true);
-                                    
+
                                 });
                             }
                             else
                             {
                                 await archivePathTB.Dispatcher.InvokeAsync(() => archivePathTB.Text = $"Поиск файлов содержащих в названии \"{findTextBox.Text}\"...");
-                                await Task.Run(() => 
+                                await Task.Run(() =>
                                 {
                                     files = Directory
                                         .EnumerateFiles(_currentArchiveFolder, "*.*", SearchOption.AllDirectories)
@@ -710,8 +721,8 @@ namespace DetailsInfo
                                     AnalyzeButtonState = Visibility.Collapsed,
                                     ShowWinExplorerButtonState = Visibility.Collapsed,
                                 };
-                                _archiveContent.Add(tempArchiveFolder); 
-                                if(tempArchiveFolder.Content == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
+                                _archiveContent.Add(tempArchiveFolder);
+                                if (tempArchiveFolder.Content == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
                             }
                         }
                         // вносим файлы
@@ -720,7 +731,7 @@ namespace DetailsInfo
                             foreach (var file in files)
                             {
                                 if (FileFormats.SystemFiles.Contains(Path.GetFileName(file))) continue;
-                            
+
                                 if (Reader.CanBeTransfered(file))
                                 {
                                     _archiveContent.Add(new ArchiveContent
@@ -821,7 +832,7 @@ namespace DetailsInfo
                         await settingsButton.Dispatcher.InvokeAsync(() => settingsButton.IsEnabled = true);
                         await refreshButton.Dispatcher.InvokeAsync(() => refreshButton.IsEnabled = true);
                         await cloudButton.Dispatcher.InvokeAsync(() => cloudButton.IsEnabled = true);
-                        
+
                         _findStatus = FindStatus.Finded;
                         await findTextBox.Dispatcher.InvokeAsync(() => findTextBox.Text = string.Empty);
                         break;
@@ -891,13 +902,13 @@ namespace DetailsInfo
                     RenameButtonVisibility = (_renameOnMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                     OpenButtonVisibility = (_openFromNcFolder && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                     DeleteButtonVisibility = (_deleteFromMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
-                    AnalyzeButtonVisibility = 
+                    AnalyzeButtonVisibility =
                         ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                             || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                             || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                              ) && Settings.Default.ncAnalyzer)
-                            && _analyzeNcProgram && file == _selectedMachineFile ) 
-                            && Reader.CanBeTransfered(_selectedMachineFile ?? string.Empty) 
+                            && _analyzeNcProgram && file == _selectedMachineFile)
+                            && Reader.CanBeTransfered(_selectedMachineFile ?? string.Empty)
                             ? Visibility.Visible : Visibility.Collapsed,
                 });
             }
@@ -1003,7 +1014,7 @@ namespace DetailsInfo
                         var comment = "   " + line.Split(';')[4];
 
                         if (!string.IsNullOrEmpty(name))
-                            details.Add(new Detail { Name = name, Status = status, Comment = comment, Order = order, Priority = priority});
+                            details.Add(new Detail { Name = name, Status = status, Comment = comment, Order = order, Priority = priority });
                         switch (status)
                         {
                             case "Отработана":
@@ -1016,7 +1027,7 @@ namespace DetailsInfo
                     }
                     statusGB.Dispatcher.Invoke(() => statusGB.Header = $"Список заданий");
                     tableDG.Dispatcher.Invoke(() => tableDG.ItemsSource = details);
-                    
+
                     return true;
                 }
                 catch (FileNotFoundException)
@@ -1057,8 +1068,8 @@ namespace DetailsInfo
                             archiveWatcher.EnableRaisingEvents = true;
                             TurnOnArchive();
                             LoadArchive();
-                        } 
-                        else if (_archiveStatus && !archiveWatcher.EnableRaisingEvents) archiveWatcher.EnableRaisingEvents = true; 
+                        }
+                        else if (_archiveStatus && !archiveWatcher.EnableRaisingEvents) archiveWatcher.EnableRaisingEvents = true;
                     }
 
                     #endregion
@@ -1096,7 +1107,7 @@ namespace DetailsInfo
                             machineWatcher.EnableRaisingEvents = true;
                             TurnOnMachine();
                             LoadMachine();
-                        } 
+                        }
                         else if (_machineStatus && !machineWatcher.EnableRaisingEvents) machineWatcher.EnableRaisingEvents = true;
                     }
                     #endregion
@@ -1131,7 +1142,7 @@ namespace DetailsInfo
 
         private void messageButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageWindow messageWindow = new() {Owner = this};
+            MessageWindow messageWindow = new() { Owner = this };
             messageWindow.ShowDialog();
         }
 
@@ -1146,7 +1157,7 @@ namespace DetailsInfo
 
         private void settingsButton_Click(object sender, RoutedEventArgs e)
         {
-            SettingsWindow settingsWindow = new() {Owner = this};
+            SettingsWindow settingsWindow = new() { Owner = this };
             settingsWindow.ShowDialog();
 
             _errorStatus = false;
@@ -1154,7 +1165,7 @@ namespace DetailsInfo
             if (Settings.Default.needUpdate)
             {
                 _currentArchiveFolder = Settings.Default.archivePath;
-                
+
                 if (!Reader.CheckPath(Settings.Default.archivePath))
                 {
                     TurnOffArchive();
@@ -1165,7 +1176,7 @@ namespace DetailsInfo
                 }
                 LoadArchive();
 
-                
+
                 if (!Reader.CheckPath(Settings.Default.machinePath))
                 {
                     TurnOffMachine();
@@ -1192,7 +1203,7 @@ namespace DetailsInfo
 
         private void helpButton_Click(object sender, RoutedEventArgs e)
         {
-            HelpWindow helpWindow = new(_errorsList) {Owner = this};
+            HelpWindow helpWindow = new(_errorsList) { Owner = this };
             helpWindow.ShowDialog();
             _status.Clear();
         }
@@ -1266,7 +1277,7 @@ namespace DetailsInfo
         {
             foreach (var file in Directory.GetFiles(Settings.Default.machinePath))
             {
-                try { if (Path.GetExtension(file)?.ToLower(CultureInfo.InvariantCulture) == ".dep") File.Delete(file); } 
+                try { if (Path.GetExtension(file)?.ToLower(CultureInfo.InvariantCulture) == ".dep") File.Delete(file); }
                 catch { SendMessage($"Не удалось удалить файл: {file}"); }
             }
         }
@@ -1281,7 +1292,7 @@ namespace DetailsInfo
         {
             if (_advancedMode)
             {
-                MessageBox.Show( $"archiveWatcher.EnableRaisingEvents = {archiveWatcher.EnableRaisingEvents}", "Молодой человек, это не для вас написано.", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"archiveWatcher.EnableRaisingEvents = {archiveWatcher.EnableRaisingEvents}", "Молодой человек, это не для вас написано.", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -1289,7 +1300,7 @@ namespace DetailsInfo
         {
             if (_advancedMode)
             {
-                MessageBox.Show( $"machineWatcher.EnableRaisingEvents = {machineWatcher.EnableRaisingEvents}", "Молодой человек, это не для вас написано.", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"machineWatcher.EnableRaisingEvents = {machineWatcher.EnableRaisingEvents}", "Молодой человек, это не для вас написано.", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -1442,11 +1453,47 @@ namespace DetailsInfo
             LoadArchive();
         }
 
+        private void removableDevicesLV_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (removableDevicesLV.SelectedItem is UsbDrive usb)
+            {
+                _currentArchiveFolder = usb.Drive.Name;
+                findDialogButton.Visibility = Visibility.Visible;
+                returnButton.Visibility = Visibility.Collapsed;
+                _findStatus = FindStatus.DontNeed;
+                _transferFromArchive = false;
+                _transferFromMachine = false;
+                _deleteFromMachine = false;
+                _openFromArchive = false;
+                _renameOnMachine = false;
+                _openFromNcFolder = false;
+                _analyzeNcProgram = false;
+                _analyzeArchiveProgram = false;
+                _showWinExplorer = false;
+                _openFolderButton = false;
+                ChangeArchiveWatcher();
+                LoadArchive();
+                SelectUsbDeviceDialogHost.IsOpen = false;
+                //SendMessage($"Открыто устройство: {usb.Description}");
+            }
+        }
+
+        private void removebleDeviceButton_Click(object sender, RoutedEventArgs e)
+        {
+            removableDevicesLV.ItemsSource = _drives;
+            SelectUsbDeviceDialogHost.IsOpen = true;
+        }
+
+        private void closeSelectUsbDialogButton_Click(object sender, RoutedEventArgs e)
+        {
+             SelectUsbDeviceDialogHost.IsOpen = false;
+        }
+
 
         private void findButton_Click(object sender, RoutedEventArgs e)
         {
             if (!Reader.CheckPath(_currentArchiveFolder)) return;
-            
+
             _findStatus = FindStatus.Find;
             Task.Run(SearchInArchive);
         }
@@ -1474,12 +1521,12 @@ namespace DetailsInfo
         {
             try
             {
-                var transferFilePath = Settings.Default.autoRenameToMachine 
-                    ? Reader.FindFreeName(_selectedArchiveFile, Settings.Default.machinePath) 
+                var transferFilePath = Settings.Default.autoRenameToMachine
+                    ? Reader.FindFreeName(_selectedArchiveFile, Settings.Default.machinePath)
                     : Path.Combine(Settings.Default.machinePath, Path.GetFileName(_selectedArchiveFile)!);
 
 
-                
+
                 _transferFromArchive = false;
                 _transferFromMachine = false;
                 _deleteFromMachine = false;
@@ -1576,7 +1623,7 @@ namespace DetailsInfo
                         _findStatus = FindStatus.DontNeed;
                         ChangeArchiveWatcher();
                         LoadArchive();
-                        
+
                     }
                     else
                     {
@@ -1599,7 +1646,7 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                
+
                 LoadMachine();
                 LoadArchive();
             }
@@ -1648,7 +1695,7 @@ namespace DetailsInfo
             {
                 path = images[^1];
             }
-            else 
+            else
             {
                 path = images[currentIndex - 1];
             }
@@ -1670,7 +1717,7 @@ namespace DetailsInfo
             {
                 path = images[0];
             }
-            else 
+            else
             {
                 path = images[currentIndex + 1];
             }
@@ -1835,7 +1882,7 @@ namespace DetailsInfo
         private void applyCheckButton_Click(object sender, RoutedEventArgs e)
         {
             // формирование пути сохранения
-            
+
             try
             {
                 var tempProgramFolder = Path.Combine(Settings.Default.tempPath, Reader.CreateTempName(_selectedMachineFile, Reader.GetFileNameOptions.OnlyNcName)).TrimEnd();
@@ -1953,7 +2000,7 @@ namespace DetailsInfo
                 {
                     Process.Start(new ProcessStartInfo(_selectedMachineFile!) { UseShellExecute = true });
                 }
-                
+
                 _transferFromArchive = false;
                 _transferFromMachine = false;
                 _deleteFromMachine = false;
@@ -2009,7 +2056,7 @@ namespace DetailsInfo
             {
                 _ = AnalyzeProgramAsync(_selectedMachineFile);
             }
-            
+
 
             //List<string> temp = new();
             //foreach (var item in analyze)
@@ -2032,10 +2079,10 @@ namespace DetailsInfo
             await Task.Run(() =>
             {
                 var analyze = Reader.AnalyzeProgram(
-                    program, 
-                    out var programType, 
-                    out var coordinates, 
-                    out var warningsH, 
+                    program,
+                    out var programType,
+                    out var coordinates,
+                    out var warningsH,
                     out var warningsD,
                     out var warningsBracket,
                     out var warningsDots,
@@ -2209,6 +2256,53 @@ namespace DetailsInfo
             archiveWatcher.EnableRaisingEvents = true;
         }
 
+        private void StartUsbMonitoring()
+        {
+            var source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            source.AddHook(WndProc);
+            Console.WriteLine("Ожидание подключения и отключения USB-накопителей...");
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == WM_DEVICECHANGE)
+            {
+                if (wParam.ToInt32() == DBT_DEVICEARRIVAL)
+                {
+                    SendMessage("[+] USB-накопитель подключён");
+                    UpdateUsbDrives();
+                }
+                else if (wParam.ToInt32() == DBT_DEVICEREMOVECOMPLETE)
+                {
+                    SendMessage("[-] USB-накопитель отключён");
+                    UpdateUsbDrives();
+                }
+            }
+            return IntPtr.Zero;
+        }
+
+        private void UpdateUsbDrives()
+        {
+            var drives = new List<UsbDrive>();
+            foreach (var drive in DriveInfo.GetDrives())
+            {
+                if (drive.IsReady && drive.DriveType == DriveType.Removable)
+                {                
+                    var info = $"{(string.IsNullOrEmpty(drive.VolumeLabel) ? $"{drive.Name}" : $"{drive.VolumeLabel} ({drive.Name})")} [{(drive.AvailableFreeSpace / (double)(1024 * 1024 * 1024)):N2} / {(drive.TotalSize / (double)(1024 * 1024 * 1024)):N2} ГБ]";
+                    drives.Add(new (drive, info));
+                }
+            }
+            _drives = drives;
+            if (_drives.Count > 0)
+            {
+                removebleDeviceButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                removebleDeviceButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
         #region Нормативы
 
         private void SetupEndTp_SelectedTimeChanged(object sender, RoutedPropertyChangedEventArgs<DateTime?> e)
@@ -2218,7 +2312,7 @@ namespace DetailsInfo
 
         private void CalcSetupButton_Click(object sender, RoutedEventArgs e)
         {
-            var dayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
+            var dayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9);
             var dayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
             var dayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
             var nightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
@@ -2354,7 +2448,7 @@ namespace DetailsInfo
 
         private void CalcProductionButton_Click(object sender, RoutedEventArgs e)
         {
-            var dayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9) ;
+            var dayShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(9);
             var dayShiftSecondBreak = DateTime.Today + TimeSpan.FromHours(12) + TimeSpan.FromMinutes(30);
             var dayShiftThirdBreak = DateTime.Today + TimeSpan.FromHours(15) + TimeSpan.FromMinutes(15);
             var nightShiftFirstBreak = DateTime.Today + TimeSpan.FromHours(22) + TimeSpan.FromMinutes(30);
@@ -2442,7 +2536,7 @@ namespace DetailsInfo
                 message += "Изготовление происходило во ночного чая, вычтено 30 минут.\n";
             }
 
-            if (double.TryParse(ProductionDowntimeTb.Text.Replace(',','.'), out var productionDowntime))
+            if (double.TryParse(ProductionDowntimeTb.Text.Replace(',', '.'), out var productionDowntime))
             {
                 reduced = true;
                 if (productionDowntime > productionFullTime)
@@ -2549,7 +2643,8 @@ namespace DetailsInfo
                     _openFolderButton = false;
                     _currentArchiveFolder = path;
                     ChangeArchiveWatcher();
-                } else
+                }
+                else
                 {
                     SendMessage($"Невозможно перейти в \"{path}\"");
                 }
@@ -2562,5 +2657,6 @@ namespace DetailsInfo
         }
         #endregion
 
+        
     }
 }
