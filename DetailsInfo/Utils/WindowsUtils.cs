@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -10,47 +11,50 @@ namespace DetailsInfo.Utils
     {
         #region DLL'ки
 
+        const string User32 = "user32.dll";
+        const string Shell32 = "shell32.dll";
+
         public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport(User32, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport(User32, SetLastError = true)]
         public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport(User32, SetLastError = true)]
         public static extern int GetWindowTextLength(IntPtr hWnd);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport(User32, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsWindowVisible(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
+        [DllImport(User32)]
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        [DllImport(User32, CharSet = CharSet.Unicode)]
         public static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string lclassName, string windowTitle);
 
-        [DllImport("user32.dll", EntryPoint = "FindWindow")]
+        [DllImport(User32, EntryPoint = "FindWindow")]
         public static extern IntPtr FindWindowByCaption(IntPtr zeroOnly, string lpWindowName);
 
-        [DllImport("user32.dll")]
+        [DllImport(User32)]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-        [DllImport("user32.dll")]
+        [DllImport(User32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsIconic(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
+        [DllImport(User32)]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
+        [DllImport(User32)]
         public static extern int SendMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
         public const int WmSyscommand = 0x0112;
         public const int ScClose = 0xF060;
 
-        [DllImport("User32.Dll", EntryPoint = "PostMessageA")]
+        [DllImport(User32, EntryPoint = "PostMessageA")]
         public static extern bool PostMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
         public enum WMessages
         {
@@ -60,6 +64,35 @@ namespace DetailsInfo.Utils
             WmKeyup = 0x101,
             WhKeyboardLl = 13,
             WhMouseLl = 14,
+        }
+
+
+        [DllImport(Shell32, CharSet = CharSet.Auto)]
+        static extern bool ShellExecuteEx(ref SHELLEXECUTEINFO lpExecInfo);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        public struct SHELLEXECUTEINFO
+        {
+            public int cbSize;
+            public uint fMask;
+            public IntPtr hwnd;
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string lpVerb;
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string lpFile;
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string lpParameters;
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string lpDirectory;
+            public int nShow;
+            public IntPtr hInstApp;
+            public IntPtr lpIDList;
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string lpClass;
+            public IntPtr hkeyClass;
+            public uint dwHotKey;
+            public IntPtr hIcon;
+            public IntPtr hProcess;
         }
         #endregion
 
@@ -126,6 +159,22 @@ namespace DetailsInfo.Utils
             {
                 var principal = new WindowsPrincipal(identity);
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+        }
+
+        public static void OpenFileWithDefaultApp(string filePath)
+        {
+            SHELLEXECUTEINFO info = new SHELLEXECUTEINFO();
+            info.cbSize = Marshal.SizeOf(info);
+            info.lpVerb = "open";
+            info.lpFile = filePath;
+            info.nShow = 1; // SW_NORMAL
+            info.fMask = 0x0000000C; // SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS
+            info.lpDirectory = System.IO.Path.GetDirectoryName(filePath);
+
+            if (!ShellExecuteEx(ref info))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             }
         }
 

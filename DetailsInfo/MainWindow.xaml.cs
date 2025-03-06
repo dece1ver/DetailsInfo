@@ -29,6 +29,7 @@ using System.Management;
 using System.Windows.Interop;
 using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
+using System.Windows.Media.Media3D;
 #pragma warning disable CS0162
 
 namespace DetailsInfo
@@ -1635,7 +1636,20 @@ namespace DetailsInfo
                 }
                 else
                 {
-                    Process.Start(new ProcessStartInfo(_selectedArchiveFile!) { UseShellExecute = true });
+                    //Process.Start(new ProcessStartInfo(_selectedArchiveFile!) { UseShellExecute = true });
+                    //WindowsUtils.OpenFileWithDefaultApp(_selectedArchiveFile);
+                    var filePath = _selectedArchiveFile;
+                    //var wd = Path.GetDirectoryName(filePath);
+                    //var psi = new ProcessStartInfo(filePath)
+                    //{
+                    //    UseShellExecute = true,
+                    //    WorkingDirectory = wd
+                    //};
+                    //Process.Start(psi);
+
+                    Type shellAppType = Type.GetTypeFromProgID("Shell.Application");
+                    dynamic shell = Activator.CreateInstance(shellAppType);
+                    shell.ShellExecute(_selectedArchiveFile, "", Path.GetDirectoryName(_selectedArchiveFile), "open", 1);
                 }
 
                 if (_findStatus is FindStatus.Finded) return;
@@ -1726,6 +1740,15 @@ namespace DetailsInfo
             }
             image.Source = new BitmapImage(new Uri(path));
             _selectedImage = path;
+        }
+
+        private void Image_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
+        {
+            scaleTransform.ScaleX *= e.DeltaManipulation.Scale.X;
+            scaleTransform.ScaleY *= e.DeltaManipulation.Scale.Y;
+
+            translateTransform.X += e.DeltaManipulation.Translation.X;
+            translateTransform.Y += e.DeltaManipulation.Translation.Y;
         }
 
         private void confirmDeleteFromArchiveButton_Click(object sender, RoutedEventArgs e)
