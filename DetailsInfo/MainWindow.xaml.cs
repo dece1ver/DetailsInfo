@@ -1521,15 +1521,13 @@ namespace DetailsInfo
             Task.Run(SearchInArchive);
         }
 
-        private async void transferButton_Click(object sender, RoutedEventArgs e)
+        private void TransferButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var transferFilePath = Settings.Default.autoRenameToMachine
                     ? Reader.FindFreeName(_selectedArchiveFile, Settings.Default.machinePath)
-                    : Path.Combine(Settings.Default.machinePath, Path.GetFileName(_selectedArchiveFile)!);
-
-
+                    : Path.Combine(Settings.Default.machinePath, Path.GetFileName(_selectedArchiveFile).Replace(' ', '_')!);
 
                 _transferFromArchive = false;
                 _transferFromMachine = false;
@@ -2682,7 +2680,5 @@ namespace DetailsInfo
             }
         }
         #endregion
-
-        
     }
 }

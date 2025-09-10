@@ -454,7 +454,7 @@
                                                     </StackPanel>
                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" FlowDirection="RightToLeft">
                                                         <Button Visibility="{Binding TransferButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
-                                                            Style="{StaticResource generalButtonStyle}" Click="transferButton_Click" Margin="0 -6 7 -6">
+                                                            Style="{StaticResource generalButtonStyle}" Click="TransferButton_Click" Margin="0 -6 7 -6">
                                                             <materialDesign:PackIcon Kind="ArrowRight" />
                                                         </Button>
                                                         <Button Visibility="{Binding AnalyzeButtonState}"
