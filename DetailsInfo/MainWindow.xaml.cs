@@ -485,7 +485,7 @@ namespace DetailsInfo
                         {
                             _archiveContent.Add(new ArchiveContent
                             {
-                                Content = file,
+                                Name = file,
                                 TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                 OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                 DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
@@ -503,7 +503,7 @@ namespace DetailsInfo
                         {
                             _archiveContent.Add(new ArchiveContent
                             {
-                                Content = file,
+                                Name = file,
                                 TransferButtonState = Visibility.Collapsed,
                                 OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                 DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
@@ -532,7 +532,7 @@ namespace DetailsInfo
                         {
                             var tempArchiveFolder = new ArchiveContent
                             {
-                                Content = folder,
+                                Name = folder,
                                 TransferButtonState = Visibility.Collapsed,
                                 OpenButtonState = Visibility.Collapsed,
                                 DeleteButtonState = Visibility.Collapsed,
@@ -541,7 +541,7 @@ namespace DetailsInfo
                                 ShowWinExplorerButtonState = Visibility.Collapsed,
                             };
                             _archiveContent.Add(tempArchiveFolder);
-                            if (tempArchiveFolder.Content == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
+                            if (tempArchiveFolder.Name == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
                         }
                     }
                     // вносим файлы
@@ -555,7 +555,7 @@ namespace DetailsInfo
                             {
                                 _archiveContent.Add(new ArchiveContent
                                 {
-                                    Content = file,
+                                    Name = file,
                                     TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                     OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                     DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
@@ -573,7 +573,7 @@ namespace DetailsInfo
                             {
                                 _archiveContent.Add(new ArchiveContent
                                 {
-                                    Content = file,
+                                    Name = file,
                                     TransferButtonState = Visibility.Collapsed,
                                     OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                     DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
@@ -717,7 +717,7 @@ namespace DetailsInfo
                             {
                                 var tempArchiveFolder = new ArchiveContent
                                 {
-                                    Content = folder,
+                                    Name = folder,
                                     TransferButtonState = Visibility.Collapsed,
                                     OpenButtonState = Visibility.Collapsed,
                                     DeleteButtonState = Visibility.Collapsed,
@@ -726,7 +726,7 @@ namespace DetailsInfo
                                     ShowWinExplorerButtonState = Visibility.Collapsed,
                                 };
                                 _archiveContent.Add(tempArchiveFolder);
-                                if (tempArchiveFolder.Content == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
+                                if (tempArchiveFolder.Name == _selectedArchiveFile) _selectedArchiveFolder = tempArchiveFolder;
                             }
                         }
                         // вносим файлы
@@ -740,7 +740,7 @@ namespace DetailsInfo
                                 {
                                     _archiveContent.Add(new ArchiveContent
                                     {
-                                        Content = file,
+                                        Name = file,
                                         TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                         OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                         DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
@@ -758,7 +758,7 @@ namespace DetailsInfo
                                 {
                                     _archiveContent.Add(new ArchiveContent
                                     {
-                                        Content = file,
+                                        Name = file,
                                         TransferButtonState = Visibility.Collapsed,
                                         OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                         DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
@@ -1315,7 +1315,7 @@ namespace DetailsInfo
             object item = (sender as ListView)?.SelectedItem;
             if (item == null) return;
             ArchiveContent currentItem = (ArchiveContent)item;
-            if (Directory.Exists(currentItem.Content))
+            if (Directory.Exists(currentItem.Name))
             {
                 //Stopwatch sw = Stopwatch.StartNew();
                 _transferFromArchive = false;
@@ -1328,12 +1328,12 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = false;
                 _showWinExplorer = false;
                 _openFolderButton = false;
-                _currentArchiveFolder = currentItem.Content;
+                _currentArchiveFolder = currentItem.Name;
                 ChangeArchiveWatcher();
                 LoadArchive();
                 //statusTextBlock.Text = $"Открыто за {sw.ElapsedMilliseconds} мс";
             }
-            else if (File.Exists(currentItem.Content))
+            else if (File.Exists(currentItem.Name))
             {
                 _transferFromArchive = true;
                 _openFromArchive = true;
@@ -1345,7 +1345,7 @@ namespace DetailsInfo
                 _analyzeArchiveProgram = true;
                 _showWinExplorer = true;
                 _openFolderButton = true;
-                _selectedArchiveFile = currentItem.Content;
+                _selectedArchiveFile = currentItem.Name;
                 if (_findStatus is FindStatus.DontNeed)
                     LoadArchive();
                 else
@@ -1607,7 +1607,7 @@ namespace DetailsInfo
                 if (Settings.Default.integratedImageViewer && FileFormats.ImageExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower()))
                 {
                     _selectedImage = _selectedArchiveFile;
-                    _selectedImagesDir = _selectedArchiveFolder.Content;
+                    _selectedImagesDir = _selectedArchiveFolder.Name;
                     _selectedImagesDir ??= archivePathTB.Text;
                     image.Source = new BitmapImage(new Uri(_selectedImage!));
                     ImageDialogHost.IsOpen = true;
