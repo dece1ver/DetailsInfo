@@ -18,6 +18,7 @@ namespace DetailsInfo
         public Visibility TransferButtonState { get; set; }
         public Visibility OpenButtonState { get; set; }
         public Visibility OpenFolderState { get; set; }
+        public Visibility RenameButtonState { get; set; }
         public Visibility DeleteButtonState { get; set; }
         public Visibility AnalyzeButtonState { get; set; }
         public Visibility ShowWinExplorerButtonState { get; set; }

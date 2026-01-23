@@ -203,7 +203,7 @@
                                             <materialDesign:PackIcon Kind="Done"/>
                                         </Button>
                                     </DockPanel>
-                                    
+
                                     <TextBox x:Name="ReasonCommentTB" Style="{StaticResource MaterialDesignOutlinedTextBox}" 
                                              Margin="0 10" Height="150" AcceptsReturn="True" TextWrapping="Wrap" materialDesign:TextFieldAssist.HasClearButton="True"
                                             materialDesign:HintAssist.Hint="Комментарий" materialDesign:HintAssist.Background="{StaticResource MaterialDesignCardBackground}">
@@ -211,7 +211,8 @@
                                 </DockPanel>
                             </materialDesign:DialogHost.DialogContent>
                         </materialDesign:DialogHost>
-
+                        
+                        
                         <materialDesign:DialogHost x:Name="ImageDialogHost" Grid.Column="1">
                             <materialDesign:DialogHost.DialogContent>
                                 <Grid MinWidth="256" MinHeight="256" Margin="0">
@@ -340,159 +341,241 @@
                                     <Label x:Name="checkInfoLabel" Content="" Margin="-4" Foreground="{DynamicResource PrimaryHueMidForegroundBrush}" MouseDoubleClick="archiveCheckGB_MouseLeftButtonDoubleClick"/>
                                 </StackPanel>
                             </GroupBox.Header>
-                            <materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                   DialogTheme="Inherit" CloseOnClickAway="True">
+
+                            <!-- Основной DialogHost для архива -->
+                            <materialDesign:DialogHost x:Name="ArchiveMainDialogHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                               DialogTheme="Inherit" CloseOnClickAway="True">
+
+                                <!-- Диалог поиска файлов -->
                                 <materialDesign:DialogHost.DialogContent>
                                     <StackPanel Margin="30" Orientation="Vertical">
-
                                         <TextBlock Text="Поиск файлов" FontSize="20"/>
                                         <TextBox x:Name="findTextBox" materialDesign:HintAssist.Hint="Название" Margin="2 15 2 2" HorizontalAlignment="Stretch" 
-                                             Style="{StaticResource MaterialDesignTextBox}" FontSize="20" Width="276"/>
+                         Style="{StaticResource MaterialDesignTextBox}" FontSize="20" Width="276"/>
                                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
                                             <StackPanel Orientation="Horizontal">
                                                 <Button
-                                            Style="{StaticResource generalButtonStyle}"
-                                            IsCancel="True"
-                                            Margin="2 2 2 2"
-                                            Width="66" Height="50"
-                                            Command="materialDesign:DialogHost.CloseDialogCommand">
+                            Style="{StaticResource generalButtonStyle}"
+                            IsCancel="True"
+                            Margin="2 2 2 2"
+                            Width="66" Height="50"
+                            Command="materialDesign:DialogHost.CloseDialogCommand">
                                                     <Button.CommandParameter>
                                                         <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
                                                             False
                                                         </system:Boolean>
                                                     </Button.CommandParameter>
                                                     <StackPanel Orientation="Vertical">
-                                                        <!--<TextBlock Text="Отмена"/>-->
                                                         <materialDesign:PackIcon Kind="Cancel" Foreground="Red" VerticalAlignment="Center"
-                                                                         Width="35" 
-                                                                         Height="35"/>
+                                                         Width="35" 
+                                                         Height="35"/>
                                                     </StackPanel>
                                                 </Button>
                                                 <Button x:Name="findButtonButton"
-                                                Style="{StaticResource generalButtonStyle}"
-                                                Width="206" Height="50"
-                                                IsDefault="True"
-                                                Margin="2 2 2 2"
-                                                Command="materialDesign:DialogHost.CloseDialogCommand"
-                                                Click="findButton_Click">
+                                Style="{StaticResource generalButtonStyle}"
+                                Width="206" Height="50"
+                                IsDefault="True"
+                                Margin="2 2 2 2"
+                                Command="materialDesign:DialogHost.CloseDialogCommand"
+                                Click="findButton_Click">
                                                     <Button.CommandParameter>
                                                         <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
                                                             True
                                                         </system:Boolean>
                                                     </Button.CommandParameter>
                                                     <StackPanel Orientation="Vertical">
-                                                        <!--<TextBlock Text="ОК"/>-->
                                                         <materialDesign:PackIcon Kind="Done" Foreground="{DynamicResource SecondaryHueMidBrush}"
-                                                                         Width="35" 
-                                                                         Height="35"/>
+                                                         Width="35" 
+                                                         Height="35"/>
                                                     </StackPanel>
                                                 </Button>
                                             </StackPanel>
                                         </StackPanel>
                                         <local:NumericKeyboardControl HorizontalAlignment="Center"/>
                                         <Button Style="{StaticResource generalButtonStyle}" Click="tabtipButton_Click" 
-                                            Margin="2" Width="276" Height="50">
+                        Margin="2" Width="276" Height="50">
                                             <materialDesign:PackIcon Kind="Keyboard"
-                                                                 Width="35" 
-                                                                 Height="35"/>
+                                             Width="35" 
+                                             Height="35"/>
                                         </Button>
                                         <CheckBox x:Name="archiveContentSearchCB" Style="{StaticResource MaterialDesignFilterChipOutlineCheckBox}" 
-                                                  Content="Поиск по содержимому" Margin="2 2 0 0"
-                                                  Width="276" Height="50" Checked="archiveContentSearchCB_Checked" Unchecked="archiveContentSearchCB_Unchecked"/>
+                          Content="Поиск по содержимому" Margin="2 2 0 0"
+                          Width="276" Height="50" Checked="archiveContentSearchCB_Checked" Unchecked="archiveContentSearchCB_Unchecked"/>
                                     </StackPanel>
                                 </materialDesign:DialogHost.DialogContent>
 
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="auto"/>
-                                        <RowDefinition/>
-                                    </Grid.RowDefinitions>
-                                    <ProgressBar Grid.Row="1" x:Name="archiveProgressBar" DockPanel.Dock="Right" Height="100" Width="100" 
-                                        Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                        Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <DockPanel Grid.Row="0" x:Name="archiveButtonsPanel" Visibility="Visible">
-                                        <StackPanel Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Left">
-                                            <Button x:Name="removebleDeviceButton" Style="{StaticResource generalButtonStyle}" Click="removebleDeviceButton_Click" Cursor="Hand">
-                                                <materialDesign:PackIcon Kind="UsbFlashDriveOutline" Height="25" Width="25" />
-                                            </Button>
-                                            <Button x:Name="archiveRootButton" Style="{StaticResource generalButtonStyle}" Click="archiveRootButton_Click" Cursor="Hand">
-                                                <materialDesign:PackIcon Kind="FolderHomeOutline" Height="25" Width="25" />
-                                            </Button>
-                                            <Button x:Name="archiveParentButton" Style="{StaticResource generalButtonStyle}" Click="archiveParentButton_Click">
-                                                <materialDesign:PackIcon Kind="FolderUploadOutline" Height="25" Width="25" />
-                                            </Button>
-                                        </StackPanel>
-                                        <Button x:Name="findDialogButton" Style="{StaticResource generalButtonStyle}"
-                                            DockPanel.Dock="Right" Margin="0" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}" Cursor="Hand" Click="findDialogButton_Click" >
-                                            <materialDesign:PackIcon Kind="Magnify" Height="25" Width="25" />
-                                        </Button>
-                                        <Button x:Name="stopSearchButton" Style="{StaticResource generalButtonStyle}"
-                                                DockPanel.Dock="Right" Margin="0" Cursor="Hand" Visibility="Collapsed" Click="stopSearchButton_Click" >
-                                            <materialDesign:PackIcon Kind="CloseOctagonOutline" Height="25" Width="25" />
-                                        </Button>
-                                        <ProgressBar x:Name="findProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
-                                        Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                        Value="0" IsIndeterminate="True" Visibility="Collapsed"/>
-                                        <Button x:Name="returnButton" Style="{StaticResource generalButtonStyle}" Click="returnButton_Click"
-                                            DockPanel.Dock="Right" Margin="0" Visibility="Collapsed" Cursor="Hand">
-                                            <materialDesign:PackIcon Kind="ArrowBack" Height="25" Width="25"/>
-                                        </Button>
-                                        <TextBox x:Name="archivePathTB" Margin="0 0 6 0" materialDesign:TextFieldAssist.TextBoxViewMargin="5 12 5 0"
-                                                 Text="&lt;путь>" IsReadOnly="True" FontSize="14" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
-                                        </TextBox>
-                                    </DockPanel>
-                                    
-                                    <ListView Grid.Row="1" x:Name="archiveLV" Margin="0,10,0,0" PreviewMouseLeftButtonUp="archiveLV_PreviewMouseLeftButtonUp" 
-                                          HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Focusable="False" Visibility="Visible">
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <DockPanel Margin="-12 0 -8 0" Focusable="False">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <ContentControl Content="{Binding Icon}" Margin="0 -6 7 -6" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
-                                                        <StackPanel VerticalAlignment="Center" Margin="5 5 0 -5">
-                                                            <TextBlock Text="{Binding Name, Converter={StaticResource archiveConverter}}" 
-                                                                       VerticalAlignment="Center" />
-                                                            <TextBlock Text="{Binding Description}" FontSize="8" Foreground="Gray"/>
+                                <!-- Вложенный DialogHost для переименования -->
+                                <materialDesign:DialogHost x:Name="RenameArchiveFileDialogHost" 
+                                   HorizontalAlignment="Stretch" 
+                                   VerticalAlignment="Stretch"
+                                   DialogTheme="Inherit" 
+                                   CloseOnClickAway="True">
+
+                                    <!-- Диалог переименования -->
+                                    <materialDesign:DialogHost.DialogContent>
+                                        <StackPanel Margin="30" Orientation="Vertical">
+                                            <TextBlock Text="Переименовать файл" FontSize="20"/>
+                                            <TextBox x:Name="newArchiveNameTB" 
+                                                     materialDesign:HintAssist.Hint="Новое имя" 
+                                                     Margin="2 15 2 2" 
+                                                     HorizontalAlignment="Stretch" 
+                                                     Style="{StaticResource MaterialDesignTextBox}" 
+                                                     FontSize="20" 
+                                                     Width="276" />
+                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Style="{StaticResource generalButtonStyle}"
+                                                            IsCancel="True"
+                                                            Margin="2 2 2 2"
+                                                            Width="66" Height="50"
+                                                            Command="materialDesign:DialogHost.CloseDialogCommand">
+                                                        <Button.CommandParameter>
+                                                            <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                                                False
+                                                            </system:Boolean>
+                                                        </Button.CommandParameter>
+                                                        <StackPanel Orientation="Vertical">
+                                                            <materialDesign:PackIcon Kind="Cancel" Foreground="Red" VerticalAlignment="Center"
+                                                             Width="35" 
+                                                             Height="35"/>
                                                         </StackPanel>
-                                                    </StackPanel>
-                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" FlowDirection="RightToLeft">
-                                                        <Button Visibility="{Binding TransferButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
-                                                            Style="{StaticResource generalButtonStyle}" Click="TransferButton_Click" Margin="0 -6 7 -6">
-                                                            <materialDesign:PackIcon Kind="ArrowRight" />
-                                                        </Button>
-                                                        <Button Visibility="{Binding AnalyzeButtonState}"
-                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
-                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
-                                                            Style="{StaticResource generalButtonStyle}" Click="analyzeArchiveNCButton_Click">
-                                                            <materialDesign:PackIcon Kind="CodeTagsCheck"/>
-                                                        </Button>
-                                                        <Button Visibility="{Binding OpenButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
-                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
-                                                            Style="{StaticResource generalButtonStyle}" Click="openButton_Click" Margin="0 -6 7 -6">
-                                                            <materialDesign:PackIcon Kind="Eye" />
-                                                        </Button>
-                                                        <Button Visibility="{Binding OpenFolderState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
-                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2" Margin="0 -6 7 -6"
-                                                            Style="{StaticResource generalButtonStyle}" Click="openFolderButton_Click">
-                                                            <materialDesign:PackIcon Kind="Folder" />
-                                                        </Button>
-                                                        <Button Visibility="{Binding ShowWinExplorerButtonState}"
-                                                            Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
-                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
-                                                            Style="{StaticResource generalButtonStyle}" Click="showWinExplorerButton_Click">
-                                                            <materialDesign:PackIcon Kind="FolderEye"/>
-                                                        </Button>
-                                                        <Button Visibility="{Binding DeleteButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
-                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
-                                                            Style="{StaticResource generalButtonStyle}" Click="confirmDeleteFromArchiveButton_Click" Margin="0 -6 7 -6">
-                                                            <materialDesign:PackIcon Kind="Delete" Foreground="Red"/>
-                                                        </Button>
-                                                    </StackPanel>
-                                                </DockPanel>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
-                                </Grid>
+                                                    </Button>
+                                                    <Button x:Name="applyRenameArchiveButton"
+                                                            Style="{StaticResource generalButtonStyle}"
+                                                            Width="206" Height="50"
+                                                            IsDefault="True"
+                                                            Margin="2 2 2 2"
+                                                            Command="materialDesign:DialogHost.CloseDialogCommand"
+                                                            Click="applyRenameArchiveButton_Click">
+                                                        <Button.CommandParameter>
+                                                            <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                                                True
+                                                            </system:Boolean>
+                                                        </Button.CommandParameter>
+                                                        <StackPanel Orientation="Vertical">
+                                                            <materialDesign:PackIcon Kind="Done" Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                                             Width="35" 
+                                                             Height="35"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </StackPanel>
+                                                <local:NumericKeyboardControl HorizontalAlignment="Center"/>
+                                                <Button Style="{StaticResource generalButtonStyle}" Click="tabtipButton_Click" 
+                                                        Margin="2" Width="276" Height="50">
+                                                    <materialDesign:PackIcon Kind="Keyboard"
+                                                     Width="35" 
+                                                     Height="35"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </materialDesign:DialogHost.DialogContent>
+
+                                    <!-- Содержимое архива -->
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="auto"/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <ProgressBar Grid.Row="1" x:Name="archiveProgressBar" DockPanel.Dock="Right" Height="100" Width="100" 
+                                                     Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                                     Value="0" IsIndeterminate="True" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <DockPanel Grid.Row="0" x:Name="archiveButtonsPanel" Visibility="Visible">
+                                            <StackPanel Orientation="Horizontal" Grid.Row="0" DockPanel.Dock="Left">
+                                                <Button x:Name="removebleDeviceButton" Style="{StaticResource generalButtonStyle}" Click="removebleDeviceButton_Click" Cursor="Hand">
+                                                    <materialDesign:PackIcon Kind="UsbFlashDriveOutline" Height="25" Width="25" />
+                                                </Button>
+                                                <Button x:Name="archiveRootButton" Style="{StaticResource generalButtonStyle}" Click="archiveRootButton_Click" Cursor="Hand">
+                                                    <materialDesign:PackIcon Kind="FolderHomeOutline" Height="25" Width="25" />
+                                                </Button>
+                                                <Button x:Name="archiveParentButton" Style="{StaticResource generalButtonStyle}" Click="archiveParentButton_Click">
+                                                    <materialDesign:PackIcon Kind="FolderUploadOutline" Height="25" Width="25" />
+                                                </Button>
+                                            </StackPanel>
+                                            <Button x:Name="findDialogButton" Style="{StaticResource generalButtonStyle}"
+                                                    DockPanel.Dock="Right" Margin="0" 
+                                                    Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                                                    CommandTarget="{Binding ElementName=ArchiveMainDialogHost}"
+                                                    Cursor="Hand" Click="findDialogButton_Click">
+                                                <materialDesign:PackIcon Kind="Magnify" Height="25" Width="25" />
+                                            </Button>
+                                            <Button x:Name="stopSearchButton" Style="{StaticResource generalButtonStyle}"
+                                                    DockPanel.Dock="Right" Margin="0" Cursor="Hand" Visibility="Collapsed" Click="stopSearchButton_Click">
+                                                <materialDesign:PackIcon Kind="CloseOctagonOutline" Height="25" Width="25" />
+                                            </Button>
+                                            <ProgressBar x:Name="findProgressBar" DockPanel.Dock="Right" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
+                                                            Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                                            Value="0" IsIndeterminate="True" Visibility="Collapsed"/>
+                                            <Button x:Name="returnButton" Style="{StaticResource generalButtonStyle}" Click="returnButton_Click"
+                                                    DockPanel.Dock="Right" Margin="0" Visibility="Collapsed" Cursor="Hand">
+                                                <materialDesign:PackIcon Kind="ArrowBack" Height="25" Width="25"/>
+                                            </Button>
+                                            <TextBox x:Name="archivePathTB" Margin="0 0 6 0" materialDesign:TextFieldAssist.TextBoxViewMargin="5 12 5 0"
+                                                     Text="&lt;путь>" IsReadOnly="True" FontSize="14" BorderBrush="{DynamicResource PrimaryHueDarkBrush}">
+                                            </TextBox>
+                                        </DockPanel>
+
+                                        <ListView Grid.Row="1" x:Name="archiveLV" Margin="0,10,0,0" PreviewMouseLeftButtonUp="archiveLV_PreviewMouseLeftButtonUp" 
+                                                  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Focusable="False" Visibility="Visible">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <DockPanel Margin="-12 0 -8 0" Focusable="False">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <ContentControl Content="{Binding Icon}" Margin="0 -6 7 -6" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                                            <StackPanel VerticalAlignment="Center" Margin="5 5 0 -5">
+                                                                <TextBlock Text="{Binding Name, Converter={StaticResource archiveConverter}}" 
+                                                                           VerticalAlignment="Center" />
+                                                                <TextBlock Text="{Binding Description}" FontSize="8" Foreground="Gray"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" FlowDirection="RightToLeft">
+                                                            <Button Visibility="{Binding TransferButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}"
+                                                                    Style="{StaticResource generalButtonStyle}" Click="TransferButton_Click" Margin="0 -6 7 -6">
+                                                                <materialDesign:PackIcon Kind="ArrowRight" />
+                                                            </Button>
+                                                            <Button Visibility="{Binding AnalyzeButtonState}"
+                                                                    Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
+                                                                    Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                                    Style="{StaticResource generalButtonStyle}" Click="analyzeArchiveNCButton_Click">
+                                                                <materialDesign:PackIcon Kind="CodeTagsCheck"/>
+                                                            </Button>
+                                                            <Button Visibility="{Binding OpenButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                                    Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                                    Style="{StaticResource generalButtonStyle}" Click="openButton_Click" Margin="0 -6 7 -6">
+                                                                <materialDesign:PackIcon Kind="Eye" />
+                                                            </Button>
+                                                            <Button Visibility="{Binding OpenFolderState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                                    Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2" Margin="0 -6 7 -6"
+                                                                    Style="{StaticResource generalButtonStyle}" Click="openFolderButton_Click">
+                                                                <materialDesign:PackIcon Kind="Folder" />
+                                                            </Button>
+                                                            <Button Visibility="{Binding ShowWinExplorerButtonState}"
+                                                                    Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 7 -6"
+                                                                    Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                                    Style="{StaticResource generalButtonStyle}" Click="showWinExplorerButton_Click">
+                                                                <materialDesign:PackIcon Kind="FolderEye"/>
+                                                            </Button>
+                                                            <Button Visibility="{Binding RenameButtonState}" 
+                                                                    Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                                    Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                                    Padding="-2"
+                                                                    Style="{StaticResource generalButtonStyle}" 
+                                                                    Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                                                                    CommandTarget="{Binding ElementName=RenameArchiveFileDialogHost}"
+                                                                    Margin="0 -6 7 -6">
+                                                                <materialDesign:PackIcon Kind="Rename"/>
+                                                            </Button>
+                                                            <Button Visibility="{Binding DeleteButtonState}" Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
+                                                                    Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
+                                                                    Style="{StaticResource generalButtonStyle}" Click="confirmDeleteFromArchiveButton_Click" Margin="0 -6 7 -6">
+                                                                <materialDesign:PackIcon Kind="Delete" Foreground="Red"/>
+                                                            </Button>
+                                                        </StackPanel>
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </Grid>
+                                </materialDesign:DialogHost>
                             </materialDesign:DialogHost>
                         </GroupBox>
                         <!--#endregion-->
@@ -688,7 +771,8 @@
                                                         <Button Visibility="{Binding RenameButtonVisibility}" Margin="0 -6 3 -6"
                                                             Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" 
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
-                                                        Style="{StaticResource generalButtonStyle}" Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
+                                                            Style="{StaticResource generalButtonStyle}" 
+                                                            Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
                                                             <materialDesign:PackIcon Kind="Rename"/>
                                                         </Button>
                                                         <Button Visibility="{Binding AnalyzeButtonVisibility}"
@@ -700,7 +784,7 @@
                                                         <Button Visibility="{Binding OpenButtonVisibility}" 
                                                             Height="{Binding Source={x:Static ff:FileFormats.IconSize}}" Margin="0 -6 3 -6"
                                                             Width="{Binding Source={x:Static ff:FileFormats.IconSize}}" Padding="-2"
-                                                        Style="{StaticResource generalButtonStyle}" Click="openNCButton_Click">
+                                                            Style="{StaticResource generalButtonStyle}" Click="openNCButton_Click">
                                                             <materialDesign:PackIcon Kind="Eye"/>
                                                         </Button>
                                                     </StackPanel>

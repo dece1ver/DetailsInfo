@@ -488,6 +488,7 @@ namespace DetailsInfo
                                 Name = file,
                                 TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                 OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                RenameButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                 DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                 OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile && _openFolderButton) ? Visibility.Visible : Visibility.Collapsed,
                                 AnalyzeButtonState =
@@ -506,6 +507,7 @@ namespace DetailsInfo
                                 Name = file,
                                 TransferButtonState = Visibility.Collapsed,
                                 OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                RenameButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                 DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                 OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                 AnalyzeButtonState = Visibility.Collapsed,
@@ -535,6 +537,7 @@ namespace DetailsInfo
                                 Name = folder,
                                 TransferButtonState = Visibility.Collapsed,
                                 OpenButtonState = Visibility.Collapsed,
+                                RenameButtonState = Visibility.Collapsed,
                                 DeleteButtonState = Visibility.Collapsed,
                                 OpenFolderState = Visibility.Collapsed,
                                 AnalyzeButtonState = Visibility.Collapsed,
@@ -558,6 +561,7 @@ namespace DetailsInfo
                                     Name = file,
                                     TransferButtonState = (_transferFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                     OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                    RenameButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                     DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && Settings.Default.advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                     OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile && _openFolderButton) ? Visibility.Visible : Visibility.Collapsed,
                                     AnalyzeButtonState =
@@ -576,6 +580,7 @@ namespace DetailsInfo
                                     Name = file,
                                     TransferButtonState = Visibility.Collapsed,
                                     OpenButtonState = (_openFromArchive && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
+                                    RenameButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                     DeleteButtonState = (_openFromArchive && file == _selectedArchiveFile && _advancedMode) ? Visibility.Visible : Visibility.Collapsed,
                                     OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
                                     AnalyzeButtonState = Visibility.Collapsed,
@@ -1346,6 +1351,8 @@ namespace DetailsInfo
                 _showWinExplorer = true;
                 _openFolderButton = true;
                 _selectedArchiveFile = currentItem.Name;
+                newArchiveNameTB.Text = Path.GetFileName(currentItem.Name) ?? "";
+                newArchiveNameTB.CaretIndex = Path.GetFileNameWithoutExtension(currentItem.Name).Length;
                 if (_findStatus is FindStatus.DontNeed)
                     LoadArchive();
                 else
@@ -1881,8 +1888,6 @@ namespace DetailsInfo
                 }
                 var newName = Path.Combine(Settings.Default.machinePath, newNameTB.Text) + kostyl.Text;
                 FileSystem.Rename(_selectedMachineFile, newName);
-                //LoadMachine();
-                //LoadArchive();
                 SendMessage($"Файл {Path.GetFileName(_selectedMachineFile)} переименован в {Path.GetFileName(newName)}");
                 newNameTB.Text = string.Empty;
                 kostyl.Text = string.Empty;
@@ -2680,5 +2685,38 @@ namespace DetailsInfo
             }
         }
         #endregion
+
+        private void applyRenameArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(newArchiveNameTB.Text))
+                {
+                    throw new ArgumentException();
+                }
+                var newName = Path.Combine(Settings.Default.archivePath, newArchiveNameTB.Text);
+                FileSystem.Rename(_selectedArchiveFile, newName);
+                SendMessage($"Файл {Path.GetFileName(_selectedArchiveFile)} переименован в {Path.GetFileName(newName)}");
+                WindowsUtils.KillTabTip(0);
+
+            }
+            catch (ArgumentException)
+            {
+                SendMessage("Недопустимое имя.");
+            }
+            catch (IOException)
+            {
+                SendMessage("Такой файл уже существует.");
+            }
+            catch (Exception exception)
+            {
+                AddError(exception);
+            }
+        }
+
+        private void renameArchiveFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
     }
 }
