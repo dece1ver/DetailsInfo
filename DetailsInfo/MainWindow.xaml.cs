@@ -14,7 +14,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -30,6 +29,7 @@ using System.Windows.Interop;
 using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
 using System.Windows.Media.Media3D;
+using static DetailsInfo.Data.Reader;
 #pragma warning disable CS0162
 
 namespace DetailsInfo
@@ -493,7 +493,6 @@ namespace DetailsInfo
                                 OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile && _openFolderButton) ? Visibility.Visible : Visibility.Collapsed,
                                 AnalyzeButtonState =
                                     ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
-                                        || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
                                         || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
                                          ) && Settings.Default.ncAnalyzer && Reader.CanBeTransfered(file))
                                      && _analyzeArchiveProgram && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
@@ -566,7 +565,6 @@ namespace DetailsInfo
                                     OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile && _openFolderButton) ? Visibility.Visible : Visibility.Collapsed,
                                     AnalyzeButtonState =
                                         ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
-                                            || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
                                             || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
                                              ) && Settings.Default.ncAnalyzer && Reader.CanBeTransfered(file))
                                          && _analyzeArchiveProgram && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
@@ -752,7 +750,6 @@ namespace DetailsInfo
                                         OpenFolderState = (_findStatus == FindStatus.Finded && file == _selectedArchiveFile && _openFolderButton) ? Visibility.Visible : Visibility.Collapsed,
                                         AnalyzeButtonState =
                                             ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
-                                                || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
                                                 || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture))
                                                  ) && Settings.Default.ncAnalyzer && Reader.CanBeTransfered(file))
                                              && _analyzeArchiveProgram && file == _selectedArchiveFile) ? Visibility.Visible : Visibility.Collapsed,
@@ -913,7 +910,6 @@ namespace DetailsInfo
                     DeleteButtonVisibility = (_deleteFromMachine && file == _selectedMachineFile) ? Visibility.Visible : Visibility.Collapsed,
                     AnalyzeButtonVisibility =
                         ((!(FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
-                            || FileFormats.HeidenhainExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                             || FileFormats.SinumerikExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture))
                              ) && Settings.Default.ncAnalyzer)
                             && _analyzeNcProgram && file == _selectedMachineFile)
@@ -961,7 +957,7 @@ namespace DetailsInfo
             machineWatcher.EnableRaisingEvents = true;
             if (!_analyzeInfo) machineDG.Dispatcher.Invoke(() => machineDG.Visibility = Visibility.Visible);
             machineProgressBar.Dispatcher.Invoke(() => machineProgressBar.Visibility = Visibility.Collapsed);
-            machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.ServerNetwork);
+            machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Kind = PackIconKind.ServerNetwork);
             machineConnectionIcon.Dispatcher.Invoke(() => machineConnectionIcon.Foreground = _greenBrush);
             if (DebugMode) RemoveStatus(NoMachineLabel);
         }
@@ -1573,9 +1569,14 @@ namespace DetailsInfo
 
         private void analyzeArchiveNCButton_Click(object sender, RoutedEventArgs e)
         {
-            if (FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture)))
+            var ext = Path.GetExtension(_selectedArchiveFile)?.ToLower(CultureInfo.InvariantCulture);
+            if (FileFormats.MazatrolExtensions.Contains(ext))
             {
                 SendMessage("Файлы Mazatrol не поддерживаются");
+            }
+            else if (FileFormats.HeidenhainExtensions.Contains(ext))
+            {
+                _ = AnalyzeProgramAsync(_selectedArchiveFile, Cnc.Heidenhain);
             }
             else
             {
@@ -1621,8 +1622,8 @@ namespace DetailsInfo
                 }
                 else if (Path.GetExtension(_selectedArchiveFile)?.ToLower() == ".lnk")
                 {
-                    IWshRuntimeLibrary.IWshShell shell = new IWshRuntimeLibrary.WshShell();
-                    var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(_selectedArchiveFile);
+                    IWshShell shell = new WshShell();
+                    var shortcut = (IWshShortcut)shell.CreateShortcut(_selectedArchiveFile);
 
                     if (Directory.Exists(shortcut.TargetPath))
                     {
@@ -2076,10 +2077,14 @@ namespace DetailsInfo
 
         private void analyzeNCButton_Click(object sender, RoutedEventArgs e)
         {
-
-            if (FileFormats.MazatrolExtensions.Contains(Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture)))
+            var ext = Path.GetExtension(_selectedMachineFile)?.ToLower(CultureInfo.InvariantCulture);
+            if (FileFormats.MazatrolExtensions.Contains(ext))
             {
                 SendMessage("Файлы Mazatrol не поддерживаются");
+            }
+            else if (FileFormats.HeidenhainExtensions.Contains(ext))
+            {
+                _ = AnalyzeProgramAsync(_selectedMachineFile, Cnc.Heidenhain);
             }
             else
             {
@@ -2095,7 +2100,7 @@ namespace DetailsInfo
             //MessageBox.Show($"{coordinates}\n{temp}", programType);
         }
 
-        private async Task AnalyzeProgramAsync(string program)
+        private async Task AnalyzeProgramAsync(string program, Cnc cnc = Cnc.Fanuc)
         {
             _analyzeInfo = true;
             machineDG.Visibility = Visibility.Collapsed;
@@ -2109,6 +2114,7 @@ namespace DetailsInfo
             {
                 var analyze = Reader.AnalyzeProgram(
                     program,
+                    cnc,
                     out var programType,
                     out var coordinates,
                     out var warningsH,

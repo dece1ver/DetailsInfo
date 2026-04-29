@@ -297,8 +297,17 @@ namespace DetailsInfo.Data
             textBox.ScrollToHorizontalOffset(double.MaxValue);
         }
 
+        public enum Cnc
+        {
+            Fanuc,
+            Heidenhain,
+            Mazatrol,
+            Sinumerik,
+        }
+
         public static List<NcToolInfo> AnalyzeProgram(
-            string programPath, 
+            string programPath,
+            Cnc cnc,
             out string caption, 
             out string coordinates, 
             out List<string> warningsH, 
@@ -319,8 +328,9 @@ namespace DetailsInfo.Data
             out List<string> warningsExcessText
             )
         {
-            //Stopwatch sw = Stopwatch.StartNew();
             List<NcToolInfo> tools = new();
+            caption = "";
+            coordinates = "";
             warningsH = new List<string>();                   // корректор на длину
             warningsD = new List<string>();                   // корректор на радиус
             warningsBracket = new List<string>();             // скобки
@@ -334,8 +344,8 @@ namespace DetailsInfo.Data
             warningsFeedType = new List<string>();            // возврат подачи к мм/мин
             warningsIncrement = new List<string>();           // возврат к абсолютным координатам
             warningStartPercent = false;                      // процент в начале
-            warningEndPercent = true;                         // процент в конце
-            warningEndProgram = true;                         // процент в конце
+            warningEndPercent = cnc is Cnc.Fanuc;             // процент в конце
+            warningEndProgram = cnc is Cnc.Fanuc;             // процент в конце
             warningsExcessText = new List<string>();          // лишний текст (за скобками)
             var millProgram = false;
             var lazyAnalyze = false;
@@ -348,463 +358,479 @@ namespace DetailsInfo.Data
             var currentD = 0;
             var currentCoolant = Coolant.Off;
 
-            // проценты
-            if (!lines.First().Trim().Equals("%")) warningStartPercent = true;
-            if (!lines.TakeWhile(line => !string.IsNullOrEmpty(line) || !(line.StartsWith('(') && line.EndsWith(')'))).Last().Trim().Equals("%")) warningEndPercent = true;
-            var fString = "D" + lines.Count.ToString().Length;
-            var i = 1;
-            foreach (var line in lines.Skip(1))
+            switch (cnc)
             {
-                i++;
-                var lineWithoutParenthesis = line.Trim();
-                lineWithoutParenthesis = new Regex(@"[(][^)]+[)]", RegexOptions.Compiled).Matches(line)
-                    .Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
-                if (string.IsNullOrEmpty(lineWithoutParenthesis)) continue;
-
-                if (lineWithoutParenthesis.Trim().Contains("%"))
-                {
-                    warningEndPercent = false;
+                case Cnc.Heidenhain:
+                    for (int n = 0; n < lines.Count; n++)
+                    {
+                        if (lines[n].ToLowerInvariant().Contains("tool call") && int.TryParse(lines[n].ToLowerInvariant().Split("tool call")[1].Trim().Split(' ')[0], out var pos))
+                        {
+                            var comment = n > 0 && lines[n - 1].Contains('*') ? lines[n - 1].Split('*')[1].Trim() : "???";
+                            tools.Add(new NcToolInfo { Position = pos, Comment = comment });
+                        }
+                    }
                     break;
-                }
-                if(lazyAnalyze) continue;
-
-                if (line.StartsWith('<'))
-                {
-                    if (line.Count(c => c is '<') != line.Count(c => c is '>'))
+                default:
+                    // проценты
+                    if (!lines.First().Trim().Equals("%")) warningStartPercent = true;
+                    if (!lines.TakeWhile(line => !string.IsNullOrEmpty(line) || !(line.StartsWith('(') && line.EndsWith(')'))).Last().Trim().Equals("%")) warningEndPercent = true;
+                    var fString = "D" + lines.Count.ToString().Length;
+                    var i = 1;
+                    foreach (var line in lines.Skip(1))
                     {
-                        warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
-                    }
-                    continue;
-                }
+                        i++;
+                        var lineWithoutParenthesis = line.Trim();
+                        lineWithoutParenthesis = new Regex(@"[(][^)]+[)]", RegexOptions.Compiled).Matches(line)
+                            .Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
+                        if (string.IsNullOrEmpty(lineWithoutParenthesis)) continue;
 
-                // системы координат
-                if (line.Contains("G54") && !coordinateSystems.Contains("G54") && !line.Contains("G54.1") && !line.Contains("G54P"))
-                {
-                    coordinateSystems.Add("G54");
-                }
-                if (line.Contains("G55") && !coordinateSystems.Contains("G55"))
-                {
-                    coordinateSystems.Add("G55");
-                }
-                if (line.Contains("G56") && !coordinateSystems.Contains("G56"))
-                {
-                    coordinateSystems.Add("G56");
-                }
-                if (line.Contains("G57") && !coordinateSystems.Contains("G57"))
-                {
-                    coordinateSystems.Add("G57");
-                }
-                if (line.Contains("G58") && !coordinateSystems.Contains("G58"))
-                {
-                    coordinateSystems.Add("G58");
-                }
-                if (line.Contains("G59") && !coordinateSystems.Contains("G59"))
-                {
-                    coordinateSystems.Add("G59");
-                }
-
-                if (new Regex(@"G54[.]1P\d{1,3}", RegexOptions.Compiled) is { } regex541 && regex541.IsMatch(line))
-                {
-                    var match = regex541.Match(line);
-                    if (!coordinateSystems.Contains(match.Value)) coordinateSystems.Add(match.Value);
-                    
-                }
-                if (new Regex(@"G54P\d{1,3}", RegexOptions.Compiled) is { } regex54 && regex54.IsMatch(line))
-                {
-                    var match = regex54.Match(line);
-                    if (!coordinateSystems.Contains(match.Value)) coordinateSystems.Add(match.Value);
-                    
-                }
-                
-                // несовпадения скобок
-                if (line.Count(c => c is '(') != line.Count(c => c is ')'))
-                {
-                    warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-                if (line.Count(c => c is '[') != line.Count(c => c is ']'))
-                {
-                    warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-
-                // пустые адреса
-                if (!line.Contains('#') && new Regex("[A-Z]+[A-Z]|[A-Z]$", RegexOptions.Compiled) is { } matchEmptyAddress && 
-                    matchEmptyAddress.IsMatch(lineWithoutParenthesis) && 
-                    !matchEmptyAddress.Match(lineWithoutParenthesis).Value.Contains("GOTO") &&
-                    !matchEmptyAddress.Match(lineWithoutParenthesis).Value.Contains("END"))
-                {
-                    warningsEmptyAddress.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-
-                // лишние точки
-                if (new Regex(@"[A-Z]+[-]?\d*[.]+\d*[.]", RegexOptions.Compiled).IsMatch(lineWithoutParenthesis))
-                {
-                    warningsDots.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-
-                //// лишний текст 
-                //if (!new Regex(@"[)]$", RegexOptions.Compiled).IsMatch(line.TrimEnd()) && line.Contains(')'))
-                //{
-                //    warningsExcessText.Add($"[{(i).ToString(fString)}]: {line}");
-                //}
-
-                // конец программы, добавляем последний инструмент, т.к. инструмент добавляется при вызове следующего, а у последнего следующего нет
-                if (lineWithoutParenthesis.Contains("M30") || lineWithoutParenthesis.Contains("M99"))
-                {
-                    warningEndProgram = false;
-                    lazyAnalyze = true;
-                    if (currentToolNo != 0 && currentToolComment != string.Empty)
-                    {
-                        currentTool.Position = currentToolNo;
-                        currentTool.Comment = currentToolComment;
-                        currentTool.LengthCompensation = currentH;
-                        currentTool.RadiusCompensation = currentD;
-                        currentTool.PolarWarning = warningsPolar.Count > 0;
-                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
-                        warningsPolar.Clear();
-                        warningsFeedType.Clear();
-                        currentTool.Line = i;
-                        if (!tools.Contains(currentTool))
+                        if (lineWithoutParenthesis.Trim().Contains('%'))
                         {
-                            if (tools.FindAll(t =>
-                                    t.Position == currentTool.Position &&
-                                    t.Comment == currentTool.Comment &&
-                                    t.LengthCompensation == currentTool.LengthCompensation &&
-                                    t.RadiusCompensation == currentTool.RadiusCompensation).Count == 0)
+                            warningEndPercent = false;
+                            break;
+                        }
+                        if (lazyAnalyze) continue;
+
+                        if (line.StartsWith('<'))
+                        {
+                            if (line.Count(c => c is '<') != line.Count(c => c is '>'))
                             {
-                                tools.Add(currentTool);
+                                warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
                             }
+                            continue;
                         }
-                    }
-                }
 
-                // переключение ск в полярную и обратно
-                if(lineWithoutParenthesis.Contains("G16") && 
-                    !lineWithoutParenthesis.StartsWith("G161") && 
-                    !lineWithoutParenthesis.StartsWith("G162") && 
-                    !lineWithoutParenthesis.StartsWith("G163") && 
-                    !lineWithoutParenthesis.StartsWith("G164") && 
-                    !lineWithoutParenthesis.StartsWith("G165") && 
-                    !lineWithoutParenthesis.StartsWith("G166") && 
-                    !lineWithoutParenthesis.StartsWith("G167") && 
-                    !lineWithoutParenthesis.StartsWith("G168") && 
-                    !lineWithoutParenthesis.StartsWith("G169"))
-                {
-                    warningsPolar.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-                if (lineWithoutParenthesis.Contains("G15") && warningsPolar.Count > 0)
-                {
-                    warningsPolar.Clear();
-                }
-
-                // тип подачи
-                if(lineWithoutParenthesis.Contains("G95"))
-                {
-                    warningsFeedType.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-                if (lineWithoutParenthesis.Contains("G94") && warningsFeedType.Count > 0)
-                {
-                    warningsFeedType.Clear();
-                }
-
-                // приращения
-                if(lineWithoutParenthesis.Contains("G91"))
-                {
-                    warningsIncrement.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-                if (lineWithoutParenthesis.Contains("G90") && warningsIncrement.Count > 0)
-                {
-                    warningsIncrement.Remove(warningsIncrement.Last());
-                }
-
-                // циклы
-                if(lineWithoutParenthesis.Contains("G81") 
-                    || lineWithoutParenthesis.Contains("G82") 
-                    || lineWithoutParenthesis.Contains("G83") 
-                    || lineWithoutParenthesis.Contains("G84") 
-                    || lineWithoutParenthesis.Contains("G85"))
-                {
-                    warningsCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-                if (lineWithoutParenthesis.Contains("G80") && warningsCyclesCancel.Count > 0)
-                {
-                    warningsCyclesCancel.Remove(warningsCyclesCancel.Last());
-                }
-
-                // мои циклы и модальные макро программы
-                if(lineWithoutParenthesis.Contains("G161") 
-                    || lineWithoutParenthesis.Contains("G166")
-                    || lineWithoutParenthesis.Contains("G66"))
-                {
-                    warningsMacroCallCancel.Add($"[{(i).ToString(fString)}]: {line}");
-                }
-
-                if (lineWithoutParenthesis.Contains("G67") && warningsMacroCallCancel.Count > 0)
-                {
-                    // лишний текст в отключении
-                    if (!lineWithoutParenthesis.StartsWith('N'))
-                    {
-                        if(lineWithoutParenthesis != "G67")
+                        // системы координат
+                        if (line.Contains("G54") && !coordinateSystems.Contains("G54") && !line.Contains("G54.1") && !line.Contains("G54P"))
                         {
-                            warningsCustomCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
+                            coordinateSystems.Add("G54");
                         }
-                    } 
-                    else
-                    {
-                        var re = new Regex(@"N\d*", RegexOptions.Compiled).Matches(lineWithoutParenthesis);
-                        lineWithoutParenthesis = re.Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
-                        if (lineWithoutParenthesis != "G67")
+                        if (line.Contains("G55") && !coordinateSystems.Contains("G55"))
                         {
-                            warningsCustomCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
+                            coordinateSystems.Add("G55");
                         }
-                    }
-                    warningsMacroCallCancel.Remove(warningsMacroCallCancel.Last());
-                }
-
-                // фрезерный инструмент
-                if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && (line.Contains("M6") || line.Contains("M06")) && !line.StartsWith('('))
-                {
-                    millProgram = true;
-                    
-                    if (currentToolNo != 0 && currentToolComment != string.Empty)
-                    {
-                        currentTool.Position = currentToolNo;
-                        currentTool.Comment = currentToolComment;
-                        currentTool.LengthCompensation = currentH;
-                        currentTool.RadiusCompensation = currentD;
-                        currentTool.Line = i;
-                        currentTool.PolarWarning = warningsPolar.Count > 0;
-                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
-                        warningsPolar.Clear();
-                        warningsFeedType.Clear();
-                        
-                        if (!tools.Contains(currentTool))
+                        if (line.Contains("G56") && !coordinateSystems.Contains("G56"))
                         {
-                            if (tools.FindAll(t =>
-                                    t.Position == currentTool.Position &&
-                                    t.Comment == currentTool.Comment &&
-                                    t.LengthCompensation == currentTool.LengthCompensation &&
-                                    t.RadiusCompensation == currentTool.RadiusCompensation).Count == 0)
+                            coordinateSystems.Add("G56");
+                        }
+                        if (line.Contains("G57") && !coordinateSystems.Contains("G57"))
+                        {
+                            coordinateSystems.Add("G57");
+                        }
+                        if (line.Contains("G58") && !coordinateSystems.Contains("G58"))
+                        {
+                            coordinateSystems.Add("G58");
+                        }
+                        if (line.Contains("G59") && !coordinateSystems.Contains("G59"))
+                        {
+                            coordinateSystems.Add("G59");
+                        }
+
+                        if (new Regex(@"G54[.]1P\d{1,3}", RegexOptions.Compiled) is { } regex541 && regex541.IsMatch(line))
+                        {
+                            var match = regex541.Match(line);
+                            if (!coordinateSystems.Contains(match.Value)) coordinateSystems.Add(match.Value);
+
+                        }
+                        if (new Regex(@"G54P\d{1,3}", RegexOptions.Compiled) is { } regex54 && regex54.IsMatch(line))
+                        {
+                            var match = regex54.Match(line);
+                            if (!coordinateSystems.Contains(match.Value)) coordinateSystems.Add(match.Value);
+
+                        }
+
+                        // несовпадения скобок
+                        if (line.Count(c => c is '(') != line.Count(c => c is ')'))
+                        {
+                            warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
+                        }
+                        if (line.Count(c => c is '[') != line.Count(c => c is ']'))
+                        {
+                            warningsBracket.Add($"[{(i).ToString(fString)}]: {line}");
+                        }
+
+                        // пустые адреса
+                        if (!line.Contains('#') && new Regex("[A-Z]+[A-Z]|[A-Z]$", RegexOptions.Compiled) is { } matchEmptyAddress &&
+                            matchEmptyAddress.IsMatch(lineWithoutParenthesis) &&
+                            !matchEmptyAddress.Match(lineWithoutParenthesis).Value.Contains("GOTO") &&
+                            !matchEmptyAddress.Match(lineWithoutParenthesis).Value.Contains("END"))
+                        {
+                            warningsEmptyAddress.Add($"[{(i).ToString(fString)}]: {line}");
+                        }
+
+                        // лишние точки
+                        if (new Regex(@"[A-Z]+[-]?\d*[.]+\d*[.]", RegexOptions.Compiled).IsMatch(lineWithoutParenthesis))
+                        {
+                            warningsDots.Add($"[{(i).ToString(fString)}]: {line}");
+                        }
+
+                        //// лишний текст 
+                        //if (!new Regex(@"[)]$", RegexOptions.Compiled).IsMatch(line.TrimEnd()) && line.Contains(')'))
+                        //{
+                        //    warningsExcessText.Add($"[{(i).ToString(fString)}]: {line}");
+                        //}
+
+                        // конец программы, добавляем последний инструмент, т.к. инструмент добавляется при вызове следующего, а у последнего следующего нет
+                        if (lineWithoutParenthesis.Contains("M30") || lineWithoutParenthesis.Contains("M99"))
+                        {
+                            warningEndProgram = false;
+                            lazyAnalyze = true;
+                            if (currentToolNo != 0 && currentToolComment != string.Empty)
                             {
-                                tools.Add(currentTool);
-                            }
-                        }
-                    } 
-                    else
-                    {
-                        currentTool.PolarWarning = warningsPolar.Count > 0;
-                        currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
-                    }
-
-                    var toolLine = line.Contains('(') 
-                        ? line.Split('T')[1]
-                            .Replace("M6", string.Empty)
-                            .Replace("M06", string.Empty)
-                            .Split('(')[0]
-                            .Replace(" ", string.Empty) 
-                        : line.Split('T')[1]
-                            .Replace("M6", string.Empty)
-                            .Replace("M06", string.Empty)
-                            .Replace(" ", string.Empty);
-                    currentD = 0;
-                    if (int.TryParse(toolLine, out currentToolNo))
-                    {
-                        try
-                        {
-                            currentToolComment = $"(" + line.Split("(")[1].Trim();
-                            //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            currentToolComment = $"(---)";
-                            //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
-                        }
-                    }
-                }
-
-                // токарный инструмент
-                if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && !millProgram && !line.StartsWith('('))
-                {
-                    if (currentToolNo != 0 && currentToolComment != string.Empty)
-                    {
-                        currentTool.Position = currentToolNo;
-                        currentTool.Comment = currentToolComment;
-                        currentTool.LengthCompensation = 0;
-                        currentTool.RadiusCompensation = 0;
-                        currentTool.Line = i;
-                        if (!tools.Contains(currentTool))
-                        {
-                            tools.Add(currentTool);
-                        }
-                    }
-
-                    string toolLine = line.Contains('(') ? line.Split('T')[1].Split('(')[0].Replace(" ", string.Empty) : line.Split('T')[1].Replace(" ", string.Empty);
-                    if (toolLine.Contains('X')) toolLine = toolLine.Split('X')[0];
-                    if (toolLine.Contains('Y')) toolLine = toolLine.Split('Y')[0];
-                    if (toolLine.Contains('Z')) toolLine = toolLine.Split('Z')[0];
-                    if (toolLine.Contains('A')) toolLine = toolLine.Split('A')[0];
-                    if (toolLine.Contains('F')) toolLine = toolLine.Split('F')[0];
-                    if (toolLine.Contains('M')) toolLine = toolLine.Split('M')[0];
-                    if (toolLine.Contains('G')) toolLine = toolLine.Split('G')[0];
-                    currentD = 0;
-                    if (int.TryParse(toolLine, out currentToolNo))
-                    {
-                        try
-                        {
-                            currentToolComment = $"(" + line.Split("(")[1].Trim();
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            currentToolComment = $"(---)";
-                        }
-                    }
-                }
-
-                if (lineWithoutParenthesis.Contains("M8") || lineWithoutParenthesis.Contains("M58"))
-                {
-                    currentCoolant = Coolant.On;
-                }
-                if (lineWithoutParenthesis.Contains("M9") || lineWithoutParenthesis.Contains("M59"))
-                {
-                    currentCoolant = Coolant.Off;
-                }
-                if (lineWithoutParenthesis.Contains("G01")
-                    || lineWithoutParenthesis.Contains("G1")
-                    || lineWithoutParenthesis.Contains("G72")
-                    || lineWithoutParenthesis.Contains("G71"))
-                {
-                    currentTool.Coolant = currentCoolant;
-                    //if (tools.Count > 0)
-                    //{
-                        //var lastTool = tools.Last();
-                        //int index = tools.IndexOf(lastTool);
-                        //lastTool.Coolant = currentCoolant;
-                        //tools[index] = lastTool;
-                    //}
-                }
-
-                if ((line.Contains("G41") || line.Contains("G42")) && line.Contains('D'))
-                {
-                    string compensationLine = line.Split("D")[1];
-                    if (compensationLine.Contains('X')) compensationLine = compensationLine.Split('X')[0];
-                    if (compensationLine.Contains('Y')) compensationLine = compensationLine.Split('Y')[0];
-                    if (compensationLine.Contains('Z')) compensationLine = compensationLine.Split('Z')[0];
-                    if (compensationLine.Contains('A')) compensationLine = compensationLine.Split('A')[0];
-                    if (compensationLine.Contains('F')) compensationLine = compensationLine.Split('F')[0];
-                    if (compensationLine.Contains('M')) compensationLine = compensationLine.Split('M')[0];
-                    if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
-                    if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentD))
-                    {
-                        if (currentToolNo != currentD && currentToolNo != 0)
-                        {
-                            warningsD.Add($"[{(i).ToString(fString)}]: {line} - (T{currentToolNo} D{currentD})");
-                        }
-                        else if (currentToolNo != currentD && currentToolNo == 0)
-                        {
-                            warningsD.Add($"[{(i).ToString(fString)}]: {line} - (D{currentD} - без инструмента)");
-                        }
-                        currentTool.Position = currentToolNo;
-                        currentTool.Comment = currentToolComment;
-                        currentTool.LengthCompensation = currentH;
-                        currentTool.RadiusCompensation = currentD;
-                        //currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
-                        //currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
-                        //warningsPolar.Clear();
-                        //warningsFeedType.Clear();
-                        if (!tools.Contains(currentTool))
-                        {
-                            if (tools.Count > 0)
-                            {
-                                var prevTool = tools[^1];
-                                if (prevTool.Position == currentTool.Position && prevTool.Comment == currentTool.Comment &&
-                                    prevTool.LengthCompensation == currentTool.LengthCompensation && prevTool.RadiusCompensation == 0)
+                                currentTool.Position = currentToolNo;
+                                currentTool.Comment = currentToolComment;
+                                currentTool.LengthCompensation = currentH;
+                                currentTool.RadiusCompensation = currentD;
+                                currentTool.PolarWarning = warningsPolar.Count > 0;
+                                currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
+                                warningsPolar.Clear();
+                                warningsFeedType.Clear();
+                                currentTool.Line = i;
+                                if (!tools.Contains(currentTool))
                                 {
-                                    tools.Remove(prevTool);
+                                    if (tools.FindAll(t =>
+                                            t.Position == currentTool.Position &&
+                                            t.Comment == currentTool.Comment &&
+                                            t.LengthCompensation == currentTool.LengthCompensation &&
+                                            t.RadiusCompensation == currentTool.RadiusCompensation).Count == 0)
+                                    {
+                                        tools.Add(currentTool);
+                                    }
                                 }
-                                
                             }
-                            tools.Add(currentTool);
                         }
-                    }
-                    //compensationsD.Add($"T{currentTool} D{int.Parse(compensationLine.Replace(" ", string.Empty))}");
-                }
-                if (line.Contains("G43") && line.Contains('H'))
-                {
-                    string compensationLine = line.Split("H")[1];
-                    if (compensationLine.Contains('X')) compensationLine = compensationLine.Split('X')[0];
-                    if (compensationLine.Contains('Y')) compensationLine = compensationLine.Split('Y')[0];
-                    if (compensationLine.Contains('Z')) compensationLine = compensationLine.Split('Z')[0];
-                    if (compensationLine.Contains('A')) compensationLine = compensationLine.Split('A')[0];
-                    if (compensationLine.Contains('F')) compensationLine = compensationLine.Split('F')[0];
-                    if (compensationLine.Contains('M')) compensationLine = compensationLine.Split('M')[0];
-                    if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
-                    if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentH))
-                    {
-                        if (currentToolNo != currentH && currentToolNo != 0)
-                        {
-                            warningsH.Add($"[{(i).ToString(fString)}]: {line} - (T{currentToolNo} H{currentH})");
-                        }
-                        else if (currentToolNo != currentH && currentToolNo == 0) 
 
+                        // переключение ск в полярную и обратно
+                        if (lineWithoutParenthesis.Contains("G16") &&
+                            !lineWithoutParenthesis.StartsWith("G161") &&
+                            !lineWithoutParenthesis.StartsWith("G162") &&
+                            !lineWithoutParenthesis.StartsWith("G163") &&
+                            !lineWithoutParenthesis.StartsWith("G164") &&
+                            !lineWithoutParenthesis.StartsWith("G165") &&
+                            !lineWithoutParenthesis.StartsWith("G166") &&
+                            !lineWithoutParenthesis.StartsWith("G167") &&
+                            !lineWithoutParenthesis.StartsWith("G168") &&
+                            !lineWithoutParenthesis.StartsWith("G169"))
                         {
-                            warningsH.Add($"[{(i).ToString(fString)}]: {line} - (H{currentH} - без инструмента)");
+                            warningsPolar.Add($"[{(i).ToString(fString)}]: {line}");
                         }
-                        currentTool.Position = currentToolNo;
-                        currentTool.Comment = currentToolComment;
-                        currentTool.LengthCompensation = currentH;
-                        currentTool.RadiusCompensation = currentD;
-                        
-                        currentTool.Position = currentToolNo;
-                        currentTool.Comment = currentToolComment;
-                        currentTool.LengthCompensation = currentH;
-                        currentTool.RadiusCompensation = currentD;
-
-                        //currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
-                        //currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
-                        //warningsPolar.Clear();
-                        //warningsFeedType.Clear();
-                        if (!tools.Contains(currentTool))
+                        if (lineWithoutParenthesis.Contains("G15") && warningsPolar.Count > 0)
                         {
-                            if (tools.FindAll(t =>
-                                    t.Position == currentTool.Position &&
-                                    t.Comment == currentTool.Comment &&
-                                    t.LengthCompensation == currentTool.LengthCompensation &&
-                                    t.RadiusCompensation == currentTool.RadiusCompensation &&
-                                    t.RadiusCompensation != 0).Count == 0)
+                            warningsPolar.Clear();
+                        }
+
+                        // тип подачи
+                        if (lineWithoutParenthesis.Contains("G95"))
+                        {
+                            warningsFeedType.Add($"[{(i).ToString(fString)}]: {line}");
+                        }
+                        if (lineWithoutParenthesis.Contains("G94") && warningsFeedType.Count > 0)
+                        {
+                            warningsFeedType.Clear();
+                        }
+
+                        // приращения
+                        if (lineWithoutParenthesis.Contains("G91"))
+                        {
+                            warningsIncrement.Add($"[{(i).ToString(fString)}]: {line}");
+                        }
+                        if (lineWithoutParenthesis.Contains("G90") && warningsIncrement.Count > 0)
+                        {
+                            warningsIncrement.Remove(warningsIncrement.Last());
+                        }
+
+                        // циклы
+                        if (lineWithoutParenthesis.Contains("G81")
+                            || lineWithoutParenthesis.Contains("G82")
+                            || lineWithoutParenthesis.Contains("G83")
+                            || lineWithoutParenthesis.Contains("G84")
+                            || lineWithoutParenthesis.Contains("G85"))
+                        {
+                            warningsCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
+                        }
+                        if (lineWithoutParenthesis.Contains("G80") && warningsCyclesCancel.Count > 0)
+                        {
+                            warningsCyclesCancel.Remove(warningsCyclesCancel.Last());
+                        }
+
+                        // мои циклы и модальные макро программы
+                        if (lineWithoutParenthesis.Contains("G161")
+                            || lineWithoutParenthesis.Contains("G166")
+                            || lineWithoutParenthesis.Contains("G66"))
+                        {
+                            warningsMacroCallCancel.Add($"[{(i).ToString(fString)}]: {line}");
+                        }
+
+                        if (lineWithoutParenthesis.Contains("G67") && warningsMacroCallCancel.Count > 0)
+                        {
+                            // лишний текст в отключении
+                            if (!lineWithoutParenthesis.StartsWith('N'))
                             {
-                                tools.Add(currentTool);
+                                if (lineWithoutParenthesis != "G67")
+                                {
+                                    warningsCustomCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
+                                }
+                            }
+                            else
+                            {
+                                var re = new Regex(@"N\d*", RegexOptions.Compiled).Matches(lineWithoutParenthesis);
+                                lineWithoutParenthesis = re.Aggregate(lineWithoutParenthesis, (current, match) => current.Replace(match.Value, string.Empty));
+                                if (lineWithoutParenthesis != "G67")
+                                {
+                                    warningsCustomCyclesCancel.Add($"[{(i).ToString(fString)}]: {line}");
+                                }
+                            }
+                            warningsMacroCallCancel.Remove(warningsMacroCallCancel.Last());
+                        }
+
+                        // фрезерный инструмент
+                        if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && (line.Contains("M6") || line.Contains("M06")) && !line.StartsWith('('))
+                        {
+                            millProgram = true;
+
+                            if (currentToolNo != 0 && currentToolComment != string.Empty)
+                            {
+                                currentTool.Position = currentToolNo;
+                                currentTool.Comment = currentToolComment;
+                                currentTool.LengthCompensation = currentH;
+                                currentTool.RadiusCompensation = currentD;
+                                currentTool.Line = i;
+                                currentTool.PolarWarning = warningsPolar.Count > 0;
+                                currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
+                                warningsPolar.Clear();
+                                warningsFeedType.Clear();
+
+                                if (!tools.Contains(currentTool))
+                                {
+                                    if (tools.FindAll(t =>
+                                            t.Position == currentTool.Position &&
+                                            t.Comment == currentTool.Comment &&
+                                            t.LengthCompensation == currentTool.LengthCompensation &&
+                                            t.RadiusCompensation == currentTool.RadiusCompensation).Count == 0)
+                                    {
+                                        tools.Add(currentTool);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                currentTool.PolarWarning = warningsPolar.Count > 0;
+                                currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0;
+                            }
+
+                            var toolLine = line.Contains('(')
+                                ? line.Split('T')[1]
+                                    .Replace("M6", string.Empty)
+                                    .Replace("M06", string.Empty)
+                                    .Split('(')[0]
+                                    .Replace(" ", string.Empty)
+                                : line.Split('T')[1]
+                                    .Replace("M6", string.Empty)
+                                    .Replace("M06", string.Empty)
+                                    .Replace(" ", string.Empty);
+                            currentD = 0;
+                            if (int.TryParse(toolLine, out currentToolNo))
+                            {
+                                try
+                                {
+                                    currentToolComment = $"(" + line.Split("(")[1].Trim();
+                                    //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
+                                }
+                                catch (IndexOutOfRangeException)
+                                {
+                                    currentToolComment = $"(---)";
+                                    //if (!tools.Contains($"{currentTool} {currentToolComment}")) tools.Add($"{currentTool} {currentToolComment}");
+                                }
+                            }
+                        }
+
+                        // токарный инструмент
+                        if (new Regex(@"T(\d+)", RegexOptions.Compiled).IsMatch(line) && !millProgram && !line.StartsWith('('))
+                        {
+                            if (currentToolNo != 0 && currentToolComment != string.Empty)
+                            {
+                                currentTool.Position = currentToolNo;
+                                currentTool.Comment = currentToolComment;
+                                currentTool.LengthCompensation = 0;
+                                currentTool.RadiusCompensation = 0;
+                                currentTool.Line = i;
+                                if (!tools.Contains(currentTool))
+                                {
+                                    tools.Add(currentTool);
+                                }
+                            }
+
+                            string toolLine = line.Contains('(') ? line.Split('T')[1].Split('(')[0].Replace(" ", string.Empty) : line.Split('T')[1].Replace(" ", string.Empty);
+                            if (toolLine.Contains('X')) toolLine = toolLine.Split('X')[0];
+                            if (toolLine.Contains('Y')) toolLine = toolLine.Split('Y')[0];
+                            if (toolLine.Contains('Z')) toolLine = toolLine.Split('Z')[0];
+                            if (toolLine.Contains('A')) toolLine = toolLine.Split('A')[0];
+                            if (toolLine.Contains('F')) toolLine = toolLine.Split('F')[0];
+                            if (toolLine.Contains('M')) toolLine = toolLine.Split('M')[0];
+                            if (toolLine.Contains('G')) toolLine = toolLine.Split('G')[0];
+                            currentD = 0;
+                            if (int.TryParse(toolLine, out currentToolNo))
+                            {
+                                try
+                                {
+                                    currentToolComment = $"(" + line.Split("(")[1].Trim();
+                                }
+                                catch (IndexOutOfRangeException)
+                                {
+                                    currentToolComment = $"(---)";
+                                }
+                            }
+                        }
+
+                        if (lineWithoutParenthesis.Contains("M8") || lineWithoutParenthesis.Contains("M58"))
+                        {
+                            currentCoolant = Coolant.On;
+                        }
+                        if (lineWithoutParenthesis.Contains("M9") || lineWithoutParenthesis.Contains("M59"))
+                        {
+                            currentCoolant = Coolant.Off;
+                        }
+                        if (lineWithoutParenthesis.Contains("G01")
+                            || lineWithoutParenthesis.Contains("G1")
+                            || lineWithoutParenthesis.Contains("G72")
+                            || lineWithoutParenthesis.Contains("G71"))
+                        {
+                            currentTool.Coolant = currentCoolant;
+                            //if (tools.Count > 0)
+                            //{
+                            //var lastTool = tools.Last();
+                            //int index = tools.IndexOf(lastTool);
+                            //lastTool.Coolant = currentCoolant;
+                            //tools[index] = lastTool;
+                            //}
+                        }
+
+                        if ((line.Contains("G41") || line.Contains("G42")) && line.Contains('D'))
+                        {
+                            string compensationLine = line.Split("D")[1];
+                            if (compensationLine.Contains('X')) compensationLine = compensationLine.Split('X')[0];
+                            if (compensationLine.Contains('Y')) compensationLine = compensationLine.Split('Y')[0];
+                            if (compensationLine.Contains('Z')) compensationLine = compensationLine.Split('Z')[0];
+                            if (compensationLine.Contains('A')) compensationLine = compensationLine.Split('A')[0];
+                            if (compensationLine.Contains('F')) compensationLine = compensationLine.Split('F')[0];
+                            if (compensationLine.Contains('M')) compensationLine = compensationLine.Split('M')[0];
+                            if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
+                            if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentD))
+                            {
+                                if (currentToolNo != currentD && currentToolNo != 0)
+                                {
+                                    warningsD.Add($"[{(i).ToString(fString)}]: {line} - (T{currentToolNo} D{currentD})");
+                                }
+                                else if (currentToolNo != currentD && currentToolNo == 0)
+                                {
+                                    warningsD.Add($"[{(i).ToString(fString)}]: {line} - (D{currentD} - без инструмента)");
+                                }
+                                currentTool.Position = currentToolNo;
+                                currentTool.Comment = currentToolComment;
+                                currentTool.LengthCompensation = currentH;
+                                currentTool.RadiusCompensation = currentD;
+                                //currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
+                                //currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                                //warningsPolar.Clear();
+                                //warningsFeedType.Clear();
+                                if (!tools.Contains(currentTool))
+                                {
+                                    if (tools.Count > 0)
+                                    {
+                                        var prevTool = tools[^1];
+                                        if (prevTool.Position == currentTool.Position && prevTool.Comment == currentTool.Comment &&
+                                            prevTool.LengthCompensation == currentTool.LengthCompensation && prevTool.RadiusCompensation == 0)
+                                        {
+                                            tools.Remove(prevTool);
+                                        }
+
+                                    }
+                                    tools.Add(currentTool);
+                                }
+                            }
+                            //compensationsD.Add($"T{currentTool} D{int.Parse(compensationLine.Replace(" ", string.Empty))}");
+                        }
+                        if (line.Contains("G43") && line.Contains('H'))
+                        {
+                            string compensationLine = line.Split("H")[1];
+                            if (compensationLine.Contains('X')) compensationLine = compensationLine.Split('X')[0];
+                            if (compensationLine.Contains('Y')) compensationLine = compensationLine.Split('Y')[0];
+                            if (compensationLine.Contains('Z')) compensationLine = compensationLine.Split('Z')[0];
+                            if (compensationLine.Contains('A')) compensationLine = compensationLine.Split('A')[0];
+                            if (compensationLine.Contains('F')) compensationLine = compensationLine.Split('F')[0];
+                            if (compensationLine.Contains('M')) compensationLine = compensationLine.Split('M')[0];
+                            if (compensationLine.Contains('G')) compensationLine = compensationLine.Split('G')[0];
+                            if (int.TryParse(compensationLine.Replace(" ", string.Empty), out currentH))
+                            {
+                                if (currentToolNo != currentH && currentToolNo != 0)
+                                {
+                                    warningsH.Add($"[{(i).ToString(fString)}]: {line} - (T{currentToolNo} H{currentH})");
+                                }
+                                else if (currentToolNo != currentH && currentToolNo == 0)
+
+                                {
+                                    warningsH.Add($"[{(i).ToString(fString)}]: {line} - (H{currentH} - без инструмента)");
+                                }
+                                currentTool.Position = currentToolNo;
+                                currentTool.Comment = currentToolComment;
+                                currentTool.LengthCompensation = currentH;
+                                currentTool.RadiusCompensation = currentD;
+
+                                currentTool.Position = currentToolNo;
+                                currentTool.Comment = currentToolComment;
+                                currentTool.LengthCompensation = currentH;
+                                currentTool.RadiusCompensation = currentD;
+
+                                //currentTool.PolarWarning = warningsPolar.Count > 0 ? true : false;
+                                //currentTool.FeedPerSpinWarning = warningsFeedType.Count > 0 ? true : false;
+                                //warningsPolar.Clear();
+                                //warningsFeedType.Clear();
+                                if (!tools.Contains(currentTool))
+                                {
+                                    if (tools.FindAll(t =>
+                                            t.Position == currentTool.Position &&
+                                            t.Comment == currentTool.Comment &&
+                                            t.LengthCompensation == currentTool.LengthCompensation &&
+                                            t.RadiusCompensation == currentTool.RadiusCompensation &&
+                                            t.RadiusCompensation != 0).Count == 0)
+                                    {
+                                        tools.Add(currentTool);
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-            if (!millProgram)
-            {
-                foreach (var tool in  tools.Where(x => x.Coolant is Coolant.Off))
-                {
-                    warningsCoolant.Add($"[{tool.Line}]: Т{tool.Position:D4} {tool.Comment}");
-                }
-            }
-            warningsPolar.Clear();
-            warningsFeedType.Clear();
-            foreach (var tool in tools.FindAll(t => t.PolarWarning is true))
-            {
-                warningsPolar.Add($"[{tool.Line}]: Т{tool.Position} {tool.Comment}");
-            }
-            foreach (var tool in tools.FindAll(t => t.FeedPerSpinWarning is true))
-            {
-                warningsFeedType.Add($"[{tool.Line}]: Т{tool.Position} {tool.Comment}");
-            }
-            
-            caption = $"{(millProgram ? "Фрезерная" : "Токарная")} программа";
-            coordinates = coordinateSystems.Count switch
-            {
-                1 => $"Система координат {coordinateSystems[0]}\n\n",
-                > 1 => $"Системы координат: {string.Join(", ", coordinateSystems)}\n\n",
-                _ => "Системы координат отсутствуют\n\n"
-            };
-            //coordinates = $"Время: {sw.ElapsedMilliseconds} мс\n" + coordinates;
+                    if (!millProgram)
+                    {
+                        foreach (var tool in tools.Where(x => x.Coolant is Coolant.Off))
+                        {
+                            warningsCoolant.Add($"[{tool.Line}]: Т{tool.Position:D4} {tool.Comment}");
+                        }
+                    }
+                    warningsPolar.Clear();
+                    warningsFeedType.Clear();
+                    foreach (var tool in tools.FindAll(t => t.PolarWarning is true))
+                    {
+                        warningsPolar.Add($"[{tool.Line}]: Т{tool.Position} {tool.Comment}");
+                    }
+                    foreach (var tool in tools.FindAll(t => t.FeedPerSpinWarning is true))
+                    {
+                        warningsFeedType.Add($"[{tool.Line}]: Т{tool.Position} {tool.Comment}");
+                    }
 
-        return tools;
+                    caption = $"{(millProgram ? "Фрезерная" : "Токарная")} программа";
+                    coordinates = coordinateSystems.Count switch
+                    {
+                        1 => $"Система координат {coordinateSystems[0]}\n\n",
+                        > 1 => $"Системы координат: {string.Join(", ", coordinateSystems)}\n\n",
+                        _ => "Системы координат отсутствуют\n\n"
+                    };
+                    //coordinates = $"Время: {sw.ElapsedMilliseconds} мс\n" + coordinates;
+
+                    break;
+            }
+
+            return tools;
         }
 
         #region Пользовательские настройки
